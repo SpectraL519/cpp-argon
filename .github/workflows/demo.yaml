@@ -1,4 +1,4 @@
-name: demo
+name: CPP-ARGON Demo
 on:
   push:
     branches:
