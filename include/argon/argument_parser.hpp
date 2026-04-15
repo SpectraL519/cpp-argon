@@ -148,7 +148,7 @@ void add_default_argument(const default_argument, argument_parser&) noexcept;
  * This class provides methods to define positional and optional arguments, set parser options,
  * and parse the command-line input.
  *
- * Example usage:
+ * ## Basic Usage:
  * @code{.cpp}
  * #include <argon/argument_parser.hpp>
  *
@@ -175,7 +175,6 @@ void add_default_argument(const default_argument, argument_parser&) noexcept;
  *
  *     return 0;
  * }
- * @endcode
  */
 class argument_parser {
 public:
@@ -700,7 +699,6 @@ public:
      * - For top-level parsers, this is the same as the parser's name.
      * - For subparsers, the name is prefixed with its parent parser names.
      *
-     * @example
      * Top-level parser: `git`
      * Subparser: `git submodule`
      * Nested subparser : `git submodule init`

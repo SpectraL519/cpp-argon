@@ -2,5 +2,5 @@
 	path = cpp-argon-demo
 	url = https://github.com/SpectraL519/cpp-argon-demo.git
 [submodule "doxygen-awesome-css"]
-	path = doxygen-awesome-css
+	path = docs/style/doxygen-awesome-css
 	url = https://github.com/SpectraL519/doxygen-awesome-css.git

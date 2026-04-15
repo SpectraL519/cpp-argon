@@ -1,4 +1,4 @@
-name: documentation
+name: Documentation
 
 on:
   pull_request:
@@ -40,7 +40,7 @@ jobs:
         continue-on-error: false
         run: |
           doxygen Doxyfile
-          python3 scripts/postprocess_doxyhtml.py ./documentation
+          python3 scripts/postprocess_doxyhtml.py ./documentation --img-rules docs/style/img_style_rules.json
 
       - name: Validate output
         run: test -d documentation && test -f documentation/index.html
@@ -84,7 +84,7 @@ jobs:
         continue-on-error: false
         run: |
           doxygen Doxyfile
-          python3 scripts/postprocess_doxyhtml.py ./documentation
+          python3 scripts/postprocess_doxyhtml.py ./documentation --img-rules docs/style/img_style_rules.json
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

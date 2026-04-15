@@ -12,19 +12,20 @@
   - [Boolean Flags](#boolean-flags)
 - [Argument Parameters](#argument-parameters)
   - [Common Parameters](#common-parameters)
-    - [help](#1-help---the-arguments-description-which-will-be-printed-when-printing-the-parser-class-instance) - the text shown in the help message to describe an argument
-    - [hidden](#2-hidden---if-this-option-is-set-for-an-argument-then-it-will-not-be-included-in-the-program-description) - hides the argument from the generated program description and help output
-    - [required](#3-required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown) - marks the argument as mandatory; not using it will cause an error
-    - [suppress arg checks](#4-suppress_arg_checks---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments) - if a suppressing argument is used, other requirement validation will be skipped for other arguments
-    - [nargs](#5-nargs---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument) - defines how many values an argument can or must accept
-    - [greedy](#6-greedy---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached) - makes the argument consume all following values until its limit is reached
-    - [choices](#7-choices---a-list-of-valid-argument-values) - restricts the valid inputs to a predefined set of values
-    - [value actions](#8-value-actions---functions-that-are-called-after-parsing-an-arguments-value) - allows you to run custom code after the argument’s value is parsed
-    - [default values](#9-default_values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed) - specifies fallback values to use if none are provided
+    - [Help - The argument's description which will be printed when printing the parser class instance.](#help---the-arguments-description-which-will-be-printed-when-printing-the-parser-class-instance)
+    - [Hidden - If this option is set for an argument, then it will not be included in the program description.](#hidden---if-this-option-is-set-for-an-argument-then-it-will-not-be-included-in-the-program-description)
+    - [Required - If this option is set for an argument and it's value is not passed in the command-line, an exception will be thrown.](#required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown)
+    - [Argument Checks Suppression - Using a suppressing argument results in suppressing requirement checks for other arguments.](#argument-checks-suppression---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments)
+    - [Number of Arguments - Sets the allowed number of values to be parsed for an argument.](#number-of-arguments---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument)
+    - [Greedy Parsing - If this option is set, the argument will consume ALL command-line values until it's upper nargs bound is reached.](#greedy-parsing---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached)
+    - [Choices - A list of valid argument values.](#choices---a-list-of-valid-argument-values)
+    - [Value Actions - Functions that are called after parsing an argument's value.](#value-actions---functions-that-are-called-after-parsing-an-arguments-value)
+    - [Default Values - A list of values which will be used if no values for an argument have been parsed](#default-values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed)
   - [Parameters Specific for Optional Arguments](#parameters-specific-for-optional-arguments)
-    - [on-flag actions](#1-on-flag-actions---functions-that-are-called-immediately-after-parsing-an-arguments-flag) - executes custom code immediately when the argument’s flag is present
-    - [implicit values](#2-implicit_values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line) - automatically assigns a value if an argument flag is used without an explicit value
+    - [On-flag Actions - Functions that are called immediately after parsing an argument's flag.](#on-flag-actions---functions-that-are-called-immediately-after-parsing-an-arguments-flag)
+    - [Implicit Values - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.](#implicit-values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line)
 - [Predefined Parameter Values](#predefined-parameter-values)
+  - [Actions](#actions)
 - [Default Arguments](#default-arguments)
 - [Argument Groups](#argument-groups)
   - [Creating New Groups](#creating-new-groups)
@@ -34,6 +35,10 @@
   - [Suppressing Argument Group Checks](#suppressing-argument-group-checks)
 - [Parsing Arguments](#parsing-arguments)
   - [Basic Argument Parsing Rules](#basic-argument-parsing-rules)
+    - [1. Optional arguments are parsed only with a flag](#1-optional-arguments-are-parsed-only-with-a-flag)
+    - [2. Positional arguments are parsed in the order of definition](#2-positional-arguments-are-parsed-in-the-order-of-definition)
+    - [3. Positional arguments consume free values](#3-positional-arguments-consume-free-values)
+    - [4. Unknown Argument Flag Handling](#4-unknown-argument-flag-handling)
   - [Compound Arguments](#compound-arguments)
   - [Parsing Known Arguments](#parsing-known-arguments)
 - [Retrieving Argument Values](#retrieving-argument-values)
@@ -42,6 +47,7 @@
   - [Using Multiple Subparsers](#using-multiple-subparsers)
   - [Parsing Arguments with Subparsers](#parsing-arguments-with-subparsers)
   - [Tracking Parser State](#tracking-parser-state)
+    - [Example: Inspecting Parsing States](#example-inspecting-parsing-states)
 - [Examples](#examples)
 - [Common Utility](#common-utility)
 
@@ -256,7 +262,6 @@ parser.add_optional_argument<bool>("disable_another_option", "dao")
       .nargs(0)
       .help("disables option: another option");
 */
-
 ```
 
 <br/>
@@ -269,7 +274,7 @@ parser.add_optional_argument<bool>("disable_another_option", "dao")
 
 Parameters which can be specified for both positional and optional arguments include:
 
-#### 1. `help` - The argument's description which will be printed when printing the parser class instance.
+#### Help - The argument's description which will be printed when printing the parser class instance.
 
 ```cpp
 parser.add_positional_argument<std::size_t>("number", "n")
@@ -278,7 +283,7 @@ parser.add_positional_argument<std::size_t>("number", "n")
 
 <br />
 
-#### 2. `hidden` - If this option is set for an argument, then it will not be included in the program description.
+#### Hidden - If this option is set for an argument, then it will not be included in the program description.
 
 By default all arguments are visible, but this can be modified using the `hidden(bool)` setter as follows:
 
@@ -309,7 +314,7 @@ Optional arguments:
 
 <br />
 
-#### 3. `required` - If this option is set for an argument and it's value is not passed in the command-line, an exception will be thrown.
+#### Required - If this option is set for an argument and it's value is not passed in the command-line, an exception will be thrown.
 
 > [!IMPORTANT]
 >
@@ -376,7 +381,7 @@ Command                                 Result
 
 <br />
 
-#### 4. `suppress_arg_checks` - Using a suppressing argument results in suppressing requirement checks for other arguments.
+#### Argument Checks Suppression - Using a suppressing argument results in suppressing requirement checks for other arguments.
 
 If an argument is defined with the `suppress_arg_checks` option enabled and such argument is explicitly used in the command-line, then requirement validation will be suppressed/skipped for other arguments. This includes validating whether:
 - a required argument has been parsed
@@ -417,7 +422,7 @@ os << data << std::endl;
 
 <br />
 
-#### 5. `nargs` - Sets the allowed number of values to be parsed for an argument.
+#### Number of Arguments - Sets the allowed number of values to be parsed for an argument.
 
 The `nargs` parameter can be set as:
 
@@ -458,7 +463,7 @@ The `nargs` parameter can be set as:
 
 <br />
 
-#### 6. `greedy` - If this option is set, the argument will consume ALL command-line values until it's upper nargs bound is reached.
+#### Greedy Parsing - If this option is set, the argument will consume ALL command-line values until it's upper nargs bound is reached.
 
 > [!NOTE]
 >
@@ -499,7 +504,7 @@ Notice that even though the `-v` and `--type` command-line arguments have flag p
 
 <br />
 
-#### 7. `choices` - A list of valid argument values.
+#### Choices - A list of valid argument values.
 
 ```cpp
 parser.add_optional_argument<char>("method", "m").choices('a', 'b', 'c');
@@ -516,7 +521,7 @@ parser.add_optional_argument<char>("method", "m").choices('a', 'b', 'c');
 
 <br />
 
-#### 8. value actions - Functions that are called after parsing an argument's value.
+#### Value Actions - Functions that are called after parsing an argument's value.
 Actions are represented as functions, which take the argument's value as an argument. The available action types are:
 
 - `observe` actions | `void(const value_type&)` - applied to the parsed value. No value is returned - this action type is used to perform some logic on the parsed value without modifying it.
@@ -561,7 +566,7 @@ Actions are represented as functions, which take the argument's value as an argu
 
 <br />
 
-#### 9. `default_values` - A list of values which will be used if no values for an argument have been parsed
+#### Default Values - A list of values which will be used if no values for an argument have been parsed
 
 > [!WARNING]
 >
@@ -624,7 +629,7 @@ Command                                 Result
 
 Apart from the common parameters listed above, for optional arguments you can also specify the following parameters:
 
-#### 1. on-flag actions - Functions that are called immediately after parsing an argument's flag.
+#### On-flag Actions - Functions that are called immediately after parsing an argument's flag.
 
 ```cpp
 void print_debug_info() noexcept {
@@ -644,7 +649,7 @@ Here the `print_debug_info` function will be called right after parsing the `--d
 
 <br />
 
-#### 2. `implicit_values` - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.
+#### Implicit Values - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.
 
 ```cpp
 // example
@@ -1607,8 +1612,8 @@ The following table lists the projects provided in the `cpp-argon-demo` submodul
 | [Numbers Converter](https://github.com/SpectraL519/cpp-argon-demo/tree/master/numbers_converter/) | Converts numbers between different bases.<br/>**Demonstrates:** The usage of argument parameters such as *nargs*, *choices*, and *default values*. |
 | [Verbosity](https://github.com/SpectraL519/cpp-argon-demo/tree/master/verbosity/) | Prints messages with varying levels of verbosity.<br/>**Demonstrates:** The usage of `none_type` arguments and compound argument flags. |
 | [Logging Mode](https://github.com/SpectraL519/cpp-argon-demo/tree/master/logging_mode/) | Logs a message depending on the selected logging mode (`quiet`, `normal`, `verbose`).<br/>**Demonstrates:** The usage of custom argument value types (like enums). |
-| [Message Logger](https://github.com/SpectraL519/cpp-argon-demo/arg_parsertree/master/message_logger/) | Outputs a message to a file, console, or not at all.<br/>**Demonstrates:** The usage of argument groups. |
-| [AP-GIT](https://github.com/SpectraL519/cpp-argon-demo/tree/master/ap_git/) | A minimal Git CLI clone with subcommands (`init`, `add`, `commit`, `status`, `push`).<br/>**Demonstrates:** The usage of subparsers for multi-command CLIs and complex argument configurations. |
+| [Message Logger](https://github.com/SpectraL519/cpp-argon-demo/tree/master/message_logger/) | Outputs a message to a file, console, or not at all.<br/>**Demonstrates:** The usage of argument groups. |
+| [ARGON-GIT](https://github.com/SpectraL519/cpp-argon-demo/tree/master/argon_git/) | A minimal Git CLI clone with subcommands (`init`, `add`, `commit`, `status`, `push`).<br/>**Demonstrates:** The usage of subparsers for multi-command CLIs and complex argument configurations. |
 
 <br/>
 <br/>
