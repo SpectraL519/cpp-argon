@@ -386,7 +386,7 @@ TEST_CASE_FIXTURE(
     CHECK_THROWS_WITH_AS(
         sut.add_subparser(subparser_name),
         std::format(
-            "A subparser with the given name () already exists in parser '{}'",
+            "A subparser with the given name ({}) already exists in parser '{}'",
             subparser_name,
             sut.name()
         )

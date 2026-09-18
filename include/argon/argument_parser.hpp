@@ -517,7 +517,7 @@ public:
         );
         if (subparser_it != this->_subparsers.end())
             throw std::logic_error(std::format(
-                "A subparser with the given name () already exists in parser '{}'",
+                "A subparser with the given name ({}) already exists in parser '{}'",
                 (*subparser_it)->_name,
                 this->_program_name
             ));
@@ -1550,20 +1550,21 @@ private:
         }
     }
 
-    std::string _name; ///< The name of the parser.
-    std::string
-        _program_name; ///< The name of the program in the format "<parent-parser-names>... <program-name>".
-    std::optional<std::string> _program_version; ///< The version of the program.
-    std::optional<std::string> _program_description; ///< The description of the program.
+    std::string _name = ""; ///< The name of the parser.
+    std::string _program_name =
+        ""; ///< The name of the program in the format "<parent-parser-names>... <program-name>".
+    std::optional<std::string> _program_version = std::nullopt; ///< The version of the program.
+    std::optional<std::string> _program_description =
+        std::nullopt; ///< The description of the program.
     bool _verbose = false; ///< Verbosity flag.
     unknown_policy _unknown_policy = unknown_policy::fail; ///< Policy for unknown arguments.
 
-    arg_ptr_vec_t _positional_args; ///< The list of positional arguments.
-    arg_ptr_vec_t _optional_args; ///< The list of optional arguments.
-    arg_group_ptr_vec_t _argument_groups; ///< The list of argument groups.
+    arg_ptr_vec_t _positional_args = {}; ///< The list of positional arguments.
+    arg_ptr_vec_t _optional_args = {}; ///< The list of optional arguments.
+    arg_group_ptr_vec_t _argument_groups = {}; ///< The list of argument groups.
     argument_group& _gr_positional_args; ///< The positional argument group.
     argument_group& _gr_optional_args; ///< The optional argument group.
-    arg_parser_ptr_vec_t _subparsers; ///< The list of subparsers.
+    arg_parser_ptr_vec_t _subparsers = {}; ///< The list of subparsers.
 
     bool _invoked =
         false; ///< A flag indicating whether the parser has been invoked to parse arguments.

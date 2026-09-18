@@ -86,6 +86,9 @@ public:
         return *this;
     }
 
+    // argument_group& prefix(std::string_view prefix) noexcept {
+    // }
+
     friend class argument_parser;
 
 private:
@@ -112,7 +115,8 @@ private:
 
     argument_parser* _parser; ///< Pointer to the owning parser.
     std::string _name; ///< Name of the group (used in help output).
-    arg_ptr_vec_t _arguments; ///< A list of arguments that belong to this group.
+    std::string _prefix = ""; ///< Common argument flag prefix.
+    arg_ptr_vec_t _arguments = {}; ///< A list of arguments that belong to this group.
 
     bool _hidden : 1 = false; ///< The hidden attribute value (default: false).
     bool _required : 1 = false; ///< The required attribute value (default: false).
