@@ -26,7 +26,7 @@ def get_doxy_version(doxyfile_path: Path) -> str:
 
 def get_bazel_version(bazel_module_file_path: Path) -> str:
     text = bazel_module_file_path.read_text()
-    match = re.search(rf'\bversion\s*=\s*"{VERSION_REGEX}"', text)
+    match = re.search(rf'module\s*\([^)]*?\bversion\s*=\s*"{VERSION_REGEX}"', text, re.DOTALL)
     if match:
         return match.group(1)
     raise ValueError(f"[Bazel] Could not find a valid module version in {bazel_module_file_path}")
