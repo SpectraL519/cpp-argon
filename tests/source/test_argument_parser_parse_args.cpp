@@ -1493,6 +1493,12 @@ TEST_CASE_FIXTURE(
         CHECK_FALSE(sut.is_used(init_arg_name_primary(i)));
 }
 
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args, "parse_args should properly handle group prefixes"
+) {
+    // TODO
+}
+
 // subparsers
 
 TEST_CASE_FIXTURE(

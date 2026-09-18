@@ -296,7 +296,7 @@ public:
     /**
      * @brief Adds a positional argument to the parser's configuration and binds it to the given group.
      * @tparam T Type of the argument value.
-     * @param primary_name The name of the argument.
+     * @param name The name of the argument.
      * @return Reference to the added positional argument.
      * @throws argon::invalid_configuration
      */
@@ -305,9 +305,11 @@ public:
         argument_group& group, const std::string_view name
     ) {
         this->_validate_group(group);
-        this->_verify_arg_name_pattern(name);
 
-        const detail::argument_name arg_name(std::make_optional<std::string>(name));
+        const auto full_name = std::format("{}{}", group._prefix, name);
+        this->_verify_arg_name_pattern(full_name);
+
+        const detail::argument_name arg_name(std::make_optional<std::string>(full_name));
         if (this->_is_arg_name_used(arg_name))
             throw invalid_configuration::argument_name_used(arg_name);
 
@@ -366,14 +368,18 @@ public:
         const detail::argument_name_discriminator name_discr = n_primary
     ) {
         this->_validate_group(group);
-        this->_verify_arg_name_pattern(name);
+
+        const auto full_name = std::format("{}{}", group._prefix, name);
+        this->_verify_arg_name_pattern(full_name);
 
         const auto arg_name =
             name_discr == n_primary
                 ? detail::
-                      argument_name{std::make_optional<std::string>(name), std::nullopt, this->_flag_prefix_char}
+                      argument_name{std::make_optional<std::string>(full_name), std::nullopt, this->_flag_prefix_char}
                 : detail::argument_name{
-                      std::nullopt, std::make_optional<std::string>(name), this->_flag_prefix_char
+                      std::nullopt,
+                      std::make_optional<std::string>(full_name),
+                      this->_flag_prefix_char
                   };
 
         if (this->_is_arg_name_used(arg_name))
@@ -401,12 +407,16 @@ public:
         const std::string_view secondary_name
     ) {
         this->_validate_group(group);
-        this->_verify_arg_name_pattern(primary_name);
-        this->_verify_arg_name_pattern(secondary_name);
+
+        const auto full_primary_name = std::format("{}{}", group._prefix, primary_name);
+        this->_verify_arg_name_pattern(full_primary_name);
+
+        const auto full_secondary_name = std::format("{}{}", group._prefix, secondary_name);
+        this->_verify_arg_name_pattern(full_secondary_name);
 
         const detail::argument_name arg_name(
-            std::make_optional<std::string>(primary_name),
-            std::make_optional<std::string>(secondary_name),
+            std::make_optional<std::string>(full_primary_name),
+            std::make_optional<std::string>(full_secondary_name),
             this->_flag_prefix_char
         );
         if (this->_is_arg_name_used(arg_name))

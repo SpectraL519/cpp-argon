@@ -86,8 +86,10 @@ public:
         return *this;
     }
 
-    // argument_group& prefix(std::string_view prefix) noexcept {
-    // }
+    argument_group& with_prefix(std::string_view prefix) noexcept {
+        this->_prefix = prefix;
+        return *this;
+    }
 
     friend class argument_parser;
 
