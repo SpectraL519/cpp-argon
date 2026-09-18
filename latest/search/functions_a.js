@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['mark_5fused_0',['mark_used',['../classargon_1_1argument.html#a19d49e901cdb9092fbc1cd55460730ab',1,'argon::argument::mark_used()'],['../classargon_1_1detail_1_1argument__base.html#ab614f111e21d0ad0cfb3e15893159e69',1,'argon::detail::argument_base::mark_used()']]],
-  ['match_1',['match',['../structargon_1_1detail_1_1argument__name.html#a2041a9b809a3976047179427ef56c6f4',1,'argon::detail::argument_name::match(std::string_view arg_name, const match_type m_type=m_any) const noexcept'],['../structargon_1_1detail_1_1argument__name.html#a48a9c85e6ee9975d713d0280dc43c041',1,'argon::detail::argument_name::match(const argument_name &amp;arg_name, const match_type m_type=m_any) const noexcept']]],
-  ['more_5fthan_2',['more_than',['../namespaceargon_1_1nargs.html#a4cbf064e24043a2edec3edc7b2668aee',1,'argon::nargs']]],
-  ['mutually_5fexclusive_3',['mutually_exclusive',['../classargon_1_1argument__group.html#ad9f1737189b18461faa9c3ef4aad8086',1,'argon::argument_group']]]
+  ['name_0',['name',['../classargon_1_1argument.html#a3dc9026fbd6946455575043760ecf844',1,'argon::argument::name()'],['../classargon_1_1detail_1_1argument__base.html#a2f89c1eb266e934b35f312c7a58a4922',1,'argon::detail::argument_base::name()']]],
+  ['nargs_1',['nargs',['../classargon_1_1argument.html#abfc3b953a8c1370ffdccef8bc237e96d',1,'argon::argument::nargs(const nargs::range &amp;range) noexcept'],['../classargon_1_1argument.html#a8277f6ff4443c2f07e09498b2e8e9b6d',1,'argon::argument::nargs(const count_type n) noexcept'],['../classargon_1_1argument.html#ac3c5056bc3a6e1e0ead883b8cc0085a8',1,'argon::argument::nargs(const count_type lower, const count_type upper) noexcept']]],
+  ['nvalues_5fordering_2',['nvalues_ordering',['../classargon_1_1argument.html#ab31ca3581ce404f9b392fa9301fc8bdc',1,'argon::argument::nvalues_ordering()'],['../classargon_1_1detail_1_1argument__base.html#aaab8fb1b3d2bc15508cdf07fcfa5109f',1,'argon::detail::argument_base::nvalues_ordering()']]]
 ];

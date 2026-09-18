@@ -24,7 +24,6 @@ var annotated_dup =
       ] ],
       [ "argument", "classargon_1_1argument.html", "classargon_1_1argument" ],
       [ "argument_group", "classargon_1_1argument__group.html", "classargon_1_1argument__group" ],
-      [ "argument_parser", "classargon_1_1argument__parser.html", "classargon_1_1argument__parser" ],
       [ "argument_parser_exception", "structargon_1_1argument__parser__exception.html", "structargon_1_1argument__parser__exception" ],
       [ "invalid_configuration", "structargon_1_1invalid__configuration.html", "structargon_1_1invalid__configuration" ],
       [ "lookup_failure", "structargon_1_1lookup__failure.html", "structargon_1_1lookup__failure" ],

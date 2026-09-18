@@ -56,19 +56,19 @@ var NAVTREE =
       ] ],
       [ "Argument Parameters", "md_docs_2tutorial.html#argument-parameters", [
         [ "Common Parameters", "md_docs_2tutorial.html#common-parameters", [
-          [ "1. <tt>help</tt> - The argument's description which will be printed when printing the parser class instance.", "md_docs_2tutorial.html#autotoc_md1-help---the-arguments-description-which-will-be-printed-when-printing-the-parser-class-instance", null ],
-          [ "2. <tt>hidden</tt> - If this option is set for an argument, then it will not be included in the program description.", "md_docs_2tutorial.html#autotoc_md2-hidden---if-this-option-is-set-for-an-argument-then-it-will-not-be-included-in-the-program-description", null ],
-          [ "3. <tt>required</tt> - If this option is set for an argument and it's value is not passed in the command-line, an exception will be thrown.", "md_docs_2tutorial.html#autotoc_md3-required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown", null ],
-          [ "4. <tt>suppress_arg_checks</tt> - Using a suppressing argument results in suppressing requirement checks for other arguments.", "md_docs_2tutorial.html#autotoc_md4-suppress_arg_checks---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments", null ],
-          [ "5. <tt>nargs</tt> - Sets the allowed number of values to be parsed for an argument.", "md_docs_2tutorial.html#autotoc_md5-nargs---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument", null ],
-          [ "6. <tt>greedy</tt> - If this option is set, the argument will consume ALL command-line values until it's upper nargs bound is reached.", "md_docs_2tutorial.html#autotoc_md6-greedy---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached", null ],
-          [ "7. <tt>choices</tt> - A list of valid argument values.", "md_docs_2tutorial.html#autotoc_md7-choices---a-list-of-valid-argument-values", null ],
-          [ "8. value actions - Functions that are called after parsing an argument's value.", "md_docs_2tutorial.html#autotoc_md8-value-actions---functions-that-are-called-after-parsing-an-arguments-value", null ],
-          [ "9. <tt>default_values</tt> - A list of values which will be used if no values for an argument have been parsed", "md_docs_2tutorial.html#autotoc_md9-default_values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed", null ]
+          [ "Help - The argument's description which will be printed when printing the parser class instance.", "md_docs_2tutorial.html#help---the-arguments-description-which-will-be-printed-when-printing-the-parser-class-instance", null ],
+          [ "Hidden - If this option is set for an argument, then it will not be included in the program description.", "md_docs_2tutorial.html#hidden---if-this-option-is-set-for-an-argument-then-it-will-not-be-included-in-the-program-description", null ],
+          [ "Required - If this option is set for an argument and it's value is not passed in the command-line, an exception will be thrown.", "md_docs_2tutorial.html#required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown", null ],
+          [ "Argument Checks Suppression - Using a suppressing argument results in suppressing requirement checks for other arguments.", "md_docs_2tutorial.html#argument-checks-suppression---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments", null ],
+          [ "Number of Arguments - Sets the allowed number of values to be parsed for an argument.", "md_docs_2tutorial.html#number-of-arguments---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument", null ],
+          [ "Greedy Parsing - If this option is set, the argument will consume ALL command-line values until it's upper nargs bound is reached.", "md_docs_2tutorial.html#greedy-parsing---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached", null ],
+          [ "Choices - A list of valid argument values.", "md_docs_2tutorial.html#choices---a-list-of-valid-argument-values", null ],
+          [ "Value Actions - Functions that are called after parsing an argument's value.", "md_docs_2tutorial.html#value-actions---functions-that-are-called-after-parsing-an-arguments-value", null ],
+          [ "Default Values - A list of values which will be used if no values for an argument have been parsed", "md_docs_2tutorial.html#default-values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed", null ]
         ] ],
         [ "Parameters Specific for Optional Arguments", "md_docs_2tutorial.html#parameters-specific-for-optional-arguments", [
-          [ "1. on-flag actions - Functions that are called immediately after parsing an argument's flag.", "md_docs_2tutorial.html#autotoc_md1-on-flag-actions---functions-that-are-called-immediately-after-parsing-an-arguments-flag", null ],
-          [ "2. <tt>implicit_values</tt> - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.", "md_docs_2tutorial.html#autotoc_md2-implicit_values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line", null ]
+          [ "On-flag Actions - Functions that are called immediately after parsing an argument's flag.", "md_docs_2tutorial.html#on-flag-actions---functions-that-are-called-immediately-after-parsing-an-arguments-flag", null ],
+          [ "Implicit Values - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.", "md_docs_2tutorial.html#implicit-values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line", null ]
         ] ]
       ] ],
       [ "Predefined Parameter Values", "md_docs_2tutorial.html#predefined-parameter-values", [
@@ -104,7 +104,6 @@ var NAVTREE =
       [ "Examples", "md_docs_2tutorial.html#examples", null ],
       [ "Common Utility", "md_docs_2tutorial.html#common-utility", null ]
     ] ],
-    [ "Todo List", "todo.html", null ],
     [ "Topics", "topics.html", "topics" ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
@@ -122,8 +121,8 @@ var NAVTREE =
       [ "Class Index", "classes.html", null ],
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
       [ "Class Members", "functions.html", [
-        [ "All", "functions.html", "functions_dup" ],
-        [ "Functions", "functions_func.html", "functions_func" ],
+        [ "All", "functions.html", null ],
+        [ "Functions", "functions_func.html", null ],
         [ "Variables", "functions_vars.html", null ],
         [ "Typedefs", "functions_type.html", null ],
         [ "Enumerations", "functions_enum.html", null ],
@@ -132,17 +131,15 @@ var NAVTREE =
     ] ],
     [ "Files", "files.html", [
       [ "File List", "files.html", "files_dup" ]
-    ] ],
-    [ "Examples", "examples.html", "examples" ]
+    ] ]
   ] ]
 ];
 
 var NAVTREEINDEX =
 [
-"_2home_2runner_2work_2cpp-argon_2cpp-argon_2include_2argon_2argument_parser_8hpp-example.html",
-"classargon_1_1argument__parser.html#a0e6f2e1f2d0ef7ba6d442b397851d18e",
-"classargon_1_1detail_1_1help__builder.html#a9c4fc344746db41fe2b9949b528e0151",
-"namespacemembers_enum.html"
+"action_2types_8hpp.html",
+"classargon_1_1detail_1_1argument__base.html#a60712c866a37f30e1c8b8a7a4e653b17",
+"namespaceargon_1_1util.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

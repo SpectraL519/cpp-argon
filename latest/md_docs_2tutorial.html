@@ -19,7 +19,6 @@
 <script src="search/search.js" type="text/javascript"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
-<link href="doxygen-ext-stylesheet.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -29,7 +28,7 @@
 <tr id="projectrow">
 <td id="projectlogo"><img alt="Logo" src="cpp-argon-hex.png"/></td>
 <td id="projectalign">
-<div id="projectname">CPP-ARGON<span id="projectnumber"> 4.0.0</span>
+<div id="projectname">CPP-ARGON<span id="projectnumber"> 4.0.1</span>
 </div>
 <div id="projectbrief">Command-Line Argument Parser for C++20</div>
 </td>
@@ -108,25 +107,28 @@ $(document).ready(function(){initNavTree('md_docs_2tutorial.html',''); initResiz
 </li>
 <li><a class="el" href="md_docs_2tutorial.html#argument-parameters">Argument Parameters</a><ul>
 <li><a class="el" href="md_docs_2tutorial.html#common-parameters">Common Parameters</a><ul>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md1-help---the-arguments-description-which-will-be-printed-when-printing-the-parser-class-instance">help</a> - the text shown in the help message to describe an argument</li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md2-hidden---if-this-option-is-set-for-an-argument-then-it-will-not-be-included-in-the-program-description">hidden</a> - hides the argument from the generated program description and help output</li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md3-required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown">required</a> - marks the argument as mandatory; not using it will cause an error</li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md4-suppress_arg_checks---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments">suppress arg checks</a> - if a suppressing argument is used, other requirement validation will be skipped for other arguments</li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md5-nargs---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument">nargs</a> - defines how many values an argument can or must accept</li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md6-greedy---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached">greedy</a> - makes the argument consume all following values until its limit is reached</li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md7-choices---a-list-of-valid-argument-values">choices</a> - restricts the valid inputs to a predefined set of values</li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md8-value-actions---functions-that-are-called-after-parsing-an-arguments-value">value actions</a> - allows you to run custom code after the argument’s value is parsed</li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md9-default_values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed">default values</a> - specifies fallback values to use if none are provided</li>
+<li><a class="el" href="md_docs_2tutorial.html#help---the-arguments-description-which-will-be-printed-when-printing-the-parser-class-instance">Help - The argument's description which will be printed when printing the parser class instance.</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#hidden---if-this-option-is-set-for-an-argument-then-it-will-not-be-included-in-the-program-description">Hidden - If this option is set for an argument, then it will not be included in the program description.</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown">Required - If this option is set for an argument and it's value is not passed in the command-line, an exception will be thrown.</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#argument-checks-suppression---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments">Argument Checks Suppression - Using a suppressing argument results in suppressing requirement checks for other arguments.</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#number-of-arguments---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument">Number of Arguments - Sets the allowed number of values to be parsed for an argument.</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#greedy-parsing---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached">Greedy Parsing - If this option is set, the argument will consume ALL command-line values until it's upper nargs bound is reached.</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#choices---a-list-of-valid-argument-values">Choices - A list of valid argument values.</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#value-actions---functions-that-are-called-after-parsing-an-arguments-value">Value Actions - Functions that are called after parsing an argument's value.</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#default-values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed">Default Values - A list of values which will be used if no values for an argument have been parsed</a></li>
 </ul>
 </li>
 <li><a class="el" href="md_docs_2tutorial.html#parameters-specific-for-optional-arguments">Parameters Specific for Optional Arguments</a><ul>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md1-on-flag-actions---functions-that-are-called-immediately-after-parsing-an-arguments-flag">on-flag actions</a> - executes custom code immediately when the argument’s flag is present</li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md2-implicit_values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line">implicit values</a> - automatically assigns a value if an argument flag is used without an explicit value</li>
+<li><a class="el" href="md_docs_2tutorial.html#on-flag-actions---functions-that-are-called-immediately-after-parsing-an-arguments-flag">On-flag Actions - Functions that are called immediately after parsing an argument's flag.</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#implicit-values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line">Implicit Values - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="el" href="md_docs_2tutorial.html#predefined-parameter-values">Predefined Parameter Values</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#predefined-parameter-values">Predefined Parameter Values</a><ul>
+<li><a class="el" href="md_docs_2tutorial.html#actions">Actions</a></li>
+</ul>
+</li>
 <li><a class="el" href="md_docs_2tutorial.html#default-arguments">Default Arguments</a></li>
 <li><a class="el" href="md_docs_2tutorial.html#argument-groups">Argument Groups</a><ul>
 <li><a class="el" href="md_docs_2tutorial.html#creating-new-groups">Creating New Groups</a></li>
@@ -137,7 +139,13 @@ $(document).ready(function(){initNavTree('md_docs_2tutorial.html',''); initResiz
 </ul>
 </li>
 <li><a class="el" href="md_docs_2tutorial.html#parsing-arguments">Parsing Arguments</a><ul>
-<li><a class="el" href="md_docs_2tutorial.html#basic-argument-parsing-rules">Basic Argument Parsing Rules</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#basic-argument-parsing-rules">Basic Argument Parsing Rules</a><ul>
+<li><a class="el" href="md_docs_2tutorial.html#autotoc_md1-optional-arguments-are-parsed-only-with-a-flag">1. Optional arguments are parsed only with a flag</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#autotoc_md2-positional-arguments-are-parsed-in-the-order-of-definition">2. Positional arguments are parsed in the order of definition</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#autotoc_md3-positional-arguments-consume-free-values">3. Positional arguments consume free values</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#autotoc_md4-unknown-argument-flag-handling">4. Unknown Argument Flag Handling</a></li>
+</ul>
+</li>
 <li><a class="el" href="md_docs_2tutorial.html#compound-arguments">Compound Arguments</a></li>
 <li><a class="el" href="md_docs_2tutorial.html#parsing-known-arguments">Parsing Known Arguments</a></li>
 </ul>
@@ -147,7 +155,10 @@ $(document).ready(function(){initNavTree('md_docs_2tutorial.html',''); initResiz
 <li><a class="el" href="md_docs_2tutorial.html#creating-subparsers">Creating Subparsers</a></li>
 <li><a class="el" href="md_docs_2tutorial.html#using-multiple-subparsers">Using Multiple Subparsers</a></li>
 <li><a class="el" href="md_docs_2tutorial.html#parsing-arguments-with-subparsers">Parsing Arguments with Subparsers</a></li>
-<li><a class="el" href="md_docs_2tutorial.html#tracking-parser-state">Tracking Parser State</a></li>
+<li><a class="el" href="md_docs_2tutorial.html#tracking-parser-state">Tracking Parser State</a><ul>
+<li><a class="el" href="md_docs_2tutorial.html#example-inspecting-parsing-states">Example: Inspecting Parsing States</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="el" href="md_docs_2tutorial.html#examples">Examples</a></li>
@@ -224,12 +235,11 @@ Downloading the Library</h2>
 </p>
 <h1><a class="anchor" id="the-parser-class"></a>
 The Parser Class</h1>
-<p>To use the argument parser in your code you need to use the <code><a class="el" href="classargon_1_1argument__parser.html" title="The main argument parser class.">argon::argument_parser</a></code> class.</p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classargon_1_1argument__parser.html">argon::argument_parser</a> parser(<span class="stringliteral">"program"</span>);</div>
+<p>To use the argument parser in your code you need to use the <code>argon::argument_parser</code> class.</p>
+<div class="fragment"><div class="line">argon::argument_parser parser(<span class="stringliteral">"program"</span>);</div>
 <div class="line">parser.program_version(<span class="stringliteral">"alpha"</span>)</div>
 <div class="line">      .program_description(<span class="stringliteral">"Description of the program"</span>)</div>
 <div class="line">      .verbose();</div>
-<div class="ttc" id="aclassargon_1_1argument__parser_html"><div class="ttname"><a href="classargon_1_1argument__parser.html">argon::argument_parser</a></div><div class="ttdoc">The main argument parser class.</div><div class="ttdef"><b>Definition</b> <a href="argument__parser_8hpp_source.html#l00180">argument_parser.hpp:180</a></div></div>
 </div><!-- fragment --><blockquote class="doxtable">
 <p>‍<span style="color: #d63384; font-weight: bold; font-size: 1.1em;"><i class="fa fa-exclamation-circle" style="margin-right: 6px; vertical-align: middle; font-size: 1.3em; position: relative; top: -0.08em;"></i> Important:</span></p>
 <ul>
@@ -308,12 +318,12 @@ Value Types</h2>
 <ul>
 <li>The default value type of any argument is <code>std::string</code>.</li>
 <li>If the argument's value type is <code><a class="el" href="structargon_1_1none__type.html" title="A type representing the absence of a value. This type is used for arguments that should not store any...">argon::none_type</a></code>, the argument will not accept any values and therefore no value-related parameters can be set for such argument. This includes:<ul>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md5-nargs---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument">nargs</a></li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md6-greedy---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached">greedy</a></li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md7-choices---a-list-of-valid-argument-values">choices</a></li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md8-value-actions---functions-that-are-called-after-parsing-an-arguments-value">value actions</a></li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md9-default_values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed">default values</a></li>
-<li><a class="el" href="md_docs_2tutorial.html#autotoc_md2-implicit_values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line">implicit values</a> </li>
+<li>nargs</li>
+<li>greedy</li>
+<li>choices</li>
+<li>value actions</li>
+<li>default values</li>
+<li>implicit values </li>
 </ul>
 </li>
 </ul>
@@ -347,16 +357,16 @@ Argument Parameters</h1>
 <h2><a class="anchor" id="common-parameters"></a>
 Common Parameters</h2>
 <p>Parameters which can be specified for both positional and optional arguments include:</p>
-<h3><a class="anchor" id="autotoc_md1-help---the-arguments-description-which-will-be-printed-when-printing-the-parser-class-instance"></a>
-1. <code>help</code> - The argument's description which will be printed when printing the parser class instance.</h3>
+<h3><a class="anchor" id="help---the-arguments-description-which-will-be-printed-when-printing-the-parser-class-instance"></a>
+Help - The argument's description which will be printed when printing the parser class instance.</h3>
 <div class="fragment"><div class="line">parser.add_positional_argument&lt;std::size_t&gt;(<span class="stringliteral">"number"</span>, <span class="stringliteral">"n"</span>)</div>
 <div class="line">      .help(<span class="stringliteral">"a positive integer value"</span>);</div>
 </div><!-- fragment --><p><br/>
 </p>
-<h3><a class="anchor" id="autotoc_md2-hidden---if-this-option-is-set-for-an-argument-then-it-will-not-be-included-in-the-program-description"></a>
-2. <code>hidden</code> - If this option is set for an argument, then it will not be included in the program description.</h3>
+<h3><a class="anchor" id="hidden---if-this-option-is-set-for-an-argument-then-it-will-not-be-included-in-the-program-description"></a>
+Hidden - If this option is set for an argument, then it will not be included in the program description.</h3>
 <p>By default all arguments are visible, but this can be modified using the <code>hidden(bool)</code> setter as follows:</p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classargon_1_1argument__parser.html">argon::argument_parser</a>(<span class="stringliteral">"hidden-test"</span>)</div>
+<div class="fragment"><div class="line">argon::argument_parser(<span class="stringliteral">"hidden-test"</span>)</div>
 <div class="line">parser.program_description("A simple test program for argument hiding")</div>
 <div class="line">      .default_arguments(<a class="code hl_namespace" href="namespaceargon.html">argon</a>::default_argument::o_help);</div>
 <div class="line"> </div>
@@ -381,8 +391,8 @@ Common Parameters</h2>
 <div class="ttc" id="anamespaceargon_html"><div class="ttname"><a href="namespaceargon.html">argon</a></div><div class="ttdef"><b>Definition</b> <a href="predefined_8hpp_source.html#l00015">predefined.hpp:15</a></div></div>
 </div><!-- fragment --><p><br/>
 </p>
-<h3><a class="anchor" id="autotoc_md3-required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown"></a>
-3. <code>required</code> - If this option is set for an argument and it's value is not passed in the command-line, an exception will be thrown.</h3>
+<h3><a class="anchor" id="required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown"></a>
+Required - If this option is set for an argument and it's value is not passed in the command-line, an exception will be thrown.</h3>
 <blockquote class="doxtable">
 <p>‍<span style="color: #d63384; font-weight: bold; font-size: 1.1em;"><i class="fa fa-exclamation-circle" style="margin-right: 6px; vertical-align: middle; font-size: 1.3em; position: relative; top: -0.08em;"></i> Important:</span></p>
 <ul>
@@ -394,7 +404,7 @@ Common Parameters</h2>
 <p>‍<span style="color: #fd7e14; font-weight: bold; font-size: 1.1em;"><i class="fa fa-exclamation-triangle" style="margin-right: 6px; vertical-align: middle; font-size: 1.3em; position: relative; top: -0.08em;"></i> Warning:</span></p>
 <ul>
 <li>If a positional argument is defined as non-required, then no required positional argument can be defined after (only other non-required positional arguments and optional arguments will be allowed).</li>
-<li>If an argument is suppressing (see <a class="el" href="md_docs_2tutorial.html#autotoc_md4-suppress_arg_checks---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments">suppress arg checks</a> and <a class="el" href="md_docs_2tutorial.html#suppressing-argument-group-checks">Suppressing Argument Group Checks</a>), then it cannot be required (an exception will be thrown). </li>
+<li>If an argument is suppressing (see suppress arg checks and <a class="el" href="md_docs_2tutorial.html#suppressing-argument-group-checks">Suppressing Argument Group Checks</a>), then it cannot be required (an exception will be thrown). </li>
 </ul>
 </blockquote>
 <div class="fragment"><div class="line"><span class="comment">// example: positional arguments</span></div>
@@ -446,11 +456,11 @@ Common Parameters</h2>
 <div class="line"><span class="comment">*/</span></div>
 </div><!-- fragment --><p><br/>
 </p>
-<h3><a class="anchor" id="autotoc_md4-suppress_arg_checks---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments"></a>
-4. <code>suppress_arg_checks</code> - Using a suppressing argument results in suppressing requirement checks for other arguments.</h3>
+<h3><a class="anchor" id="argument-checks-suppression---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments"></a>
+Argument Checks Suppression - Using a suppressing argument results in suppressing requirement checks for other arguments.</h3>
 <p>If an argument is defined with the <code>suppress_arg_checks</code> option enabled and such argument is explicitly used in the command-line, then requirement validation will be suppressed/skipped for other arguments. This includes validating whether:</p><ul>
 <li>a required argument has been parsed</li>
-<li>the number of values parsed for an argument matches the specified <a class="el" href="md_docs_2tutorial.html#autotoc_md5-nargs---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument">nargs</a> range.</li>
+<li>the number of values parsed for an argument matches the specified nargs range.</li>
 </ul>
 <blockquote class="doxtable">
 <p>‍<span style="color: #1e90ff; font-weight: bold; font-size: 1.1em;"><i class="fa fa-info-circle" style="margin-right: 6px; vertical-align: middle; font-size: 1.3em; position: relative; top: -0.08em;"></i> Note:</span></p>
@@ -488,8 +498,8 @@ Common Parameters</h2>
 <div class="line">os &lt;&lt; data &lt;&lt; std::endl;</div>
 </div><!-- fragment --><p><br/>
 </p>
-<h3><a class="anchor" id="autotoc_md5-nargs---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument"></a>
-5. <code>nargs</code> - Sets the allowed number of values to be parsed for an argument.</h3>
+<h3><a class="anchor" id="number-of-arguments---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument"></a>
+Number of Arguments - Sets the allowed number of values to be parsed for an argument.</h3>
 <p>The <code>nargs</code> parameter can be set as:</p>
 <ul>
 <li><p class="startli">Specific number:</p>
@@ -523,8 +533,8 @@ Common Parameters</h2>
 </blockquote>
 <p><br/>
 </p>
-<h3><a class="anchor" id="autotoc_md6-greedy---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached"></a>
-6. <code>greedy</code> - If this option is set, the argument will consume ALL command-line values until it's upper nargs bound is reached.</h3>
+<h3><a class="anchor" id="greedy-parsing---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached"></a>
+Greedy Parsing - If this option is set, the argument will consume ALL command-line values until it's upper nargs bound is reached.</h3>
 <blockquote class="doxtable">
 <p>‍<span style="color: #1e90ff; font-weight: bold; font-size: 1.1em;"><i class="fa fa-info-circle" style="margin-right: 6px; vertical-align: middle; font-size: 1.3em; position: relative; top: -0.08em;"></i> Note:</span></p>
 <ul>
@@ -540,7 +550,7 @@ Common Parameters</h2>
 </ul>
 </blockquote>
 <p>Consider a simple example:</p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classargon_1_1argument__parser.html">argon::argument_parser</a> parser(<span class="stringliteral">"run-script"</span>);</div>
+<div class="fragment"><div class="line">argon::argument_parser parser(<span class="stringliteral">"run-script"</span>);</div>
 <div class="line">parser.default_arguments(<a class="code hl_enumvalue" href="namespaceargon.html#a958295d6fc5c8ff8b1da658b1dde6778a35447aaf0d5b59ba78774b40b1b1ded1">argon::default_argument::o_help</a>);</div>
 <div class="line"> </div>
 <div class="line">parser.add_positional_argument(<span class="stringliteral">"script"</span>)</div>
@@ -561,8 +571,8 @@ Common Parameters</h2>
 </div><!-- fragment --><p>Notice that even though the <code>-v</code> and <code>--type</code> command-line arguments have flag prefixes and are not defined by the program, they are not treated as unknown arguments (and therefore no exception is thrown) because the <code>--args</code> argument is marked as <code>greedy</code> and it consumes these command-line arguments as its values.</p>
 <p><br/>
 </p>
-<h3><a class="anchor" id="autotoc_md7-choices---a-list-of-valid-argument-values"></a>
-7. <code>choices</code> - A list of valid argument values.</h3>
+<h3><a class="anchor" id="choices---a-list-of-valid-argument-values"></a>
+Choices - A list of valid argument values.</h3>
 <div class="fragment"><div class="line">parser.add_optional_argument&lt;<span class="keywordtype">char</span>&gt;(<span class="stringliteral">"method"</span>, <span class="stringliteral">"m"</span>).choices(<span class="charliteral">'a'</span>, <span class="charliteral">'b'</span>, <span class="charliteral">'c'</span>);</div>
 <div class="line"><span class="comment">// equivalent to: parser.add_optional_argument&lt;char&gt;("method", "m").choices({'a', 'b', 'c'});</span></div>
 <div class="line"><span class="comment">// passing a value other than a, b or c for the `method` argument will result in an error</span></div>
@@ -579,8 +589,8 @@ Common Parameters</h2>
 </blockquote>
 <p><br/>
 </p>
-<h3><a class="anchor" id="autotoc_md8-value-actions---functions-that-are-called-after-parsing-an-arguments-value"></a>
-8. value actions - Functions that are called after parsing an argument's value.</h3>
+<h3><a class="anchor" id="value-actions---functions-that-are-called-after-parsing-an-arguments-value"></a>
+Value Actions - Functions that are called after parsing an argument's value.</h3>
 <p>Actions are represented as functions, which take the argument's value as an argument. The available action types are:</p>
 <ul>
 <li><p class="startli"><code>observe</code> actions | <code>void(const value_type&amp;)</code> - applied to the parsed value. No value is returned - this action type is used to perform some logic on the parsed value without modifying it.</p>
@@ -617,8 +627,8 @@ Common Parameters</h2>
 </blockquote>
 <p><br/>
 </p>
-<h3><a class="anchor" id="autotoc_md9-default_values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed"></a>
-9. <code>default_values</code> - A list of values which will be used if no values for an argument have been parsed</h3>
+<h3><a class="anchor" id="default-values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed"></a>
+Default Values - A list of values which will be used if no values for an argument have been parsed</h3>
 <blockquote class="doxtable">
 <p>‍<span style="color: #fd7e14; font-weight: bold; font-size: 1.1em;"><i class="fa fa-exclamation-triangle" style="margin-right: 6px; vertical-align: middle; font-size: 1.3em; position: relative; top: -0.08em;"></i> Warning:</span></p>
 <p>For both positional and optional arguments, setting the <code>default_values</code> parameter disables the <code>required</code> option. </p>
@@ -674,8 +684,8 @@ Common Parameters</h2>
 <h2><a class="anchor" id="parameters-specific-for-optional-arguments"></a>
 Parameters Specific for Optional Arguments</h2>
 <p>Apart from the common parameters listed above, for optional arguments you can also specify the following parameters:</p>
-<h3><a class="anchor" id="autotoc_md1-on-flag-actions---functions-that-are-called-immediately-after-parsing-an-arguments-flag"></a>
-1. on-flag actions - Functions that are called immediately after parsing an argument's flag.</h3>
+<h3><a class="anchor" id="on-flag-actions---functions-that-are-called-immediately-after-parsing-an-arguments-flag"></a>
+On-flag Actions - Functions that are called immediately after parsing an argument's flag.</h3>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> print_debug_info() noexcept {</div>
 <div class="line"><span class="preprocessor">#ifdef NDEBUG</span></div>
 <div class="line">    std::cout &lt;&lt; <span class="stringliteral">"Running in release mode.\n"</span>;</div>
@@ -691,8 +701,8 @@ Parameters Specific for Optional Arguments</h2>
 </div><!-- fragment --><p>Here the <code>print_debug_info</code> function will be called right after parsing the <code>--debug-info</code> flag and the program will exit, even if there are more arguments after this flag.</p>
 <p><br/>
 </p>
-<h3><a class="anchor" id="autotoc_md2-implicit_values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line"></a>
-2. <code>implicit_values</code> - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.</h3>
+<h3><a class="anchor" id="implicit-values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line"></a>
+Implicit Values - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.</h3>
 <div class="fragment"><div class="line"><span class="comment">// example</span></div>
 <div class="line">parser.add_optional_argument(<span class="stringliteral">"save"</span>, <span class="stringliteral">"s"</span>).implicit_values(<span class="stringliteral">"output.txt"</span>);</div>
 <div class="line"> </div>
@@ -735,7 +745,7 @@ Actions</h2>
 <li><p class="startli"><code>print_help</code> | on-flag</p>
 <p class="startli">Prints the parser's help message to the output stream and optionally exits with the given code.</p>
 <div class="fragment"><div class="line"><span class="keyword">typename</span> <a class="code hl_typedef" href="structargon_1_1action__type_1_1on__flag.html#ad4125731632579dcb8c04cb872580c4d">argon::action_type::on_flag::type</a> print_help(</div>
-<div class="line"> <span class="keyword">const</span> <a class="code hl_class" href="classargon_1_1argument__parser.html">argon::argument_parser</a>&amp; parser,</div>
+<div class="line"> <span class="keyword">const</span> argon::argument_parser&amp; parser,</div>
 <div class="line"> <span class="keyword">const</span> std::optional&lt;int&gt; exit_code = std::nullopt,</div>
 <div class="line">    std::ostream&amp; os = std::cout</div>
 <div class="line">) <span class="keyword">noexcept</span>;</div>
@@ -867,7 +877,7 @@ Argument Groups</h1>
 <h2><a class="anchor" id="creating-new-groups"></a>
 Creating New Groups</h2>
 <p>A new group can be created by calling the <code>add_group</code> method of an argument parser:</p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classargon_1_1argument__parser.html">argon::argument_parser</a> parser(<span class="stringliteral">"myprog"</span>);</div>
+<div class="fragment"><div class="line">argon::argument_parser parser(<span class="stringliteral">"myprog"</span>);</div>
 <div class="line"><span class="keyword">auto</span>&amp; out_opts = parser.add_group(<span class="stringliteral">"Output Options"</span>);</div>
 </div><!-- fragment --><p>The group’s name will appear as a dedicated section in the help message and arguments added to this group will be listed under <code>Output Options</code> instead of the default <code>Optional Arguments</code> section.</p>
 <blockquote class="doxtable">
@@ -909,7 +919,7 @@ Complete Example</h2>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="argument__parser_8hpp.html">argon/argument_parser.hpp</a>&gt;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span> main(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[]) {</div>
-<div class="line"> <a class="code hl_class" href="classargon_1_1argument__parser.html">argon::argument_parser</a> parser(<span class="stringliteral">"myprog"</span>);</div>
+<div class="line">    argon::argument_parser parser(<span class="stringliteral">"myprog"</span>);</div>
 <div class="line">    parser.default_arguments(<a class="code hl_enumvalue" href="namespaceargon.html#a958295d6fc5c8ff8b1da658b1dde6778a35447aaf0d5b59ba78774b40b1b1ded1">argon::default_argument::o_help</a>);</div>
 <div class="line"> </div>
 <div class="line"> <span class="comment">// create the argument group</span></div>
@@ -939,7 +949,7 @@ Complete Example</h2>
 <div class="line">  --print, -p  : Print output to the console</div>
 </div><!-- fragment --><h2><a class="anchor" id="suppressing-argument-group-checks"></a>
 Suppressing Argument Group Checks</h2>
-<p>Similarly to <a class="el" href="md_docs_2tutorial.html#autotoc_md4-suppress_arg_checks---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments">suppressing argument checks</a>, an argument can suppress the requirement checks of argument groups:</p>
+<p>Similarly to suppressing argument checks, an argument can suppress the requirement checks of argument groups:</p>
 <div class="fragment"><div class="line"> ++</div>
 <div class="line">argument.suppress_group_checks();</div>
 </div><!-- fragment --><p>If such argument is used, the requirement checks associated with the <a class="el" href="md_docs_2tutorial.html#group-attributes">group attributes</a> will not be validated.</p>
@@ -989,7 +999,7 @@ Parsing Arguments</h1>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span> main(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[]) {</div>
 <div class="line"> <span class="comment">// create the parser class instance</span></div>
-<div class="line"> <a class="code hl_class" href="classargon_1_1argument__parser.html">argon::argument_parser</a> parser(<span class="stringliteral">"some-program"</span>);</div>
+<div class="line">    argon::argument_parser parser(<span class="stringliteral">"some-program"</span>);</div>
 <div class="line"> </div>
 <div class="line"> <span class="comment">// define the parser's attributes and default arguments</span></div>
 <div class="line">    parser.program_version({0u, 0u, 0u})</div>
@@ -1077,7 +1087,7 @@ Basic Argument Parsing Rules</h2>
 <p>‍<span style="color: #d63384; font-weight: bold; font-size: 1.1em;"><i class="fa fa-exclamation-circle" style="margin-right: 6px; vertical-align: middle; font-size: 1.3em; position: relative; top: -0.08em;"></i> Important:</span></p>
 <ul>
 <li>All positional arguments expect <b>at most one value</b>.</li>
-<li>A positional argument's value doesn't have to be preset in the command-line only if the argument is defined as <b>not</b> <a class="el" href="md_docs_2tutorial.html#autotoc_md3-required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown">required</a>. </li>
+<li>A positional argument's value doesn't have to be preset in the command-line only if the argument is defined as <b>not</b> required. </li>
 </ul>
 </blockquote>
 <p><br/>
@@ -1125,7 +1135,7 @@ Basic Argument Parsing Rules</h2>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="argument__parser_8hpp.html">argon/argument_parser.hpp</a>&gt;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span> main(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[]) {</div>
-<div class="line"> <a class="code hl_class" href="classargon_1_1argument__parser.html">argon::argument_parser</a> parser(<span class="stringliteral">"unknown-policy-test"</span>);</div>
+<div class="line">    argon::argument_parser parser(<span class="stringliteral">"unknown-policy-test"</span>);</div>
 <div class="line"> </div>
 <div class="line">    parser.program_description(<span class="stringliteral">"A simple test program for unknwon argument handling policies"</span>)</div>
 <div class="line">          .default_arguments(<a class="code hl_enumvalue" href="namespaceargon.html#a958295d6fc5c8ff8b1da658b1dde6778a35447aaf0d5b59ba78774b40b1b1ded1">argon::default_argument::o_help</a>)</div>
@@ -1145,7 +1155,7 @@ Basic Argument Parsing Rules</h2>
 </div><!-- fragment --><p>The available policies are:</p><ul>
 <li><p class="startli"><code><a class="el" href="namespaceargon.html#ab8f65b0dfa4b37b711459d07c5aed420ae11185b6e35c1b767174dc988aa0f179" title="Throw an exception when an unknown argument is encountered.">argon::unknown_policy::fail</a></code> (default) - throws an exception if an unknown argument flag is encountered:</p>
 <div class="fragment"><div class="line">&gt; ./unknown-policy-test --known --unknown</div>
-<div class="line">[argon::error] Unknown argument [--unknown].</div>
+<div class="line">[<a class="code hl_enumvalue" href="namespaceargon.html#a4b32eb6291a15bebf85d8ebbd3147845ad57c24f3fe52d16e7169b912dd647f0d">argon::error</a>] Unknown argument [--unknown].</div>
 <div class="line">Program: unknown-policy-test</div>
 <div class="line"> </div>
 <div class="line">  A simple test program <span class="keywordflow">for</span> unknwon argument handling policies</div>
@@ -1154,10 +1164,11 @@ Basic Argument Parsing Rules</h2>
 <div class="line"> </div>
 <div class="line">  --help, -h  : Display the help message</div>
 <div class="line">  --known, -k : A known optional argument</div>
+<div class="ttc" id="anamespaceargon_html_a4b32eb6291a15bebf85d8ebbd3147845ad57c24f3fe52d16e7169b912dd647f0d"><div class="ttname"><a href="namespaceargon.html#a4b32eb6291a15bebf85d8ebbd3147845ad57c24f3fe52d16e7169b912dd647f0d">argon::argument_type::optional</a></div><div class="ttdeci">@ optional</div></div>
 </div><!-- fragment --></li>
 <li><p class="startli"><code><a class="el" href="namespaceargon.html#ab8f65b0dfa4b37b711459d07c5aed420a1ea4c3ab05ee0c6d4de30740443769cb" title="Issue a warning when an unknown argument is encountered.">argon::unknown_policy::warn</a></code> - prints a warning message to the standard error stream and continues parsing the remaining arguments:</p>
 <div class="fragment"><div class="line">&gt; ./unknown-policy-test --known --unknown</div>
-<div class="line">[argon::warning] Unknown argument <span class="stringliteral">'--unknown'</span> will be ignored.</div>
+<div class="line">[<a class="code hl_enumvalue" href="namespaceargon.html#a4b32eb6291a15bebf85d8ebbd3147845ad57c24f3fe52d16e7169b912dd647f0d">argon::warning</a>] Unknown argument <span class="stringliteral">'--unknown'</span> will be ignored.</div>
 <div class="line">known =</div>
 </div><!-- fragment --></li>
 <li><p class="startli"><code><a class="el" href="namespaceargon.html#ab8f65b0dfa4b37b711459d07c5aed420a567bc1d268f135496de3d5b946b691f3" title="Ignore unknown arguments.">argon::unknown_policy::ignore</a></code> - ignores unknown argument flags and continues parsing the remaining arguments:</p>
@@ -1348,10 +1359,10 @@ Subparsers</h1>
 <h2><a class="anchor" id="creating-subparsers"></a>
 Creating Subparsers</h2>
 <div class="fragment"><div class="line"><span class="keyword">auto</span>&amp; subparser = parser.add_subparser(<span class="stringliteral">"subprogram"</span>);</div>
-</div><!-- fragment --><p>Each subparser is a separate instance of <code><a class="el" href="classargon_1_1argument__parser.html" title="The main argument parser class.">argon::argument_parser</a></code> and therefore it can have its own parameters, including a description, arguments, argument groups, subparsers, etc.</p>
+</div><!-- fragment --><p>Each subparser is a separate instance of <code>argon::argument_parser</code> and therefore it can have its own parameters, including a description, arguments, argument groups, subparsers, etc.</p>
 <p>For example:</p>
 <div class="fragment"><div class="line"><span class="comment">// top-level parser</span></div>
-<div class="line"><a class="code hl_class" href="classargon_1_1argument__parser.html">argon::argument_parser</a> git(<span class="stringliteral">"ap-git"</span>);</div>
+<div class="line">argon::argument_parser git(<span class="stringliteral">"ap-git"</span>);</div>
 <div class="line">git.program_version({.major = 2u, .minor = 43u, .patch = 0u})</div>
 <div class="line">   .program_description(<span class="stringliteral">"A version control system built with CPP-ARGON"</span>)</div>
 <div class="line">   .default_arguments(<a class="code hl_enumvalue" href="namespaceargon.html#a958295d6fc5c8ff8b1da658b1dde6778a35447aaf0d5b59ba78774b40b1b1ded1">argon::default_argument::o_help</a>, <a class="code hl_enumvalue" href="namespaceargon.html#a958295d6fc5c8ff8b1da658b1dde6778ae3191f2b88ede314edc7f94b307400fa">argon::default_argument::o_version</a>);</div>
@@ -1408,7 +1419,7 @@ Parsing Arguments with Subparsers</h2>
 <li>Parsing stops when no subparser matches the first token of the <em>current</em> argument list. At that point, the parser processes its own arguments.</li>
 </ul>
 <p>For example:</p>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classargon_1_1argument__parser.html">argon::argument_parser</a> git(<span class="stringliteral">"ap-git"</span>);</div>
+<div class="fragment"><div class="line">argon::argument_parser git(<span class="stringliteral">"ap-git"</span>);</div>
 <div class="line"><span class="keyword">auto</span>&amp; submodule = git.add_subparser(<span class="stringliteral">"submodule"</span>);</div>
 <div class="line"><span class="keyword">auto</span>&amp; submodule_init = submodule.add_subparser(<span class="stringliteral">"init"</span>);</div>
 </div><!-- fragment --><p>Running <code>ap-git submodule init &lt;args&gt;</code> will result in <code>&lt;args&gt;</code> being parsed by the <code>submodule_init</code> parser.</p>
@@ -1422,7 +1433,7 @@ Tracking Parser State</h2>
 <li><p class="startli"><code>finalized() -&gt; bool</code> : Returns <code>true</code> if the parser has processed its own arguments.</p>
 <p class="startli">This is distinct from <code>invoked()</code>: a parser can be <em>invoked</em> but not <em>finalized</em> if one of its subparsers handled the arguments instead.</p>
 </li>
-<li><p class="startli"><code>resolved_parser() -&gt; <a class="el" href="classargon_1_1argument__parser.html" title="The main argument parser class.">argon::argument_parser</a>&amp;</code> : Returns a reference to the <em>deepest invoked parser</em>.</p>
+<li><p class="startli"><code>resolved_parser() -&gt; argon::argument_parser&amp;</code> : Returns a reference to the <em>deepest invoked parser</em>.</p>
 <p class="startli">If no subparser was invoked, this simply returns the current parser.</p>
 </li>
 </ul>
@@ -1431,7 +1442,7 @@ Tracking Parser State</h2>
 <h3><a class="anchor" id="example-inspecting-parsing-states"></a>
 Example: Inspecting Parsing States</h3>
 <div class="fragment"><div class="line"><span class="comment">// define the parser hierarchy</span></div>
-<div class="line"><a class="code hl_class" href="classargon_1_1argument__parser.html">argon::argument_parser</a> git(<span class="stringliteral">"ap-git"</span>);</div>
+<div class="line">argon::argument_parser git(<span class="stringliteral">"ap-git"</span>);</div>
 <div class="line"><span class="keyword">auto</span>&amp; submodule = git.add_subparser(<span class="stringliteral">"submodule"</span>);</div>
 <div class="line"><span class="keyword">auto</span>&amp; submodule_init = submodule.add_subparser(<span class="stringliteral">"init"</span>);</div>
 <div class="line"> </div>
@@ -1487,10 +1498,10 @@ Examples</h1>
 <td class="markdownTableBodyLeft"><a href="https://github.com/SpectraL519/cpp-argon-demo/tree/master/logging_mode/">Logging Mode</a> </td><td class="markdownTableBodyLeft">Logs a message depending on the selected logging mode (<code>quiet</code>, <code>normal</code>, <code>verbose</code>).<br/>
 <b>Demonstrates:</b> The usage of custom argument value types (like enums).    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft"><a href="https://github.com/SpectraL519/cpp-argon-demo/arg_parsertree/master/message_logger/">Message Logger</a> </td><td class="markdownTableBodyLeft">Outputs a message to a file, console, or not at all.<br/>
+<td class="markdownTableBodyLeft"><a href="https://github.com/SpectraL519/cpp-argon-demo/tree/master/message_logger/">Message Logger</a> </td><td class="markdownTableBodyLeft">Outputs a message to a file, console, or not at all.<br/>
 <b>Demonstrates:</b> The usage of argument groups.    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft"><a href="https://github.com/SpectraL519/cpp-argon-demo/tree/master/ap_git/">AP-GIT</a> </td><td class="markdownTableBodyLeft">A minimal Git CLI clone with subcommands (<code>init</code>, <code>add</code>, <code>commit</code>, <code>status</code>, <code>push</code>).<br/>
+<td class="markdownTableBodyLeft"><a href="https://github.com/SpectraL519/cpp-argon-demo/tree/master/argon_git/">ARGON-GIT</a> </td><td class="markdownTableBodyLeft">A minimal Git CLI clone with subcommands (<code>init</code>, <code>add</code>, <code>commit</code>, <code>status</code>, <code>push</code>).<br/>
 <b>Demonstrates:</b> The usage of subparsers for multi-command CLIs and complex argument configurations.   </td></tr>
 </table>
 <p><br/>
@@ -1506,7 +1517,7 @@ Common Utility</h1>
 <!-- start footer part -->
 <div class="navpath" id="nav-path"><!-- id is needed for treeview function! -->
 <ul>
-<li class="footer">Generated on Thu Jan 1 2026 for CPP-ARGON by <a href="https://www.doxygen.org/index.html"><img alt="doxygen" class="footer" height="31" src="doxygen.svg" width="104"/></a> 1.9.8 </li>
+<li class="footer">Generated on Fri Sep 18 2026 for CPP-ARGON by <a href="https://www.doxygen.org/index.html"><img alt="doxygen" class="footer" height="31" src="doxygen.svg" width="104"/></a> 1.9.8 </li>
 </ul>
 </div>
 </body>

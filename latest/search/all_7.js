@@ -1,4 +1,18 @@
 var searchData=
 [
-  ['8_20value_20actions_20functions_20that_20are_20called_20after_20parsing_20an_20argument_20s_20value_0',['8. value actions - Functions that are called after parsing an argument&apos;s value.',['../md_docs_2tutorial.html#autotoc_md8-value-actions---functions-that-are-called-after-parsing-an-arguments-value',1,'']]]
+  ['basic_20argument_20parsing_20rules_0',['Basic Argument Parsing Rules',['../md_docs_2tutorial.html#basic-argument-parsing-rules',1,'']]],
+  ['bazel_20build_20system_1',['Bazel Build System',['../md_docs_2tutorial.html#bazel-build-system',1,'']]],
+  ['be_20included_20in_20the_20program_20description_2',['Hidden - If this option is set for an argument, then it will not be included in the program description.',['../md_docs_2tutorial.html#hidden---if-this-option-is-set-for-an-argument-then-it-will-not-be-included-in-the-program-description',1,'']]],
+  ['be_20parsed_20for_20an_20argument_3',['Number of Arguments - Sets the allowed number of values to be parsed for an argument.',['../md_docs_2tutorial.html#number-of-arguments---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument',1,'']]],
+  ['be_20printed_20when_20printing_20the_20parser_20class_20instance_4',['Help - The argument&apos;s description which will be printed when printing the parser class instance.',['../md_docs_2tutorial.html#help---the-arguments-description-which-will-be-printed-when-printing-the-parser-class-instance',1,'']]],
+  ['be_20set_20for_20an_20argument_20if_20only_20its_20flag_20but_20no_20values_20are_20parsed_20from_20the_20command_20line_5',['Implicit Values - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.',['../md_docs_2tutorial.html#implicit-values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line',1,'']]],
+  ['be_20thrown_6',['Required - If this option is set for an argument and it&apos;s value is not passed in the command-line, an exception will be thrown.',['../md_docs_2tutorial.html#required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown',1,'']]],
+  ['be_20used_20if_20no_20values_20for_20an_20argument_20have_20been_20parsed_7',['Default Values - A list of values which will be used if no values for an argument have been parsed',['../md_docs_2tutorial.html#default-values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed',1,'']]],
+  ['been_20parsed_8',['Default Values - A list of values which will be used if no values for an argument have been parsed',['../md_docs_2tutorial.html#default-values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed',1,'']]],
+  ['boolean_20flags_9',['Boolean Flags',['../md_docs_2tutorial.html#boolean-flags',1,'']]],
+  ['bound_20is_20reached_10',['Greedy Parsing - If this option is set, the argument will consume ALL command-line values until it&apos;s upper nargs bound is reached.',['../md_docs_2tutorial.html#greedy-parsing---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached',1,'']]],
+  ['build_20system_11',['Bazel Build System',['../md_docs_2tutorial.html#bazel-build-system',1,'']]],
+  ['build_20the_20testing_20executable_12',['Build the Testing Executable',['../md_docs_2dev__notes.html#build-the-testing-executable',1,'']]],
+  ['building_20and_20testing_13',['Building and Testing',['../md_docs_2dev__notes.html#building-and-testing',1,'']]],
+  ['but_20no_20values_20are_20parsed_20from_20the_20command_20line_14',['Implicit Values - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.',['../md_docs_2tutorial.html#implicit-values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line',1,'']]]
 ];

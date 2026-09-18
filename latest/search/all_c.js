@@ -1,18 +1,15 @@
 var searchData=
 [
-  ['basic_20argument_20parsing_20rules_0',['Basic Argument Parsing Rules',['../md_docs_2tutorial.html#basic-argument-parsing-rules',1,'']]],
-  ['bazel_20build_20system_1',['Bazel Build System',['../md_docs_2tutorial.html#bazel-build-system',1,'']]],
-  ['be_20included_20in_20the_20program_20description_2',['2. &lt;tt&gt;hidden&lt;/tt&gt; - If this option is set for an argument, then it will not be included in the program description.',['../md_docs_2tutorial.html#autotoc_md2-hidden---if-this-option-is-set-for-an-argument-then-it-will-not-be-included-in-the-program-description',1,'']]],
-  ['be_20parsed_20for_20an_20argument_3',['5. &lt;tt&gt;nargs&lt;/tt&gt; - Sets the allowed number of values to be parsed for an argument.',['../md_docs_2tutorial.html#autotoc_md5-nargs---sets-the-allowed-number-of-values-to-be-parsed-for-an-argument',1,'']]],
-  ['be_20printed_20when_20printing_20the_20parser_20class_20instance_4',['1. &lt;tt&gt;help&lt;/tt&gt; - The argument&apos;s description which will be printed when printing the parser class instance.',['../md_docs_2tutorial.html#autotoc_md1-help---the-arguments-description-which-will-be-printed-when-printing-the-parser-class-instance',1,'']]],
-  ['be_20set_20for_20an_20argument_20if_20only_20its_20flag_20but_20no_20values_20are_20parsed_20from_20the_20command_20line_5',['2. &lt;tt&gt;implicit_values&lt;/tt&gt; - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.',['../md_docs_2tutorial.html#autotoc_md2-implicit_values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line',1,'']]],
-  ['be_20thrown_6',['3. &lt;tt&gt;required&lt;/tt&gt; - If this option is set for an argument and it&apos;s value is not passed in the command-line, an exception will be thrown.',['../md_docs_2tutorial.html#autotoc_md3-required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown',1,'']]],
-  ['be_20used_20if_20no_20values_20for_20an_20argument_20have_20been_20parsed_7',['9. &lt;tt&gt;default_values&lt;/tt&gt; - A list of values which will be used if no values for an argument have been parsed',['../md_docs_2tutorial.html#autotoc_md9-default_values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed',1,'']]],
-  ['been_20parsed_8',['9. &lt;tt&gt;default_values&lt;/tt&gt; - A list of values which will be used if no values for an argument have been parsed',['../md_docs_2tutorial.html#autotoc_md9-default_values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed',1,'']]],
-  ['boolean_20flags_9',['Boolean Flags',['../md_docs_2tutorial.html#boolean-flags',1,'']]],
-  ['bound_20is_20reached_10',['6. &lt;tt&gt;greedy&lt;/tt&gt; - If this option is set, the argument will consume ALL command-line values until it&apos;s upper nargs bound is reached.',['../md_docs_2tutorial.html#autotoc_md6-greedy---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached',1,'']]],
-  ['build_20system_11',['Bazel Build System',['../md_docs_2tutorial.html#bazel-build-system',1,'']]],
-  ['build_20the_20testing_20executable_12',['Build the Testing Executable',['../md_docs_2dev__notes.html#build-the-testing-executable',1,'']]],
-  ['building_20and_20testing_13',['Building and Testing',['../md_docs_2dev__notes.html#building-and-testing',1,'']]],
-  ['but_20no_20values_20are_20parsed_20from_20the_20command_20line_14',['2. &lt;tt&gt;implicit_values&lt;/tt&gt; - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.',['../md_docs_2tutorial.html#autotoc_md2-implicit_values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line',1,'']]]
+  ['generating_20the_20documentation_0',['Generating the Documentation',['../md_docs_2dev__notes.html#generating-the-documentation',1,'']]],
+  ['geq_1',['geq',['../namespaceargon_1_1action.html#a43fdbfd83c3dd8e7406ebf5ac53d065c',1,'argon::action']]],
+  ['get_2',['get',['../classargon_1_1detail_1_1help__builder.html#a79989f8ba62612e3716d907374754d0f',1,'argon::detail::help_builder']]],
+  ['get_5fbasic_3',['get_basic',['../classargon_1_1detail_1_1help__builder.html#a63fd6cc85778b957b8edba597ac46d5a',1,'argon::detail::help_builder']]],
+  ['get_5fdemangled_5ftype_5fname_4',['get_demangled_type_name',['../group__util.html#ga2300bb1cd5fe0fe5a2338fc274ec121b',1,'argon::util']]],
+  ['greedy_5',['greedy',['../classargon_1_1argument.html#af37cdbc7cfa62208529f5cd1ac5c9daa',1,'argon::argument']]],
+  ['greedy_20parsing_20if_20this_20option_20is_20set_20the_20argument_20will_20consume_20all_20command_20line_20values_20until_20it_20s_20upper_20nargs_20bound_20is_20reached_6',['Greedy Parsing - If this option is set, the argument will consume ALL command-line values until it&apos;s upper nargs bound is reached.',['../md_docs_2tutorial.html#greedy-parsing---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached',1,'']]],
+  ['group_20attributes_7',['Group Attributes',['../md_docs_2tutorial.html#group-attributes',1,'']]],
+  ['group_20checks_8',['Suppressing Argument Group Checks',['../md_docs_2tutorial.html#suppressing-argument-group-checks',1,'']]],
+  ['groups_9',['groups',['../md_docs_2tutorial.html#adding-arguments-to-groups',1,'Adding Arguments to Groups'],['../md_docs_2tutorial.html#argument-groups',1,'Argument Groups'],['../md_docs_2tutorial.html#creating-new-groups',1,'Creating New Groups']]],
+  ['groups_2edox_10',['groups.dox',['../groups_8dox.html',1,'']]],
+  ['gt_11',['gt',['../namespaceargon_1_1action.html#aed2c02242e96fa357ad26c7518a54368',1,'argon::action']]]
 ];

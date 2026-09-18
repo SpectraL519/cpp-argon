@@ -1,15 +1,16 @@
 var searchData=
 [
-  ['generating_20the_20documentation_0',['Generating the Documentation',['../md_docs_2dev__notes.html#generating-the-documentation',1,'']]],
-  ['geq_1',['geq',['../namespaceargon_1_1action.html#a43fdbfd83c3dd8e7406ebf5ac53d065c',1,'argon::action']]],
-  ['get_2',['get',['../classargon_1_1detail_1_1help__builder.html#a79989f8ba62612e3716d907374754d0f',1,'argon::detail::help_builder']]],
-  ['get_5fbasic_3',['get_basic',['../classargon_1_1detail_1_1help__builder.html#a63fd6cc85778b957b8edba597ac46d5a',1,'argon::detail::help_builder']]],
-  ['get_5fdemangled_5ftype_5fname_4',['get_demangled_type_name',['../group__util.html#ga2300bb1cd5fe0fe5a2338fc274ec121b',1,'argon::util']]],
-  ['greedy_5',['greedy',['../classargon_1_1argument.html#af37cdbc7cfa62208529f5cd1ac5c9daa',1,'argon::argument']]],
-  ['greedy_20tt_20if_20this_20option_20is_20set_20the_20argument_20will_20consume_20all_20command_20line_20values_20until_20it_20s_20upper_20nargs_20bound_20is_20reached_6',['6. &lt;tt&gt;greedy&lt;/tt&gt; - If this option is set, the argument will consume ALL command-line values until it&apos;s upper nargs bound is reached.',['../md_docs_2tutorial.html#autotoc_md6-greedy---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached',1,'']]],
-  ['group_20attributes_7',['Group Attributes',['../md_docs_2tutorial.html#group-attributes',1,'']]],
-  ['group_20checks_8',['Suppressing Argument Group Checks',['../md_docs_2tutorial.html#suppressing-argument-group-checks',1,'']]],
-  ['groups_9',['groups',['../md_docs_2tutorial.html#adding-arguments-to-groups',1,'Adding Arguments to Groups'],['../md_docs_2tutorial.html#argument-groups',1,'Argument Groups'],['../md_docs_2tutorial.html#creating-new-groups',1,'Creating New Groups']]],
-  ['groups_2edox_10',['groups.dox',['../groups_8dox.html',1,'']]],
-  ['gt_11',['gt',['../namespaceargon_1_1action.html#aed2c02242e96fa357ad26c7518a54368',1,'argon::action']]]
+  ['leq_0',['leq',['../namespaceargon_1_1action.html#afb8938ab75f815d9494338473601734b',1,'argon::action']]],
+  ['less_5fthan_1',['less_than',['../classargon_1_1nargs_1_1range.html#aa62f26f5531c9e4217c153023c27e53e',1,'argon::nargs::range::less_than'],['../namespaceargon_1_1nargs.html#ac9c86f3af543e0034b593b2e3ea768f0',1,'argon::nargs::less_than()']]],
+  ['library_2',['Downloading the Library',['../md_docs_2tutorial.html#downloading-the-library',1,'']]],
+  ['license_3',['license',['../index.html#license',1,'License'],['../md_LICENSE.html',1,'MIT License']]],
+  ['license_2emd_4',['LICENSE.md',['../LICENSE_8md.html',1,'']]],
+  ['line_5',['Implicit Values - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.',['../md_docs_2tutorial.html#implicit-values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line',1,'']]],
+  ['line_20an_20exception_20will_20be_20thrown_6',['Required - If this option is set for an argument and it&apos;s value is not passed in the command-line, an exception will be thrown.',['../md_docs_2tutorial.html#required---if-this-option-is-set-for-an-argument-and-its-value-is-not-passed-in-the-command-line-an-exception-will-be-thrown',1,'']]],
+  ['line_20values_20until_20it_20s_20upper_20nargs_20bound_20is_20reached_7',['Greedy Parsing - If this option is set, the argument will consume ALL command-line values until it&apos;s upper nargs bound is reached.',['../md_docs_2tutorial.html#greedy-parsing---if-this-option-is-set-the-argument-will-consume-all-command-line-values-until-its-upper-nargs-bound-is-reached',1,'']]],
+  ['list_20of_20valid_20argument_20values_8',['Choices - A list of valid argument values.',['../md_docs_2tutorial.html#choices---a-list-of-valid-argument-values',1,'']]],
+  ['list_20of_20values_20which_20will_20be_20set_20for_20an_20argument_20if_20only_20its_20flag_20but_20no_20values_20are_20parsed_20from_20the_20command_20line_9',['Implicit Values - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.',['../md_docs_2tutorial.html#implicit-values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line',1,'']]],
+  ['list_20of_20values_20which_20will_20be_20used_20if_20no_20values_20for_20an_20argument_20have_20been_20parsed_10',['Default Values - A list of values which will be used if no values for an argument have been parsed',['../md_docs_2tutorial.html#default-values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed',1,'']]],
+  ['lookup_5ffailure_11',['lookup_failure',['../structargon_1_1lookup__failure.html',1,'argon::lookup_failure'],['../structargon_1_1lookup__failure.html#a4e0ef9555884064be705117c1a66ce9b',1,'argon::lookup_failure::lookup_failure()']]],
+  ['lt_12',['lt',['../namespaceargon_1_1action.html#a878e91242ce4beae6a046afb97ea99e6',1,'argon::action']]]
 ];

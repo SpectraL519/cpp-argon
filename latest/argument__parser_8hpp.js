@@ -1,7 +1,5 @@
 var argument__parser_8hpp =
 [
-    [ "argon::argument_parser", "classargon_1_1argument__parser.html", "classargon_1_1argument__parser" ],
-    [ "argon::argument_parser::parsing_state", "structargon_1_1argument__parser_1_1parsing__state.html", "structargon_1_1argument__parser_1_1parsing__state" ],
     [ "default_argument", "argument__parser_8hpp.html#a958295d6fc5c8ff8b1da658b1dde6778", [
       [ "p_input", "argument__parser_8hpp.html#a958295d6fc5c8ff8b1da658b1dde6778a918ad2ff30cfa8b5018b0479aadef7cd", null ],
       [ "p_output", "argument__parser_8hpp.html#a958295d6fc5c8ff8b1da658b1dde6778a08173b515fb5e9d04aaa45529dad7c24", null ],
@@ -18,5 +16,5 @@ var argument__parser_8hpp =
       [ "ignore", "argument__parser_8hpp.html#ab8f65b0dfa4b37b711459d07c5aed420a567bc1d268f135496de3d5b946b691f3", null ],
       [ "as_values", "argument__parser_8hpp.html#ab8f65b0dfa4b37b711459d07c5aed420a2d7ea658370d04bd31d1bb8497ca7ef5", null ]
     ] ],
-    [ "add_default_argument", "argument__parser_8hpp.html#ae4a9487ae0692550f7a8488e51689bd3", null ]
+    [ "add_default_argument", "argument__parser_8hpp.html#a92c78323c2e9a878a43fb8b9c63f7d38", null ]
 ];

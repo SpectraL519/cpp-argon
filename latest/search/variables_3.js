@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['default_5fdelimiter_0',['default_delimiter',['../classargon_1_1detail_1_1help__builder.html#ac42c03a7011063ede7b473fe91e778fb',1,'argon::detail::help_builder']]]
+  ['flag_5fchar_0',['flag_char',['../structargon_1_1detail_1_1argument__name.html#a48c6c5bfb83474819fa1726a6a7a820b',1,'argon::detail::argument_name']]]
 ];

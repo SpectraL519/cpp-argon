@@ -9,5 +9,5 @@ var namespaceargon_1_1detail =
       [ "n_primary", "namespaceargon_1_1detail.html#aed57495e22a26096a60668500c8881abaf9977027e35d0052c62c1e26e00b7d13", null ],
       [ "n_secondary", "namespaceargon_1_1detail.html#aed57495e22a26096a60668500c8881abacea61f9e13585d906e14d77960bc70f1", null ]
     ] ],
-    [ "add_default_argument", "namespaceargon_1_1detail.html#ae4a9487ae0692550f7a8488e51689bd3", null ]
+    [ "add_default_argument", "namespaceargon_1_1detail.html#a92c78323c2e9a878a43fb8b9c63f7d38", null ]
 ];
