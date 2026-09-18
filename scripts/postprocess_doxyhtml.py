@@ -1,15 +1,9 @@
 import argparse
 import re
+import json
 from pathlib import Path
+from typing import Optional
 from bs4 import BeautifulSoup
-
-
-IMAGE_STYLE_RULES = [
-    {
-        "alt": "CPP-ARGON",
-        "style": "display: block; margin: 1.5em auto;"
-    }
-]
 
 
 def encode_md_link(path_str: str) -> str:
@@ -95,7 +89,9 @@ def remove_mainpage_title(content: str, filename: str) -> str:
     return str(soup)
 
 
-def process_images(content: str, html_path: Path) -> str:
+ImgRules = list[dict]
+
+def process_images(content: str, html_path: Path, rules: ImgRules) -> str:
     soup = BeautifulSoup(content, 'html.parser')
 
     for img in soup.find_all('img'):
@@ -111,31 +107,39 @@ def process_images(content: str, html_path: Path) -> str:
             img['src'] = filename  # Align the file path
 
             alt = img.get('alt', '')
-            for rule in IMAGE_STYLE_RULES: # Apply image style rules
+            for rule in rules: # Apply image style rules
                 if ("filaneme" in rule and filename == rule["filename"]) or ("alt" in rule and alt == rule["alt"]):
                     img['style'] = f"{img.get('style', '')}; {rule.get('style', '')}".strip('; ')
 
     return str(soup)
 
 
-def process_file(f: Path):
+def process_file(f: Path, img_rules: Optional[ImgRules] = None):
     content = f.read_text(encoding='utf-8')
     content = process_md_refs(content)
     content = process_gfm(content)
     content = process_heading_code_blocks(content)
     content = remove_mainpage_title(content, f.name)
-    content = process_images(content, f)
+    if img_rules:
+        content = process_images(content, f, img_rules)
+
     f.write_text(content, encoding='utf-8')
 
 
 def main():
     parser = argparse.ArgumentParser(description='Postprocess Doxygen HTML files to fix links.')
     parser.add_argument('directory', type=Path, help='Root directory of generated HTML files')
+    parser.add_argument('--img-rules', type=Path, help='Path to JSON file with image style rules')
 
     args = parser.parse_args()
 
+    img_rules = None
+    if args.img_rules:
+        with args.img_rules.open(encoding='utf-8') as f:
+            img_rules = json.load(f)
+
     for f in args.directory.rglob('*.html'):
-        process_file(f)
+        process_file(f, img_rules)
 
 
 if __name__ == '__main__':
