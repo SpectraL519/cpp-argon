@@ -7,12 +7,12 @@
 #pragma once
 
 #include "argon/action/predefined.hpp"
-#include "argon/action/util/helpers.hpp"
+#include "argon/action/util.hpp"
 #include "argon/detail/argument_base.hpp"
 #include "argon/detail/help_builder.hpp"
 #include "argon/nargs/range.hpp"
+#include "argon/traits.hpp"
 #include "argon/types.hpp"
-#include "argon/util/concepts.hpp"
 
 #ifdef AP_TESTING
 
@@ -53,7 +53,7 @@ enum class argument_type : bool { positional, optional };
  * @tparam ArgT The argument type, either @ref argon::argument_type::positional or @ref argon::argument_type::optional.
  * @tparam T The value type accepted by the argument (defaults to std::string).
  */
-template <argument_type ArgT, util::c_argument_value_type T = std::string>
+template <argument_type ArgT, traits::c_argument_value_type T = std::string>
 class argument : public detail::typed_argument_base<T> {
 public:
     using value_type = T; ///< The argument's value type alias.
@@ -208,7 +208,7 @@ public:
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
     argument& greedy(const bool value = true) noexcept
-    requires(not util::c_is_none<value_type>)
+    requires(not traits::c_is_none<value_type>)
     {
         this->_greedy = value;
         return *this;
@@ -221,7 +221,7 @@ public:
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
     argument& nargs(const nargs::range& range) noexcept
-    requires(not util::c_is_none<value_type>)
+    requires(not traits::c_is_none<value_type>)
     {
         this->_nargs_range = range;
         return *this;
@@ -234,7 +234,7 @@ public:
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
     argument& nargs(const count_type n) noexcept
-    requires(not util::c_is_none<value_type>)
+    requires(not traits::c_is_none<value_type>)
     {
         return this->nargs(nargs::range(n));
     }
@@ -247,7 +247,7 @@ public:
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
     argument& nargs(const count_type lower, const count_type upper) noexcept
-    requires(not util::c_is_none<value_type>)
+    requires(not traits::c_is_none<value_type>)
     {
         return this->nargs(nargs::range(lower, upper));
     }
@@ -262,9 +262,9 @@ public:
      * @note - `value_type` is not `none_type`.
      * @note - `AS` is a valid value action specifier: `action_type::observe`, `action_type::transform`, `action_type::modify`.
      */
-    template <action::util::c_value_action_specifier AS, typename F>
+    template <argon::traits::c_value_action_specifier AS, typename F>
     argument& action(F&& action) noexcept
-    requires(not util::c_is_none<value_type>)
+    requires(not traits::c_is_none<value_type>)
     {
         using callable_type = action::util::callable_type<AS, value_type>;
         this->_value_actions.emplace_back(std::forward<callable_type>(action));
@@ -279,7 +279,7 @@ public:
      * @return Reference to the argument instance.
      * @note The method is enabled only for optional arguments and if `AS` is `action_type::on_flag`.
      */
-    template <action::util::c_flag_action_specifier AS, typename F>
+    template <argon::traits::c_flag_action_specifier AS, typename F>
     argument& action(F&& action) noexcept
     requires(type == argument_type::optional)
     {
@@ -296,9 +296,9 @@ public:
      * @note - `value_type` must not be `none_type` and must be equality comparable
      * @note - `CR` must be a range such that its value type is convertible to the argument's `value_type`
      */
-    template <util::c_range_of<value_type, util::type_validator::convertible> CR>
+    template <traits::c_range_of<value_type, traits::type_validator::convertible> CR>
     argument& choices(const CR& choices) noexcept
-    requires(not util::c_is_none<value_type> and std::equality_comparable<value_type>)
+    requires(not traits::c_is_none<value_type> and std::equality_comparable<value_type>)
     {
         for (const auto& choice : choices)
             this->_choices.emplace_back(choice);
@@ -312,7 +312,7 @@ public:
      * @note The method is enabled only if `value_type` is not `none_type` and is equality comparable.
      */
     argument& choices(std::initializer_list<value_type> choices) noexcept
-    requires(not util::c_is_none<value_type> and std::equality_comparable<value_type>)
+    requires(not traits::c_is_none<value_type> and std::equality_comparable<value_type>)
     {
         return this->choices<>(choices);
     }
@@ -325,7 +325,7 @@ public:
      * @note The method is enabled only if `value_type` is not `none_type` and is equality comparable.
      */
     argument& choices(const std::convertible_to<value_type> auto&... choices) noexcept
-    requires(not util::c_is_none<value_type> and std::equality_comparable<value_type>)
+    requires(not traits::c_is_none<value_type> and std::equality_comparable<value_type>)
     {
         (this->_choices.emplace_back(choices), ...);
         return *this;
@@ -338,9 +338,9 @@ public:
      * @attention Setting the default values resets the `required` attribute to `false`.
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
-    template <util::c_range_of<value_type, util::type_validator::convertible> CR>
+    template <traits::c_range_of<value_type, traits::type_validator::convertible> CR>
     argument& default_values(const CR& values) noexcept
-    requires(not util::c_is_none<value_type> and std::equality_comparable<value_type>)
+    requires(not traits::c_is_none<value_type> and std::equality_comparable<value_type>)
     {
         for (const auto& value : values)
             this->_default_values.emplace_back(value);
@@ -356,7 +356,7 @@ public:
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
     argument& default_values(std::initializer_list<value_type> values) noexcept
-    requires(not util::c_is_none<value_type> and std::equality_comparable<value_type>)
+    requires(not traits::c_is_none<value_type> and std::equality_comparable<value_type>)
     {
         return this->default_values<>(values);
     }
@@ -369,7 +369,7 @@ public:
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
     argument& default_values(const std::convertible_to<value_type> auto&... values) noexcept
-    requires(not util::c_is_none<value_type>)
+    requires(not traits::c_is_none<value_type>)
     {
         (this->_default_values.emplace_back(values), ...);
         this->_required = false;
@@ -383,9 +383,9 @@ public:
      * @return Reference to the optional argument instance.
      * @note The method is enabled only for optional arguments and if `value_type` is not `none_type`.
      */
-    template <util::c_range_of<value_type, util::type_validator::convertible> CR>
+    template <traits::c_range_of<value_type, traits::type_validator::convertible> CR>
     argument& implicit_values(const CR& values) noexcept
-    requires(not util::c_is_none<value_type> and type == argument_type::optional)
+    requires(not traits::c_is_none<value_type> and type == argument_type::optional)
     {
         for (const auto& value : values)
             this->_implicit_values.emplace_back(value);
@@ -399,7 +399,7 @@ public:
      * @note The method is enabled only for optional arguments and if `value_type` is not `none_type`.
      */
     argument& implicit_values(std::initializer_list<value_type> values) noexcept
-    requires(not util::c_is_none<value_type> and type == argument_type::optional)
+    requires(not traits::c_is_none<value_type> and type == argument_type::optional)
     {
         return this->implicit_values<>(values);
     }
@@ -411,7 +411,7 @@ public:
      * @note The method is enabled only for optional arguments and if `value_type` is not `none_type`.
      */
     argument& implicit_values(const std::convertible_to<value_type> auto&... values) noexcept
-    requires(not util::c_is_none<value_type> and type == argument_type::optional)
+    requires(not traits::c_is_none<value_type> and type == argument_type::optional)
     {
         (this->_implicit_values.emplace_back(values), ...);
         return *this;
@@ -432,7 +432,7 @@ private:
     /// @tparam _T The actual type used if the argument's `value_type` is not `none_type`.
     template <typename _T>
     using value_arg_specific_type = std::conditional_t<
-        util::c_is_none<value_type>,
+        traits::c_is_none<value_type>,
         none_type,
         _T>; ///< Type alias for value-argument-specific types.
 
@@ -469,7 +469,7 @@ private:
             bld.add_param("suppress group checks", "true");
         if (this->_nargs_range != _default_nargs_range)
             bld.add_param("nargs", this->_nargs_range);
-        if constexpr (util::c_writable<value_type>) {
+        if constexpr (traits::c_writable<value_type>) {
             if (not this->_choices.empty())
                 bld.add_range_param("choices", this->_choices);
             if (not this->_default_values.empty())
@@ -551,11 +551,11 @@ private:
      * @note If multiple values are available, the first one is returned.
      * @throws std::logic_error if no values are available.
      */
-    [[nodiscard]] detail::arg_return_type<T> value() const override {
+    [[nodiscard]] traits::argument_result_type<T> value() const override {
         if (this->has_parsed_values())
             return this->_values.front();
 
-        if constexpr (util::c_is_none<value_type>)
+        if constexpr (traits::c_is_none<value_type>)
             throw std::logic_error(
                 std::format("No values parsed for argument '{}'.", this->_name.str())
             );
@@ -571,7 +571,7 @@ private:
     /// @return Reference to the vector of parsed values for the argument.
     /// @note For none-type arguments, the method always returns an empty vector.
     [[nodiscard]] const std::vector<T>& _values_impl() const noexcept
-    requires(util::c_is_none<value_type>)
+    requires(traits::c_is_none<value_type>)
     {
         return this->_values;
     }
@@ -582,7 +582,7 @@ private:
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
     [[nodiscard]] const std::vector<T>& _values_impl() const noexcept
-    requires(not util::c_is_none<value_type>)
+    requires(not traits::c_is_none<value_type>)
     {
         if (this->has_parsed_values())
             return this->_values;
@@ -597,7 +597,7 @@ private:
 
     /// @return `true` if the argument has a predefined value, `false` otherwise.
     [[nodiscard]] bool _has_predefined_values_impl() const noexcept
-    requires(util::c_is_none<value_type>)
+    requires(traits::c_is_none<value_type>)
     {
         return false;
     }
@@ -609,7 +609,7 @@ private:
      * @note - For optional arguments, a predefined value exists if either a default value is set or if the argument has been used and an implicit value is set.
      */
     [[nodiscard]] bool _has_predefined_values_impl() const noexcept
-    requires(not util::c_is_none<value_type>)
+    requires(not traits::c_is_none<value_type>)
     {
         if constexpr (type == argument_type::positional)
             return not this->_default_values.empty();
@@ -626,7 +626,7 @@ private:
      * @note - For optional arguments, if the argument has been used, the implicit value list is returned, otherwise the default value list is returned.
      */
     [[nodiscard]] const std::vector<T>& _predefined_values() const
-    requires(not util::c_is_none<value_type>)
+    requires(not traits::c_is_none<value_type>)
     {
         if constexpr (type == argument_type::optional) {
             if (this->is_used()) {
@@ -654,7 +654,7 @@ private:
 
     /// @return `true` if the given value is a valid choice for the argument, `false` otherwise.
     [[nodiscard]] bool _is_valid_choice(const value_type& value) const noexcept
-    requires(not util::c_is_none<value_type>)
+    requires(not traits::c_is_none<value_type>)
     {
         return this->_choices.empty()
             or std::ranges::find(this->_choices, value) != std::ranges::end(this->_choices);
@@ -667,7 +667,7 @@ private:
      * @attention Always throws! (`set_value` should never be called for a none-type argument).
      */
     bool _set_value_impl(const std::string& str_value)
-    requires(util::c_is_none<value_type>)
+    requires(traits::c_is_none<value_type>)
     {
         throw parsing_failure(std::format(
             "Cannot set values for a none-type argument '{}' (value: '{}')",
@@ -687,13 +687,13 @@ private:
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
     bool _set_value_impl(const std::string& str_value)
-    requires(not util::c_is_none<value_type>)
+    requires(not traits::c_is_none<value_type>)
     {
         if (not this->_accepts_further_values())
             throw parsing_failure::invalid_nvalues(this->_name, std::weak_ordering::greater);
 
         value_type value;
-        if constexpr (util::c_trivially_readable<value_type>) {
+        if constexpr (traits::c_trivially_readable<value_type>) {
             value = value_type(str_value);
         }
         else {
@@ -749,7 +749,7 @@ private:
     static constexpr nargs::range _default_nargs_range =
         (type == argument_type::positional) ? nargs::range(1ull) : nargs::any();
     static constexpr nargs::range _default_nargs_range_actual =
-        util::c_is_none<value_type> ? nargs::range(0ull) : _default_nargs_range;
+        traits::c_is_none<value_type> ? nargs::range(0ull) : _default_nargs_range;
 };
 
 /**
@@ -757,7 +757,7 @@ private:
  * @tparam T The value type accepted by the argument (defaults to std::string).
  * @see argon::argument
  */
-template <util::c_argument_value_type T = std::string>
+template <traits::c_argument_value_type T = std::string>
 using positional_argument = argument<argument_type::positional, T>;
 
 /**
@@ -765,7 +765,7 @@ using positional_argument = argument<argument_type::positional, T>;
  * @tparam T The value type accepted by the argument (defaults to std::string).
  * @see argon::argument
  */
-template <util::c_argument_value_type T = std::string>
+template <traits::c_argument_value_type T = std::string>
 using optional_argument = argument<argument_type::optional, T>;
 
 } // namespace argon

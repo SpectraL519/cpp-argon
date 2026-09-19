@@ -250,7 +250,7 @@ public:
      * @note `arg_discriminators` must be a `std::ranges::range` with the `argon::default_argument` value type.
      * @return Reference to the argument parser.
      */
-    template <util::c_range_of<default_argument> ArgvRange>
+    template <traits::c_range_of<default_argument> ArgvRange>
     argument_parser& default_arguments(const ArgvRange& arg_discriminators) noexcept {
         for (const auto arg_discriminator : arg_discriminators)
             detail::add_default_argument(arg_discriminator, *this);
@@ -287,7 +287,7 @@ public:
      * @return Reference to the added positional argument.
      * @throws argon::invalid_configuration
      */
-    template <util::c_argument_value_type T = std::string>
+    template <traits::c_argument_value_type T = std::string>
     positional_argument<T>& add_positional_argument(const std::string_view base_name) {
         return this->add_positional_argument<T>(this->_gr_positional_args, base_name);
     }
@@ -299,7 +299,7 @@ public:
      * @return Reference to the added positional argument.
      * @throws argon::invalid_configuration
      */
-    template <util::c_argument_value_type T = std::string>
+    template <traits::c_argument_value_type T = std::string>
     positional_argument<T>& add_positional_argument(
         argument_group& group, const std::string_view base_name
     ) {
@@ -326,7 +326,7 @@ public:
      * @return Reference to the added optional argument.
      * @throws argon::invalid_configuration
      */
-    template <util::c_argument_value_type T = std::string>
+    template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         const std::string_view base_name,
         const detail::argument_name_discriminator name_discr = n_primary
@@ -342,7 +342,7 @@ public:
      * @return Reference to the added optional argument.
      * @throws argon::invalid_configuration
      */
-    template <util::c_argument_value_type T = std::string>
+    template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         const std::string_view base_primary_name, const std::string_view base_secondary_name
     ) {
@@ -360,7 +360,7 @@ public:
      * @return Reference to the added optional argument.
      * @throws std::logic_error, argon::invalid_configuration
      */
-    template <util::c_argument_value_type T = std::string>
+    template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         argument_group& group,
         const std::string_view base_name,
@@ -399,7 +399,7 @@ public:
      * @return Reference to the added optional argument.
      * @throws argon::invalid_configuration
      */
-    template <util::c_argument_value_type T = std::string>
+    template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         argument_group& group,
         const std::string_view base_primary_name,
@@ -561,7 +561,7 @@ public:
      * @throws argon::invalid_configuration, argon::parsing_failure
      * @attention This overload of the `parse_args` function assumes that the program name argument has already been discarded.
      */
-    template <util::c_forward_range_of<std::string, util::type_validator::convertible> ArgvRange>
+    template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     void parse_args(const ArgvRange& argv_rng) {
         parsing_state state(*this);
         this->_parse_args_impl(std::ranges::begin(argv_rng), std::ranges::end(argv_rng), state);
@@ -600,7 +600,7 @@ public:
      * @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
      * @attention This overload of the `try_parse_args` function assumes that the program name argument has already been discarded.
      */
-    template <util::c_forward_range_of<std::string, util::type_validator::convertible> ArgvRange>
+    template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     void try_parse_args(const ArgvRange& argv_rng) {
         try {
             this->parse_args(argv_rng);
@@ -648,7 +648,7 @@ public:
      * @throws argon::invalid_configuration, argon::parsing_failure
      * @attention This overload of the `parse_known_args` function assumes that the program name argument already been discarded.
      */
-    template <util::c_forward_range_of<std::string, util::type_validator::convertible> ArgvRange>
+    template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     std::vector<std::string> parse_known_args(const ArgvRange& argv_rng) {
         parsing_state state(*this, true);
         this->_parse_args_impl(std::ranges::begin(argv_rng), std::ranges::end(argv_rng), state);
@@ -685,7 +685,7 @@ public:
      * @return A vector of unknown argument values.
      * @attention This overload of the `try_parse_known_args` function assumes that the program name argument has already been discarded.
      */
-    template <util::c_forward_range_of<std::string, util::type_validator::convertible> ArgvRange>
+    template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     std::vector<std::string> try_parse_known_args(const ArgvRange& argv_rng) {
         try {
             return this->parse_known_args(argv_rng);
@@ -780,8 +780,8 @@ public:
      * @return The value of the argument.
      * @throws argon::lookup_failure, argon::type_error
      */
-    template <util::c_argument_value_type T = std::string>
-    [[nodiscard]] detail::arg_return_type<T> value(std::string_view arg_name) const {
+    template <traits::c_argument_value_type T = std::string>
+    [[nodiscard]] traits::argument_result_type<T> value(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
 
         const auto* typed_arg = dynamic_cast<const detail::typed_argument_base<T>*>(arg.get());
@@ -800,7 +800,7 @@ public:
      * @return The value of the argument.
      * @throws argon::lookup_failure, argon::type_error
      */
-    template <util::c_argument_value_type T = std::string, std::convertible_to<T> U>
+    template <traits::c_argument_value_type T = std::string, std::convertible_to<T> U>
     [[nodiscard]] T value_or(std::string_view arg_name, U&& fallback_value) const {
         const auto arg = this->_get_argument(arg_name);
 
@@ -825,7 +825,7 @@ public:
      * @return The values of the argument as a vector.
      * @throws argon::lookup_failure, argon::type_error
      */
-    template <util::c_argument_value_type T = std::string>
+    template <traits::c_argument_value_type T = std::string>
     [[nodiscard]] const std::vector<T>& values(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
 
@@ -1039,7 +1039,7 @@ private:
      * @param state The current parsing state.
      * @throws argon::invalid_configuration, argon::parsing_failure
      */
-    template <util::c_forward_iterator_of<std::string, util::type_validator::convertible> AIt>
+    template <traits::c_forward_iterator_of<std::string, traits::type_validator::convertible> AIt>
     void _parse_args_impl(AIt args_begin, const AIt args_end, parsing_state& state) {
         this->_invoked = true;
 
@@ -1099,7 +1099,7 @@ private:
      * @param state The current parsing state.
      * @return A list of preprocessed command-line argument tokens.
      */
-    template <util::c_forward_iterator_of<std::string, util::type_validator::convertible> AIt>
+    template <traits::c_forward_iterator_of<std::string, traits::type_validator::convertible> AIt>
     [[nodiscard]] arg_token_vec_t _tokenize(
         AIt args_begin, const AIt args_end, const parsing_state& state
     ) {

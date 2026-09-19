@@ -7,3 +7,8 @@
  * @defgroup util Utility
  * @brief Helper functions, types, concepts, etc.
  */
+
+ /**
+ * @defgroup traits Traits & Concepts
+ * @brief Type trait and concept definitions.
+ */

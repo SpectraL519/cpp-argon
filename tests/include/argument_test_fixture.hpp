@@ -5,11 +5,11 @@
 
 using argon::argument;
 using argon::argument_type;
-using argon::detail::arg_return_type;
 using argon::detail::argument_name;
 using argon::detail::help_builder;
+using argon::traits::argument_result_type;
+using argon::traits::c_argument_value_type;
 using argon::util::as_string;
-using argon::util::c_argument_value_type;
 
 namespace argon_testing {
 
@@ -73,7 +73,7 @@ struct argument_test_fixture {
     }
 
     template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] arg_return_type<T> get_value(const argument<ArgT, T>& arg) const {
+    [[nodiscard]] argument_result_type<T> get_value(const argument<ArgT, T>& arg) const {
         return arg.value();
     }
 
