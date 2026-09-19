@@ -306,7 +306,7 @@ public:
     ) {
         this->_validate_group(group);
 
-        const auto full_name = std::format("{}{}", group._prefix, name);
+        const auto full_name = group._format_arg_name(name);
         this->_verify_arg_name_pattern(full_name);
 
         const detail::argument_name arg_name(std::make_optional<std::string>(full_name));
@@ -369,7 +369,7 @@ public:
     ) {
         this->_validate_group(group);
 
-        const auto full_name = std::format("{}{}", group._prefix, name);
+        const auto full_name = group._format_arg_name(name);
         this->_verify_arg_name_pattern(full_name);
 
         const auto arg_name =
@@ -408,10 +408,10 @@ public:
     ) {
         this->_validate_group(group);
 
-        const auto full_primary_name = std::format("{}{}", group._prefix, primary_name);
+        const auto full_primary_name = group._format_arg_name(primary_name);
         this->_verify_arg_name_pattern(full_primary_name);
 
-        const auto full_secondary_name = std::format("{}{}", group._prefix, secondary_name);
+        const auto full_secondary_name = group._format_arg_name(secondary_name);
         this->_verify_arg_name_pattern(full_secondary_name);
 
         const detail::argument_name arg_name(
