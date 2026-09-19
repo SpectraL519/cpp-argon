@@ -1493,9 +1493,59 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_parse_args, "parse_args should properly handle group prefixes"
+    test_argument_parser_parse_args, "parse_args should properly handle group prefixes and suffixes"
 ) {
-    // TODO
+    const std::string prefix = "mod_";
+    const std::string suffix = "_mod";
+    auto& group = sut.add_group("Modified Group").with_prefix(prefix).with_suffix(suffix);
+
+    const std::string pos_base_name = "pos_arg";
+    const std::string opt_base_name = "opt_arg";
+    const std::string flag_base_name = "flag";
+
+    // Add arguments to the group
+    sut.add_positional_argument(group, pos_base_name);
+    sut.add_optional_argument(group, opt_base_name);
+    sut.add_flag(group, flag_base_name);
+
+    // Deducing the expected registered names
+    const std::string expected_pos_name = prefix + pos_base_name + suffix;
+    const std::string expected_opt_name = prefix + opt_base_name + suffix;
+    const std::string expected_flag_name = prefix + flag_base_name + suffix;
+
+    const std::string pos_val = "positional-value";
+    const std::string opt_val = "optional-value";
+
+    std::vector<std::string> argv_vec{
+        "program",
+        pos_val,
+        std::format("--{}", expected_opt_name),
+        opt_val,
+        std::format("--{}", expected_flag_name),
+    };
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(sut.parse_args(argc, argv));
+
+    // Verify arguments are parsed and accessible by their formatted names
+    CHECK(sut.has_value(expected_pos_name));
+    CHECK_EQ(sut.value(expected_pos_name), pos_val);
+
+    CHECK(sut.has_value(expected_opt_name));
+    CHECK_EQ(sut.value(expected_opt_name), opt_val);
+    CHECK_EQ(sut.count(expected_opt_name), 1ull);
+
+    CHECK(sut.has_value(expected_flag_name));
+    CHECK(sut.value<bool>(expected_flag_name));
+
+    // Verify the arguments are NOT accessible by their unformatted base names
+    CHECK_THROWS_AS(discard(sut.has_value(pos_base_name)), lookup_failure);
+    CHECK_THROWS_AS(discard(sut.has_value(opt_base_name)), lookup_failure);
+    CHECK_THROWS_AS(discard(sut.has_value(flag_base_name)), lookup_failure);
+
+    free_argv(argc, argv);
 }
 
 // subparsers

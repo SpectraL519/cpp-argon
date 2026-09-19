@@ -388,18 +388,18 @@ TEST_CASE_FIXTURE(
     sut.add_optional_argument(group, "optional");
     sut.add_flag(group, "flag");
 
-    const auto expected_err_msg = [](const auto& arg_name) {
+    const auto expected_err_msg = [](const auto& arg_name) -> std::string {
         return lookup_failure::argument_not_found(arg_name).what();
     };
 
     CHECK_THROWS_WITH_AS(
-        discard(sut.value("positional")), expected_err_msg("positional"), lookup_failure
+        discard(sut.value("positional")), expected_err_msg("positional").c_str(), lookup_failure
     );
     CHECK_THROWS_WITH_AS(
-        discard(sut.value("optional")), expected_err_msg("optional"), lookup_failure
+        discard(sut.value("optional")), expected_err_msg("optional").c_str(), lookup_failure
     );
     CHECK_THROWS_WITH_AS(
-        discard(sut.value<bool>("flag")), expected_err_msg("flag"), lookup_failure
+        discard(sut.value<bool>("flag")), expected_err_msg("flag").c_str(), lookup_failure
     );
 
     CHECK_FALSE(sut.has_value("pre-positional-suf"));

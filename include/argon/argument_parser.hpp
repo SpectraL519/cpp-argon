@@ -246,13 +246,13 @@ public:
 
     /**
      * @brief Add default arguments to the argument parser.
-     * @tparam AR Type of the positional argument discriminator range.
+     * @tparam ArgvRange Type of the positional argument discriminator range.
      * @param arg_discriminators A range of default positional argument discriminators.
      * @note `arg_discriminators` must be a `std::ranges::range` with the `argon::default_argument` value type.
      * @return Reference to the argument parser.
      */
-    template <util::c_range_of<default_argument> AR>
-    argument_parser& default_arguments(const AR& arg_discriminators) noexcept {
+    template <util::c_range_of<default_argument> ArgvRange>
+    argument_parser& default_arguments(const ArgvRange& arg_discriminators) noexcept {
         for (const auto arg_discriminator : arg_discriminators)
             detail::add_default_argument(arg_discriminator, *this);
         return *this;
@@ -556,14 +556,14 @@ public:
 
     /**
      * @brief Parses the command-line arguments.
-     * @tparam AR The argument range type.
+     * @tparam ArgvRange The argument range type.
      * @param argv_rng A range of command-line argument values.
      * @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
      * @throws argon::invalid_configuration, argon::parsing_failure
      * @attention This overload of the `parse_args` function assumes that the program name argument has already been discarded.
      */
-    template <util::c_forward_range_of<std::string, util::type_validator::convertible> AR>
-    void parse_args(const AR& argv_rng) {
+    template <util::c_forward_range_of<std::string, util::type_validator::convertible> ArgvRange>
+    void parse_args(const ArgvRange& argv_rng) {
         parsing_state state(*this);
         this->_parse_args_impl(std::ranges::begin(argv_rng), std::ranges::end(argv_rng), state);
 
@@ -596,13 +596,13 @@ public:
      * message and the parser are printed to `std::cerr` and the function exists with
      * `EXIT_FAILURE` status.
      *
-     * @tparam AR The argument range type.
+     * @tparam ArgvRange The argument range type.
      * @param argv_rng A range of command-line argument values.
      * @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
      * @attention This overload of the `try_parse_args` function assumes that the program name argument has already been discarded.
      */
-    template <util::c_forward_range_of<std::string, util::type_validator::convertible> AR>
-    void try_parse_args(const AR& argv_rng) {
+    template <util::c_forward_range_of<std::string, util::type_validator::convertible> ArgvRange>
+    void try_parse_args(const ArgvRange& argv_rng) {
         try {
             this->parse_args(argv_rng);
         }
@@ -643,14 +643,14 @@ public:
      * - `add_optional_argument`
      * - `add_flag`
      *
-     * @tparam AR The argument range type.
+     * @tparam ArgvRange The argument range type.
      * @param argv_rng A range of command-line argument values.
      * @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
      * @throws argon::invalid_configuration, argon::parsing_failure
      * @attention This overload of the `parse_known_args` function assumes that the program name argument already been discarded.
      */
-    template <util::c_forward_range_of<std::string, util::type_validator::convertible> AR>
-    std::vector<std::string> parse_known_args(const AR& argv_rng) {
+    template <util::c_forward_range_of<std::string, util::type_validator::convertible> ArgvRange>
+    std::vector<std::string> parse_known_args(const ArgvRange& argv_rng) {
         parsing_state state(*this, true);
         this->_parse_args_impl(std::ranges::begin(argv_rng), std::ranges::end(argv_rng), state);
         return std::move(state.unknown_args);
@@ -680,14 +680,14 @@ public:
      * and the parser are printed to `std::cerr` and the function exists with `EXIT_FAILURE` status.
      * Otherwise the result of `parse_known_args(argv_rng)` is returned.
      *
-     * @tparam AR The argument range type.
+     * @tparam ArgvRange The argument range type.
      * @param argv_rng A range of command-line argument values.
      * @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
      * @return A vector of unknown argument values.
      * @attention This overload of the `try_parse_known_args` function assumes that the program name argument has already been discarded.
      */
-    template <util::c_forward_range_of<std::string, util::type_validator::convertible> AR>
-    std::vector<std::string> try_parse_known_args(const AR& argv_rng) {
+    template <util::c_forward_range_of<std::string, util::type_validator::convertible> ArgvRange>
+    std::vector<std::string> try_parse_known_args(const ArgvRange& argv_rng) {
         try {
             return this->parse_known_args(argv_rng);
         }
