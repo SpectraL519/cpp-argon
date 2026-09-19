@@ -785,12 +785,11 @@ public:
     [[nodiscard]] T value(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
 
-        try {
-            return std::any_cast<T>(arg->value());
-        }
-        catch (const std::bad_any_cast&) {
+        const auto* typed_arg = dynamic_cast<const detail::typed_argument_base<T>*>(arg.get());
+        if (not typed_arg)
             throw type_error::invalid_value_type<T>(arg->name());
-        }
+
+        return typed_arg->value();
     }
 
     /**
@@ -806,16 +805,17 @@ public:
     [[nodiscard]] T value_or(std::string_view arg_name, U&& fallback_value) const {
         const auto arg = this->_get_argument(arg_name);
 
+        const auto* typed_arg = dynamic_cast<const detail::typed_argument_base<T>*>(arg.get());
+        if (not typed_arg)
+            throw type_error::invalid_value_type<T>(arg->name());
+
         try {
-            return std::any_cast<T>(arg->value());
+            return typed_arg->value();
         }
         catch (const std::logic_error&) {
             // positional: no value parsed
             // optional: no value parsed + no predefined value
             return T{std::forward<U>(fallback_value)};
-        }
-        catch (const std::bad_any_cast&) {
-            throw type_error::invalid_value_type<T>(arg->name());
         }
     }
 
@@ -825,22 +825,16 @@ public:
      * @param arg_name The name of the argument.
      * @return The values of the argument as a vector.
      * @throws argon::lookup_failure, argon::type_error
-     * @todo Use std::ranges::to after transition to C++23 for range casting
      */
     template <util::c_argument_value_type T = std::string>
     [[nodiscard]] std::vector<T> values(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
 
-        try {
-            std::vector<T> values;
-            std::ranges::copy(
-                util::any_range_cast_view<T>(arg->values()), std::back_inserter(values)
-            );
-            return values;
-        }
-        catch (const std::bad_any_cast&) {
+        const auto* typed_arg = dynamic_cast<const detail::typed_argument_base<T>*>(arg.get());
+        if (not typed_arg)
             throw type_error::invalid_value_type<T>(arg->name());
-        }
+
+        return typed_arg->values();
     }
 
     /**

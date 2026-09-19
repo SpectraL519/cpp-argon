@@ -12,8 +12,9 @@
 #include "argon/detail/argument_name.hpp"
 #include "argon/detail/help_builder.hpp"
 
-#include <any>
+// Note: <any> is completely removed from this header
 #include <iostream>
+#include <string>
 #include <vector>
 
 namespace argon {
@@ -87,12 +88,17 @@ protected:
 
     /// @return The ordering relationship of argument range.
     virtual std::weak_ordering nvalues_ordering() const noexcept = 0;
+};
 
+/// @brief Strongly-typed intermediate argument interface
+template <typename T>
+class typed_argument_base : public argument_base {
+public:
     /// @return Reference to the stored value of the argument.
-    virtual const std::any& value() const = 0;
+    virtual T value() const = 0;
 
     /// @return Reference to the vector of parsed values of the argument.
-    virtual const std::vector<std::any>& values() const = 0;
+    virtual const std::vector<T>& values() const = 0;
 };
 
 } // namespace detail

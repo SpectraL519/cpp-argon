@@ -43,13 +43,13 @@ struct argument_test_fixture {
 
     template <argument_type ArgT, c_argument_value_type T>
     void set_value_force(argument<ArgT, T>& arg, const T& value) const {
-        set_value_force(arg, as_string(value));
+        arg._values.emplace_back(value);
     }
 
-    template <argument_type ArgT, c_argument_value_type T>
-    void set_value_force(argument<ArgT, T>& arg, const std::string& str_value) const {
-        arg._values.emplace_back(str_value);
-    }
+    // template <argument_type ArgT, c_argument_value_type T>
+    // void set_value_force(argument<ArgT, T>& arg, const std::string& str_value) const {
+    //     arg._values.emplace_back(str_value);
+    // }
 
     template <argument_type ArgT, c_argument_value_type T>
     void reset_values(argument<ArgT, T>& arg) const {
@@ -77,12 +77,12 @@ struct argument_test_fixture {
     }
 
     template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] const std::any& get_value(const argument<ArgT, T>& arg) const {
+    [[nodiscard]] T get_value(const argument<ArgT, T>& arg) const {
         return arg.value();
     }
 
     template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] const std::vector<std::any>& get_values(const argument<ArgT, T>& arg) const {
+    [[nodiscard]] const std::vector<T>& get_values(const argument<ArgT, T>& arg) const {
         return arg.values();
     }
 

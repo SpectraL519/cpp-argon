@@ -139,8 +139,8 @@ struct argument_parser_test_fixture {
 
     template <c_argument_value_type T = std::string>
     void add_arguments(const std::size_t n_positional_args, std::size_t n_optional_args) {
-        add_positional_args(n_positional_args);
-        add_optional_args(n_optional_args, n_positional_args);
+        add_positional_args<T>(n_positional_args);
+        add_optional_args<T>(n_optional_args, n_positional_args);
     }
 
     [[nodiscard]] arg_token_vec_t init_arg_tokens(

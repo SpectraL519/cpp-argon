@@ -26,7 +26,7 @@ namespace argon::util {
  * @ingroup util
  */
 template <typename T>
-constexpr std::string_view get_demangled_type_name() {
+constexpr std::string_view demangled_type_name() {
 #if defined(__clang__) || defined(__GNUC__)
     constexpr std::string_view func_name = __PRETTY_FUNCTION__;
     constexpr std::string_view begin_key = "T = ";

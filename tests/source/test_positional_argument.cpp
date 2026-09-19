@@ -330,7 +330,7 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name);
 
     REQUIRE_FALSE(has_value(sut));
-    CHECK_THROWS_AS(static_cast<void>(get_value(sut)), std::logic_error);
+    CHECK_THROWS_AS(discard(get_value(sut)), std::logic_error);
 }
 
 TEST_CASE_FIXTURE(
@@ -340,7 +340,7 @@ TEST_CASE_FIXTURE(
     set_value(sut, valid_value);
 
     REQUIRE(has_value(sut));
-    CHECK_EQ(std::any_cast<sut_value_type>(get_value(sut)), valid_value);
+    CHECK_EQ(get_value(sut), valid_value);
 }
 
 TEST_CASE_FIXTURE(
@@ -352,7 +352,7 @@ TEST_CASE_FIXTURE(
     sut.default_values(default_value);
 
     REQUIRE(has_value(sut));
-    CHECK_EQ(std::any_cast<sut_value_type>(get_value(sut)), default_value);
+    CHECK_EQ(get_value(sut), default_value);
 }
 
 TEST_CASE_FIXTURE(
@@ -363,7 +363,7 @@ TEST_CASE_FIXTURE(
     set_value(sut, valid_value);
 
     REQUIRE(has_value(sut));
-    CHECK_EQ(std::any_cast<sut_value_type>(get_value(sut)), valid_value);
+    CHECK_EQ(get_value(sut), valid_value);
 }
 
 TEST_CASE_FIXTURE(
@@ -417,10 +417,7 @@ TEST_CASE_FIXTURE(
     for (const auto value : choices)
         REQUIRE_NOTHROW(set_value(sut, value));
 
-    const auto stored_values = get_values(sut);
-    REQUIRE_EQ(stored_values.size(), choices.size());
-    for (std::size_t i = 0; i < stored_values.size(); ++i)
-        REQUIRE_EQ(std::any_cast<sut_value_type>(stored_values[i]), choices[i]);
+    REQUIRE_EQ(get_values(sut), choices);
 
     CHECK_THROWS_WITH_AS(
         set_value(sut, valid_value),
@@ -445,7 +442,7 @@ TEST_CASE_FIXTURE(argument_test_fixture, "set_value(any) should perform the spec
 
         sut_value_type valid_value = 16;
         REQUIRE_NOTHROW(set_value(sut, valid_value));
-        CHECK_EQ(std::any_cast<sut_value_type>(get_value(sut)), valid_value);
+        CHECK_EQ(get_value(sut), valid_value);
     }
 
     SUBCASE("transform action") {
@@ -454,7 +451,7 @@ TEST_CASE_FIXTURE(argument_test_fixture, "set_value(any) should perform the spec
 
         set_value(sut, valid_value);
 
-        CHECK_EQ(std::any_cast<sut_value_type>(get_value(sut)), double_action(valid_value));
+        CHECK_EQ(get_value(sut), double_action(valid_value));
     }
 
     SUBCASE("modify action") {
@@ -466,7 +463,7 @@ TEST_CASE_FIXTURE(argument_test_fixture, "set_value(any) should perform the spec
         set_value(sut, test_value);
 
         double_action(test_value);
-        CHECK_EQ(std::any_cast<sut_value_type>(get_value(sut)), test_value);
+        CHECK_EQ(get_value(sut), test_value);
     }
 }
 
