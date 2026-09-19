@@ -86,6 +86,32 @@ public:
         return *this;
     }
 
+    /**
+     * @brief Set the `prefix` attribute of the group.
+     *
+     * If set, each argument added to the group will have the given value prepended to its name.
+     *
+     * @param prefix The value to set for the attribute.
+     * @return Reference to the group instance.
+     */
+    argument_group& with_prefix(std::string_view prefix) noexcept {
+        this->_prefix = prefix;
+        return *this;
+    }
+
+    /**
+     * @brief Set the `suffix` attribute of the group.
+     *
+     * If set, each argument added to the group will have the given value appended to its name.
+     *
+     * @param suffix The value to set for the attribute.
+     * @return Reference to the group instance.
+     */
+    argument_group& with_suffix(std::string_view suffix) noexcept {
+        this->_suffix = suffix;
+        return *this;
+    }
+
     friend class argument_parser;
 
 private:
@@ -101,18 +127,25 @@ private:
         return std::unique_ptr<argument_group>(new argument_group(parser, name));
     }
 
-    /// Construct a new argument group with the given name.
+    /// @brief Construct a new argument group with the given name.
     argument_group(argument_parser& parser, const std::string_view name)
     : _parser(&parser), _name(name) {}
 
-    /// Add a new argument to this group (called internally by parser).
+    /// @brief Add a new argument to this group (called internally by parser).
     void _add_argument(arg_ptr_t arg) noexcept {
         this->_arguments.emplace_back(std::move(arg));
     }
 
+    /// @brief Format the argument's base name by adding the group's prefix and suffix.
+    [[nodiscard]] std::string _format_arg_name(std::string_view arg_base_name) const noexcept {
+        return std::format("{}{}{}", this->_prefix, arg_base_name, this->_suffix);
+    }
+
     argument_parser* _parser; ///< Pointer to the owning parser.
     std::string _name; ///< Name of the group (used in help output).
-    arg_ptr_vec_t _arguments; ///< A list of arguments that belong to this group.
+    std::string _prefix = ""; ///< Common argument flag prefix.
+    std::string _suffix = ""; ///< Common argument flag suffix.
+    arg_ptr_vec_t _arguments = {}; ///< A list of arguments that belong to this group.
 
     bool _hidden : 1 = false; ///< The hidden attribute value (default: false).
     bool _required : 1 = false; ///< The required attribute value (default: false).

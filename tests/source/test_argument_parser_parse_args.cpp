@@ -5,6 +5,7 @@
 using namespace argon_testing;
 using namespace argon::nargs;
 using argon::invalid_configuration;
+using argon::lookup_failure;
 using argon::parsing_failure;
 using argon::unknown_policy;
 
@@ -117,10 +118,10 @@ TEST_CASE_FIXTURE(
 
 TEST_CASE_FIXTURE(
     test_argument_parser_parse_args,
-    "_get_argument should return nullopt if there is no argument with given name present"
+    "_get_argument should throw if there is no argument with given name present"
 ) {
     add_arguments(n_positional_args, n_optional_args);
-    CHECK_FALSE(get_argument(invalid_arg_name));
+    CHECK_THROWS_AS(discard(get_argument(invalid_arg_name)), lookup_failure);
 }
 
 TEST_CASE_FIXTURE(
@@ -577,7 +578,7 @@ TEST_CASE_FIXTURE(
     auto argv = init_argv(n_positional_args, n_optional_args);
 
     REQUIRE_NOTHROW(sut.parse_args(argc, argv));
-    CHECK_FALSE(sut.has_value(invalid_arg_name));
+    CHECK_THROWS_AS(discard(sut.has_value(invalid_arg_name)), lookup_failure);
 
     free_argv(argc, argv);
 }
@@ -587,10 +588,12 @@ TEST_CASE_FIXTURE(
 ) {
     add_arguments(n_positional_args, n_optional_args);
 
-    for (std::size_t i = 0ull; i < n_args_total; ++i) {
-        const auto arg_name = init_arg_name(i);
-        CHECK_FALSE(sut.has_value(arg_name.primary.value()));
-        CHECK_FALSE(sut.has_value(arg_name.secondary.value()));
+    for (std::size_t i = 0ull; i < n_positional_args; ++i)
+        CHECK_FALSE(sut.has_value(init_arg_name_primary(i)));
+
+    for (std::size_t i = first_opt_arg_idx; i < n_args_total; ++i) {
+        CHECK_FALSE(sut.has_value(init_arg_name_primary(i)));
+        CHECK_FALSE(sut.has_value(init_arg_name_secondary(i)));
     }
 }
 
@@ -621,19 +624,21 @@ TEST_CASE_FIXTURE(
 TEST_CASE_FIXTURE(test_argument_parser_parse_args, "count should return 0 by default") {
     add_arguments(n_positional_args, n_optional_args);
 
-    for (std::size_t i = 0ull; i < n_args_total; ++i) {
-        const auto arg_name = init_arg_name(i);
-        CHECK_EQ(sut.count(arg_name.primary.value()), 0ull);
-        CHECK_EQ(sut.count(arg_name.secondary.value()), 0ull);
+    for (std::size_t i = 0ull; i < n_positional_args; ++i)
+        CHECK_EQ(sut.count(init_arg_name_primary(i)), 0ull);
+
+    for (std::size_t i = first_opt_arg_idx; i < n_args_total; ++i) {
+        CHECK_EQ(sut.count(init_arg_name_primary(i)), 0ull);
+        CHECK_EQ(sut.count(init_arg_name_secondary(i)), 0ull);
     }
 }
 
 TEST_CASE_FIXTURE(
     test_argument_parser_parse_args,
-    "count should return 0 if there is no argument with given name present"
+    "count should throw if there is no argument with given name present"
 ) {
     add_arguments(n_positional_args, n_optional_args);
-    CHECK_EQ(sut.count(invalid_arg_name), 0ull);
+    CHECK_THROWS_AS(discard(sut.count(invalid_arg_name)), lookup_failure);
 }
 
 TEST_CASE_FIXTURE(
@@ -680,7 +685,7 @@ TEST_CASE_FIXTURE(
     "value() should throw if there is no argument with given name present"
 ) {
     add_arguments(n_positional_args, n_optional_args);
-    CHECK_THROWS_AS(discard_result(sut.value(invalid_arg_name)), argon::lookup_failure);
+    CHECK_THROWS_AS(discard(sut.value(invalid_arg_name)), argon::lookup_failure);
 }
 
 TEST_CASE_FIXTURE(
@@ -690,11 +695,11 @@ TEST_CASE_FIXTURE(
     add_arguments(n_positional_args, n_optional_args);
 
     for (std::size_t i = 0ull; i < n_positional_args; ++i)
-        CHECK_THROWS_AS(discard_result(sut.value(init_arg_name_primary(i))), std::logic_error);
+        CHECK_THROWS_AS(discard(sut.value(init_arg_name_primary(i))), std::logic_error);
 
     for (std::size_t i = first_opt_arg_idx; i < n_args_total; ++i) {
-        CHECK_THROWS_AS(discard_result(sut.value(init_arg_name_primary(i))), std::logic_error);
-        CHECK_THROWS_AS(discard_result(sut.value(init_arg_name_secondary(i))), std::logic_error);
+        CHECK_THROWS_AS(discard(sut.value(init_arg_name_primary(i))), std::logic_error);
+        CHECK_THROWS_AS(discard(sut.value(init_arg_name_secondary(i))), std::logic_error);
     }
 }
 
@@ -716,8 +721,7 @@ TEST_CASE_FIXTURE(
 
         REQUIRE(sut.has_value(arg_name.primary.value()));
         CHECK_THROWS_AS(
-            discard_result(sut.value<invalid_value_type>(arg_name.primary.value())),
-            argon::type_error
+            discard(sut.value<invalid_value_type>(arg_name.primary.value())), argon::type_error
         );
     }
 
@@ -784,9 +788,7 @@ TEST_CASE_FIXTURE(
     "value_or() should throw if there is no argument with given name present"
 ) {
     add_arguments(n_positional_args, n_optional_args);
-    CHECK_THROWS_AS(
-        discard_result(sut.value_or(invalid_arg_name, empty_str)), argon::lookup_failure
-    );
+    CHECK_THROWS_AS(discard(sut.value_or(invalid_arg_name, empty_str)), argon::lookup_failure);
 }
 
 TEST_CASE_FIXTURE(
@@ -807,8 +809,7 @@ TEST_CASE_FIXTURE(
 
         REQUIRE(sut.has_value(arg_name.primary.value()));
         CHECK_THROWS_AS(
-            discard_result(
-                sut.value_or<invalid_value_type>(arg_name.primary.value(), invalid_value_type{})
+            discard(sut.value_or<invalid_value_type>(arg_name.primary.value(), invalid_value_type{})
             ),
             argon::type_error
         );
@@ -947,7 +948,7 @@ TEST_CASE_FIXTURE(
     sut.parse_args(argc, argv);
 
     CHECK_THROWS_AS(
-        discard_result(sut.values<invalid_argument_value_type>(positional_name)), argon::type_error
+        discard(sut.values<invalid_argument_value_type>(positional_name)), argon::type_error
     );
 
     free_argv(argc, argv);
@@ -1040,12 +1041,10 @@ TEST_CASE_FIXTURE(
     sut.parse_args(argc, argv);
 
     CHECK_THROWS_AS(
-        discard_result(sut.values<invalid_argument_value_type>(optional_primary_name)),
-        argon::type_error
+        discard(sut.values<invalid_argument_value_type>(optional_primary_name)), argon::type_error
     );
     CHECK_THROWS_AS(
-        discard_result(sut.values<invalid_argument_value_type>(optional_secondary_name)),
-        argon::type_error
+        discard(sut.values<invalid_argument_value_type>(optional_secondary_name)), argon::type_error
     );
 
     free_argv(argc, argv);
@@ -1491,6 +1490,62 @@ TEST_CASE_FIXTURE(
     CHECK(sut.value<bool>(suppressing_arg_name));
     for (std::size_t i = 0ull; i < n_optional_args; ++i)
         CHECK_FALSE(sut.is_used(init_arg_name_primary(i)));
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args, "parse_args should properly handle group prefixes and suffixes"
+) {
+    const std::string prefix = "mod_";
+    const std::string suffix = "_mod";
+    auto& group = sut.add_group("Modified Group").with_prefix(prefix).with_suffix(suffix);
+
+    const std::string pos_base_name = "pos_arg";
+    const std::string opt_base_name = "opt_arg";
+    const std::string flag_base_name = "flag";
+
+    // Add arguments to the group
+    sut.add_positional_argument(group, pos_base_name);
+    sut.add_optional_argument(group, opt_base_name);
+    sut.add_flag(group, flag_base_name);
+
+    // Deducing the expected registered names
+    const std::string expected_pos_name = prefix + pos_base_name + suffix;
+    const std::string expected_opt_name = prefix + opt_base_name + suffix;
+    const std::string expected_flag_name = prefix + flag_base_name + suffix;
+
+    const std::string pos_val = "positional-value";
+    const std::string opt_val = "optional-value";
+
+    std::vector<std::string> argv_vec{
+        "program",
+        pos_val,
+        std::format("--{}", expected_opt_name),
+        opt_val,
+        std::format("--{}", expected_flag_name),
+    };
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(sut.parse_args(argc, argv));
+
+    // Verify arguments are parsed and accessible by their formatted names
+    CHECK(sut.has_value(expected_pos_name));
+    CHECK_EQ(sut.value(expected_pos_name), pos_val);
+
+    CHECK(sut.has_value(expected_opt_name));
+    CHECK_EQ(sut.value(expected_opt_name), opt_val);
+    CHECK_EQ(sut.count(expected_opt_name), 1ull);
+
+    CHECK(sut.has_value(expected_flag_name));
+    CHECK(sut.value<bool>(expected_flag_name));
+
+    // Verify the arguments are NOT accessible by their unformatted base names
+    CHECK_THROWS_AS(discard(sut.has_value(pos_base_name)), lookup_failure);
+    CHECK_THROWS_AS(discard(sut.has_value(opt_base_name)), lookup_failure);
+    CHECK_THROWS_AS(discard(sut.has_value(flag_base_name)), lookup_failure);
+
+    free_argv(argc, argv);
 }
 
 // subparsers

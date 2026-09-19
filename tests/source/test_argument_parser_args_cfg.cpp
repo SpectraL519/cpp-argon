@@ -8,10 +8,11 @@ using argon::argument;
 using argon::argument_parser;
 using argon::default_argument;
 using argon::invalid_configuration;
+using argon::lookup_failure;
 
-TEST_SUITE_BEGIN("test_argument_parser_add_elements");
+TEST_SUITE_BEGIN("test_argument_parser_args_cfg");
 
-struct test_argument_parser_add_elements : public argument_parser_test_fixture {
+struct test_argument_parser_args_cfg : public argument_parser_test_fixture {
     const char flag_char = '-';
 
     const std::string_view primary_name_1 = "primary_name_1";
@@ -37,7 +38,7 @@ struct test_argument_parser_add_elements : public argument_parser_test_fixture {
 };
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_add_elements,
+    test_argument_parser_args_cfg,
     "add_{positional,optional}_argument(primary) should throw if the passed argument name is "
     "invalid"
 ) {
@@ -80,7 +81,7 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_add_elements,
+    test_argument_parser_args_cfg,
     "add_{positional,optional}_argument(primary, secondary) should throw if the primary name is "
     "invalid"
 ) {
@@ -123,7 +124,7 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_add_elements,
+    test_argument_parser_args_cfg,
     "add_optional_argument(primary, secondary) should throw if the secondary name is "
     "invalid"
 ) {
@@ -160,7 +161,7 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_add_elements,
+    test_argument_parser_args_cfg,
     "add_positional_argument should throw when adding an argument with a previously used name"
 ) {
     sut.add_positional_argument(primary_name_1);
@@ -177,7 +178,7 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_add_elements,
+    test_argument_parser_args_cfg,
     "add_optional_argument should throw when adding an argument with a previously used name"
 ) {
     sut.add_optional_argument(primary_name_1, secondary_name_1);
@@ -210,7 +211,7 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_add_elements,
+    test_argument_parser_args_cfg,
     "add_flag should return an optional argument reference with flag parameters"
 ) {
     const argument_test_fixture arg_fixture;
@@ -237,7 +238,7 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_add_elements,
+    test_argument_parser_args_cfg,
     "add_flag should throw when adding and argument with a previously used name"
 ) {
     sut.add_flag(primary_name_1, secondary_name_1);
@@ -270,8 +271,7 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_add_elements,
-    "default_arguments should add the specified positional arguments"
+    test_argument_parser_args_cfg, "default_arguments should add the specified positional arguments"
 ) {
     sut.default_arguments({default_argument::p_input, default_argument::p_output});
 
@@ -285,8 +285,7 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_add_elements,
-    "default_arguments should add the specified optional arguments"
+    test_argument_parser_args_cfg, "default_arguments should add the specified optional arguments"
 ) {
     sut.default_arguments(
         default_argument::o_help, default_argument::o_input, default_argument::o_output
@@ -327,7 +326,7 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_add_elements,
+    test_argument_parser_args_cfg,
     "argument adding functions should throw if a group does not belong to the parser"
 ) {
     argument_parser different_parser("different-program");
@@ -376,7 +375,40 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_add_elements,
+    test_argument_parser_args_cfg,
+    "argument adding functions should properly apply the argument group's name modifiers"
+) {
+    const auto group_name = "An Argument Group";
+    const auto group_pre = "pre-";
+    const auto group_suf = "-suf";
+
+    auto& group = sut.add_group(group_name).with_prefix(group_pre).with_suffix(group_suf);
+
+    sut.add_positional_argument(group, "positional");
+    sut.add_optional_argument(group, "optional");
+    sut.add_flag(group, "flag");
+
+    const auto expected_err_msg = [](const auto& arg_name) -> std::string {
+        return lookup_failure::argument_not_found(arg_name).what();
+    };
+
+    CHECK_THROWS_WITH_AS(
+        discard(sut.value("positional")), expected_err_msg("positional").c_str(), lookup_failure
+    );
+    CHECK_THROWS_WITH_AS(
+        discard(sut.value("optional")), expected_err_msg("optional").c_str(), lookup_failure
+    );
+    CHECK_THROWS_WITH_AS(
+        discard(sut.value<bool>("flag")), expected_err_msg("flag").c_str(), lookup_failure
+    );
+
+    CHECK_FALSE(sut.has_value("pre-positional-suf"));
+    CHECK_FALSE(sut.has_value("pre-optional-suf"));
+    CHECK_FALSE(sut.value<bool>("pre-flag-suf"));
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_args_cfg,
     "add_subparser should throw if a subparser with the given name already exists"
 ) {
     constexpr std::string_view subparser_name = "subprogram";
@@ -386,7 +418,7 @@ TEST_CASE_FIXTURE(
     CHECK_THROWS_WITH_AS(
         sut.add_subparser(subparser_name),
         std::format(
-            "A subparser with the given name () already exists in parser '{}'",
+            "A subparser with the given name ({}) already exists in parser '{}'",
             subparser_name,
             sut.name()
         )
@@ -395,4 +427,4 @@ TEST_CASE_FIXTURE(
     );
 }
 
-TEST_SUITE_END(); // test_argument_parser_add_elements
+TEST_SUITE_END(); // test_argument_parser_args_cfg
