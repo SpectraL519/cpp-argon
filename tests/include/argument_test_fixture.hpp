@@ -47,11 +47,6 @@ struct argument_test_fixture {
         arg._values.emplace_back(value);
     }
 
-    // template <argument_type ArgT, c_argument_value_type T>
-    // void set_value_force(argument<ArgT, T>& arg, const std::string& str_value) const {
-    //     arg._values.emplace_back(str_value);
-    // }
-
     template <argument_type ArgT, c_argument_value_type T>
     void reset_values(argument<ArgT, T>& arg) const {
         arg._values.clear();

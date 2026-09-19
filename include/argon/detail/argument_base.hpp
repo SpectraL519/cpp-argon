@@ -12,7 +12,6 @@
 #include "argon/detail/argument_name.hpp"
 #include "argon/detail/help_builder.hpp"
 
-// Note: <any> is completely removed from this header
 #include <iostream>
 #include <string>
 #include <vector>
