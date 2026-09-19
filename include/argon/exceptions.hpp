@@ -85,7 +85,7 @@ struct type_error : public argument_parser_exception {
         return type_error(std::format(
             "Invalid value type specified for argument [{}] = {}.",
             arg_name.str(),
-            util::get_demangled_type_name<InvalidType>()
+            util::demangled_type_name<InvalidType>()
         ));
     }
 };

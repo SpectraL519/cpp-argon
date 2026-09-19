@@ -13,7 +13,6 @@
 #include "argon/nargs/range.hpp"
 #include "argon/types.hpp"
 #include "argon/util/concepts.hpp"
-#include "argon/util/ranges.hpp"
 
 #ifdef AP_TESTING
 
@@ -55,7 +54,7 @@ enum class argument_type : bool { positional, optional };
  * @tparam T The value type accepted by the argument (defaults to std::string).
  */
 template <argument_type ArgT, util::c_argument_value_type T = std::string>
-class argument : public detail::argument_base {
+class argument : public detail::typed_argument_base<T> {
 public:
     using value_type = T; ///< The argument's value type alias.
     using count_type = nargs::count_type; ///< The argument's count type alias.
@@ -344,7 +343,7 @@ public:
     requires(not util::c_is_none<value_type> and std::equality_comparable<value_type>)
     {
         for (const auto& value : values)
-            this->_default_values.emplace_back(std::make_any<value_type>(value));
+            this->_default_values.emplace_back(value);
         this->_required = false;
         return *this;
     }
@@ -372,7 +371,7 @@ public:
     argument& default_values(const std::convertible_to<value_type> auto&... values) noexcept
     requires(not util::c_is_none<value_type>)
     {
-        (this->_default_values.emplace_back(std::make_any<value_type>(values)), ...);
+        (this->_default_values.emplace_back(values), ...);
         this->_required = false;
         return *this;
     }
@@ -389,7 +388,7 @@ public:
     requires(not util::c_is_none<value_type> and type == argument_type::optional)
     {
         for (const auto& value : values)
-            this->_implicit_values.emplace_back(std::make_any<value_type>(value));
+            this->_implicit_values.emplace_back(value);
         return *this;
     }
 
@@ -414,7 +413,7 @@ public:
     argument& implicit_values(const std::convertible_to<value_type> auto&... values) noexcept
     requires(not util::c_is_none<value_type> and type == argument_type::optional)
     {
-        (this->_implicit_values.emplace_back(std::make_any<value_type>(values)), ...);
+        (this->_implicit_values.emplace_back(values), ...);
         return *this;
     }
 
@@ -474,15 +473,10 @@ private:
             if (not this->_choices.empty())
                 bld.add_range_param("choices", this->_choices);
             if (not this->_default_values.empty())
-                bld.add_range_param(
-                    "default value(s)", util::any_range_cast_view<value_type>(this->_default_values)
-                );
+                bld.add_range_param("default value(s)", this->_default_values);
             if constexpr (type == argument_type::optional) {
                 if (not this->_implicit_values.empty())
-                    bld.add_range_param(
-                        "implicit value(s)",
-                        util::any_range_cast_view<value_type>(this->_implicit_values)
-                    );
+                    bld.add_range_param("implicit value(s)", this->_implicit_values);
             }
         }
 
@@ -557,7 +551,7 @@ private:
      * @note If multiple values are available, the first one is returned.
      * @throws std::logic_error if no values are available.
      */
-    [[nodiscard]] const std::any& value() const override {
+    [[nodiscard]] detail::arg_return_type<T> value() const override {
         if (this->has_parsed_values())
             return this->_values.front();
 
@@ -570,13 +564,13 @@ private:
     }
 
     /// @return Reference to the vector of parsed values for the argument.
-    [[nodiscard]] const std::vector<std::any>& values() const override {
+    [[nodiscard]] const std::vector<T>& values() const override {
         return this->_values_impl();
     }
 
     /// @return Reference to the vector of parsed values for the argument.
     /// @note For none-type arguments, the method always returns an empty vector.
-    [[nodiscard]] const std::vector<std::any>& _values_impl() const noexcept
+    [[nodiscard]] const std::vector<T>& _values_impl() const noexcept
     requires(util::c_is_none<value_type>)
     {
         return this->_values;
@@ -587,7 +581,7 @@ private:
      * @note If no parsed values are available, the method attempts to return the predefined values (default/implicit).
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
-    [[nodiscard]] const std::vector<std::any>& _values_impl() const noexcept
+    [[nodiscard]] const std::vector<T>& _values_impl() const noexcept
     requires(not util::c_is_none<value_type>)
     {
         if (this->has_parsed_values())
@@ -631,7 +625,7 @@ private:
      * @note - For positional arguments, the default value list is returned.
      * @note - For optional arguments, if the argument has been used, the implicit value list is returned, otherwise the default value list is returned.
      */
-    [[nodiscard]] const std::vector<std::any>& _predefined_values() const
+    [[nodiscard]] const std::vector<T>& _predefined_values() const
     requires(not util::c_is_none<value_type>)
     {
         if constexpr (type == argument_type::optional) {
@@ -726,9 +720,9 @@ private:
     const argon::detail::argument_name _name; ///< The argument's name.
     std::optional<std::string> _help_msg; ///< The argument's help message.
     nargs::range _nargs_range; ///< The argument's nargs range attribute value.
-    [[no_unique_address]] value_arg_specific_type<std::vector<std::any>>
+    [[no_unique_address]] value_arg_specific_type<std::vector<value_type>>
         _default_values; ///< The argument's default value list.
-    [[no_unique_address]] value_arg_specific_type<optional_specific_type<std::vector<std::any>>>
+    [[no_unique_address]] value_arg_specific_type<optional_specific_type<std::vector<value_type>>>
         _implicit_values; ///< The optional argument's implicit value list.
     [[no_unique_address]] value_arg_specific_type<std::vector<value_type>>
         _choices; ///< The argument's valid choices collection.
@@ -748,7 +742,7 @@ private:
     // parsing result
     [[no_unique_address]] optional_specific_type<std::size_t>
         _count; ///< The argument's value count.
-    std::vector<std::any> _values; ///< The argument's parsed values.
+    std::vector<value_type> _values; ///< The argument's parsed values.
 
     // default attribute values
     static constexpr bool _default_required = (type == argument_type::positional);
