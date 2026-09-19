@@ -716,7 +716,7 @@ Command                       Result
   Validates that the value is strictly greater than `lower_bound`.
 
   ```cpp
-  template <argon::util::c_arithmetic T>
+  template <argon::traits::c_arithmetic T>
   argon::action::util::callable_type<argon::action_type::observe, T> gt(const T lower_bound) noexcept;
   ```
 
@@ -725,7 +725,7 @@ Command                       Result
   Validates that the value is greater than or equal to `lower_bound`.
 
   ```cpp
-  template <argon::util::c_arithmetic T>
+  template <argon::traits::c_arithmetic T>
   argon::action::util::callable_type<argon::action_type::observe, T> geq(const T lower_bound) noexcept;
   ```
 
@@ -734,7 +734,7 @@ Command                       Result
   Validates that the value is strictly less than `upper_bound`.
 
   ```cpp
-  template <argon::util::c_arithmetic T>
+  template <argon::traits::c_arithmetic T>
   argon::action::util::callable_type<argon::action_type::observe, T> lt(const T upper_bound) noexcept;
   ```
 
@@ -743,7 +743,7 @@ Command                       Result
   Validates that the value is less than or equal to `upper_bound`.
 
   ```cpp
-  template <argon::util::c_arithmetic T>
+  template <argon::traits::c_arithmetic T>
   argon::action::util::callable_type<argon::action_type::observe, T> leq(const T upper_bound) noexcept;
   ```
 
@@ -752,7 +752,7 @@ Command                       Result
   Checks if the value is within the given interval. Bound inclusivity is customizable using template parameters.
 
   ```cpp
-  template <argon::util::c_arithmetic T, bool LeftInclusive = true, bool RightInclusive = true>
+  template <argon::traits::c_arithmetic T, bool LeftInclusive = true, bool RightInclusive = true>
   argon::action::util::callable_type<argon::action_type::observe, T> within(
       const T lower_bound, const T upper_bound
   ) noexcept;

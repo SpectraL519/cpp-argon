@@ -9,9 +9,9 @@ using argon::optional_argument;
 using argon::positional_argument;
 using argon::detail::argument_name;
 using argon::detail::argument_token;
-using argon::util::c_argument_value_type;
-using argon::util::c_forward_iterator_of;
-using argon::util::type_validator;
+using argon::traits::c_argument_value_type;
+using argon::traits::c_forward_iterator_of;
+using argon::traits::type_validator;
 
 namespace argon_testing {
 

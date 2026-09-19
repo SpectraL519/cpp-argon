@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "argon/util/concepts.hpp"
+#include "argon/traits.hpp"
 
 #include <algorithm>
 #include <sstream>
@@ -19,11 +19,11 @@ namespace argon::util {
 
 /**
  * @brief Converts a value to `std::string`.
- * @tparam T The value type (must satisfy the @ref argon::util::c_writable concept).
+ * @tparam T The value type (must satisfy the @ref argon::traits::c_writable concept).
  * @param value The value to convert.
  * @ingroup util
  */
-template <c_writable T>
+template <traits::c_writable T>
 [[nodiscard]] std::string as_string(const T& value) noexcept {
     std::ostringstream oss;
     oss << value;
@@ -44,7 +44,7 @@ template <c_writable T>
  * @ingroup util
  */
 template <std::ranges::range R>
-requires(c_writable<std::ranges::range_value_t<R>>)
+requires(traits::c_writable<std::ranges::range_value_t<R>>)
 [[nodiscard]] std::string join(const R& range, const std::string_view delimiter = ", ") {
     std::ostringstream oss;
 

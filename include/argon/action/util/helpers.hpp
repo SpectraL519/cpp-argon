@@ -7,6 +7,8 @@
  * @brief Defines general action-related helper utility.
  */
 
+// TODO: move to action/util.hpp
+
 #pragma once
 
 #include "argon/action/util/concepts.hpp"
@@ -18,11 +20,11 @@ namespace argon::action::util {
 
 /// @brief Template argument action callable type alias.
 /// @ingroup util
-template <c_value_action_specifier AS, argon::util::c_argument_value_type T>
+template <c_value_action_specifier AS, argon::traits::c_argument_value_type T>
 using callable_type = typename AS::template type<T>;
 
 /// @brief Template argument action callabla variant type alias.
-template <argon::util::c_argument_value_type T>
+template <argon::traits::c_argument_value_type T>
 using value_action_variant_type = std::variant<
     callable_type<action_type::observe, T>,
     callable_type<action_type::transform, T>,
@@ -33,7 +35,7 @@ using value_action_variant_type = std::variant<
  * @tparam T The argument's value type
  * @ingroup util
  */
-template <argon::util::c_argument_value_type T>
+template <argon::traits::c_argument_value_type T>
 struct apply_visitor {
     using value_type = T;
 

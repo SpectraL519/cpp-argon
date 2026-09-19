@@ -10,7 +10,7 @@
 #pragma once
 
 #include "argon/detail/argument_name.hpp"
-#include "argon/util/concepts.hpp"
+#include "argon/traits.hpp"
 #include "argon/util/string.hpp"
 
 #include <cstdint>
@@ -49,11 +49,11 @@ public:
 
     /**
      * @brief Adds a parameter descriptor with the given value.
-     * @tparam T The type of the parameter; must satisfy the @ref argon::util::c_writable concept.
+     * @tparam T The type of the parameter; must satisfy the @ref argon::traits::c_writable concept.
      * @param param_name The parameter's name.
      * @param value The parameter's value.
      */
-    template <util::c_writable T>
+    template <traits::c_writable T>
     void add_param(const std::string& param_name, const T& value) {
         std::ostringstream oss;
         oss << std::boolalpha << value;
@@ -62,13 +62,13 @@ public:
 
     /**
      * @brief Adds a range parameter descriptor with the given value.
-     * @tparam R The type of the parameter range. The value type of R must satisfy the @ref argon::util::c_writable concept.
+     * @tparam R The type of the parameter range. The value type of R must satisfy the @ref argon::traits::c_writable concept.
      * @param param_name The parameter's name.
      * @param range The parameter value range.
      * @param delimiter The delimiter used to separate the range values.
      */
     template <std::ranges::range R>
-    requires(util::c_writable<std::ranges::range_value_t<R>>)
+    requires(traits::c_writable<std::ranges::range_value_t<R>>)
     void add_range_param(
         const std::string& param_name,
         const R& range,

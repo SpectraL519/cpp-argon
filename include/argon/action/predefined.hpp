@@ -54,7 +54,7 @@ inline util::callable_type<argon::action_type::observe, std::string> check_file_
  * @tparam T The *arithmetic* value type.
  * @param lower_bound The exclusive lower bound to validate against.
  */
-template <argon::util::c_arithmetic T>
+template <argon::traits::c_arithmetic T>
 util::callable_type<argon::action_type::observe, T> gt(const T lower_bound) noexcept {
     return [lower_bound](const T& value) {
         if (not (value > lower_bound))
@@ -69,7 +69,7 @@ util::callable_type<argon::action_type::observe, T> gt(const T lower_bound) noex
  * @tparam T The *arithmetic* value type.
  * @param lower_bound The inclusive lower bound to validate against.
  */
-template <argon::util::c_arithmetic T>
+template <argon::traits::c_arithmetic T>
 util::callable_type<argon::action_type::observe, T> geq(const T lower_bound) noexcept {
     return [lower_bound](const T& value) {
         if (! (value >= lower_bound))
@@ -84,7 +84,7 @@ util::callable_type<argon::action_type::observe, T> geq(const T lower_bound) noe
  * @tparam T The *arithmetic* value type.
  * @param lower_bound The exclusive upper bound to validate against.
  */
-template <argon::util::c_arithmetic T>
+template <argon::traits::c_arithmetic T>
 util::callable_type<argon::action_type::observe, T> lt(const T upper_bound) noexcept {
     return [upper_bound](const T& value) {
         if (! (value < upper_bound))
@@ -99,7 +99,7 @@ util::callable_type<argon::action_type::observe, T> lt(const T upper_bound) noex
  * @tparam T The *arithmetic* value type.
  * @param lower_bound The inclusive upper bound to validate against.
  */
-template <argon::util::c_arithmetic T>
+template <argon::traits::c_arithmetic T>
 util::callable_type<argon::action_type::observe, T> leq(const T upper_bound) noexcept {
     return [upper_bound](const T& value) {
         if (! (value <= upper_bound))
@@ -120,7 +120,7 @@ util::callable_type<argon::action_type::observe, T> leq(const T upper_bound) noe
  * @param lower_bound The lower bound of the interval.
  * @param upper_bound The upper bound of the interval.
  */
-template <argon::util::c_arithmetic T, bool LeftInclusive = true, bool RightInclusive = true>
+template <argon::traits::c_arithmetic T, bool LeftInclusive = true, bool RightInclusive = true>
 util::callable_type<argon::action_type::observe, T> within(
     const T lower_bound, const T upper_bound
 ) noexcept {
