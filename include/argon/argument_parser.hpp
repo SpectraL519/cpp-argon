@@ -781,7 +781,7 @@ public:
      * @throws argon::lookup_failure, argon::type_error
      */
     template <traits::c_argument_value_type T = std::string>
-    [[nodiscard]] traits::argument_return_type<T> value(std::string_view arg_name) const {
+    [[nodiscard]] traits::argument_result_type<T> value(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
 
         const auto* typed_arg = dynamic_cast<const detail::typed_argument_base<T>*>(arg.get());

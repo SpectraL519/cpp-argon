@@ -66,10 +66,15 @@ concept c_argument_value_type =
     std::same_as<T, argon::none_type>
     or (std::semiregular<T> and (c_trivially_readable<T> or c_readable<T>));
 
-/// @brief Returns by value if it is a *small* and trivially copyable. Otherwise, returns by const reference.
-/// @note This trait was introduced to avoid problems with `std::vector<bool>` reference proxy objects.
+/// @brief Defines the return type for argument value getters.
+///
+/// Resolves to `T` (by value) if the type is *small* and trivially copyable.
+/// Otherwise, resolves to `const T&` (by const reference).
+///
+/// @note This trait was introduced to safely bypass the `std::vector<bool>` proxy reference trap,
+///       ensuring boolean values are always returned by value while complex types avoid deep copies.
 template <typename T>
-using argument_return_type =
+using argument_result_type =
     std::conditional_t<std::is_trivially_copyable_v<T> and sizeof(T) <= sizeof(void*), T, const T&>;
 
 /**

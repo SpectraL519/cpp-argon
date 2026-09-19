@@ -95,7 +95,7 @@ template <traits::c_argument_value_type T>
 class typed_argument_base : public argument_base {
 public:
     /// @return Reference to the stored value of the argument.
-    virtual traits::argument_return_type<T> value() const = 0;
+    virtual traits::argument_result_type<T> value() const = 0;
 
     /// @return Reference to the vector of parsed values of the argument.
     virtual const std::vector<T>& values() const = 0;
