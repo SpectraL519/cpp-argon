@@ -8,6 +8,7 @@ using argon::argument;
 using argon::argument_parser;
 using argon::default_argument;
 using argon::invalid_configuration;
+using argon::lookup_failure;
 
 TEST_SUITE_BEGIN("test_argument_parser_args_cfg");
 
@@ -375,12 +376,35 @@ TEST_CASE_FIXTURE(
 
 TEST_CASE_FIXTURE(
     test_argument_parser_args_cfg,
-    "argument adding functions should properly add the group's prefrix"
+    "argument adding functions should properly apply the argument group's name modifiers"
 ) {
-    // const std::string group_name = "An Argument Group";
-    // auto& group = sut.add_group(group_name);
+    const auto group_name = "An Argument Group";
+    const auto group_pre = "pre-";
+    const auto group_suf = "-suf";
 
-    // TODO
+    auto& group = sut.add_group(group_name).with_prefix(group_pre).with_suffix(group_suf);
+
+    sut.add_positional_argument(group, "positional");
+    sut.add_optional_argument(group, "optional");
+    sut.add_flag(group, "flag");
+
+    const auto expected_err_msg = [](const auto& arg_name) {
+        return lookup_failure::argument_not_found(arg_name).what();
+    };
+
+    CHECK_THROWS_WITH_AS(
+        discard(sut.value("positional")), expected_err_msg("positional"), lookup_failure
+    );
+    CHECK_THROWS_WITH_AS(
+        discard(sut.value("optional")), expected_err_msg("optional"), lookup_failure
+    );
+    CHECK_THROWS_WITH_AS(
+        discard(sut.value<bool>("flag")), expected_err_msg("flag"), lookup_failure
+    );
+
+    CHECK_FALSE(sut.has_value("pre-positional-suf"));
+    CHECK_FALSE(sut.has_value("pre-optional-suf"));
+    CHECK_FALSE(sut.value<bool>("pre-flag-suf"));
 }
 
 TEST_CASE_FIXTURE(

@@ -5,7 +5,7 @@
 namespace argon_testing {
 
 template <typename T>
-void discard_result(T&&) {
+void discard(T&&) {
     // do nothing
 }
 

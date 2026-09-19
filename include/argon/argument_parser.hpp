@@ -752,9 +752,8 @@ public:
      * @param arg_name The name of the argument.
      * @return `true` if the argument was used on the command line, `false` otherwise.
      */
-    [[nodiscard]] bool is_used(std::string_view arg_name) const noexcept {
-        const auto arg = this->_get_argument(arg_name);
-        return arg ? arg->is_used() : false;
+    [[nodiscard]] bool is_used(std::string_view arg_name) const {
+        return this->_get_argument(arg_name)->is_used();
     }
 
     /**
@@ -762,9 +761,8 @@ public:
      * @param arg_name The name of the argument.
      * @return `true` if the argument has a value, `false` otherwise.
      */
-    [[nodiscard]] bool has_value(std::string_view arg_name) const noexcept {
-        const auto arg = this->_get_argument(arg_name);
-        return arg ? arg->has_value() : false;
+    [[nodiscard]] bool has_value(std::string_view arg_name) const {
+        return this->_get_argument(arg_name)->has_value();
     }
 
     /**
@@ -772,9 +770,8 @@ public:
      * @param arg_name The name of the argument.
      * @return The number of times the argument has been used.
      */
-    [[nodiscard]] std::size_t count(std::string_view arg_name) const noexcept {
-        const auto arg = this->_get_argument(arg_name);
-        return arg ? arg->count() : 0ull;
+    [[nodiscard]] std::size_t count(std::string_view arg_name) const {
+        return this->_get_argument(arg_name)->count();
     }
 
     /**
@@ -787,12 +784,9 @@ public:
     template <util::c_argument_value_type T = std::string>
     [[nodiscard]] T value(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
-        if (not arg)
-            throw lookup_failure::argument_not_found(arg_name);
 
-        const auto& arg_value = arg->value();
         try {
-            return std::any_cast<T>(arg_value);
+            return std::any_cast<T>(arg->value());
         }
         catch (const std::bad_any_cast&) {
             throw type_error::invalid_value_type<T>(arg->name());
@@ -811,12 +805,9 @@ public:
     template <util::c_argument_value_type T = std::string, std::convertible_to<T> U>
     [[nodiscard]] T value_or(std::string_view arg_name, U&& fallback_value) const {
         const auto arg = this->_get_argument(arg_name);
-        if (not arg)
-            throw lookup_failure::argument_not_found(arg_name);
 
         try {
-            const auto& arg_value = arg->value();
-            return std::any_cast<T>(arg_value);
+            return std::any_cast<T>(arg->value());
         }
         catch (const std::logic_error&) {
             // positional: no value parsed
@@ -839,8 +830,6 @@ public:
     template <util::c_argument_value_type T = std::string>
     [[nodiscard]] std::vector<T> values(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
-        if (not arg)
-            throw lookup_failure::argument_not_found(arg_name);
 
         try {
             std::vector<T> values;
@@ -1469,8 +1458,9 @@ private:
      * @brief Get the argument with the specified name.
      * @param arg_name The name of the argument.
      * @return The argument with the specified name, if found; otherwise, std::nullopt.
+     * @throws argon::lookup_failure if an argument with the given name cannot be found.
      */
-    arg_ptr_t _get_argument(std::string_view arg_name) const noexcept {
+    arg_ptr_t _get_argument(std::string_view arg_name) const {
         const auto predicate = this->_name_match_predicate(arg_name);
 
         if (auto pos_arg_it = std::ranges::find_if(this->_positional_args, predicate);
@@ -1483,7 +1473,7 @@ private:
             return *opt_arg_it;
         }
 
-        return nullptr;
+        throw lookup_failure::argument_not_found(arg_name);
     }
 
     void _print_subparsers(std::ostream& os) const noexcept {
