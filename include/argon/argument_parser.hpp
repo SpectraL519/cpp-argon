@@ -167,8 +167,8 @@ void add_default_argument(const default_argument, argument_parser&) noexcept;
  *           .try_parse_args(argc, argv);
  *
  *     // Access parsed argument values
- *     const std::string input_file = parser.value("input");
- *     const std::string output_file = parser.value("output");
+ *     const std::string& input_file = parser.value("input");
+ *     const std::string& output_file = parser.value("output");
  *
  *     // Application logic here
  *     std::cout << "Copying from " << input_file << " to " << output_file << std::endl;
@@ -782,7 +782,7 @@ public:
      * @throws argon::lookup_failure, argon::type_error
      */
     template <util::c_argument_value_type T = std::string>
-    [[nodiscard]] T value(std::string_view arg_name) const {
+    [[nodiscard]] detail::arg_return_type<T> value(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
 
         const auto* typed_arg = dynamic_cast<const detail::typed_argument_base<T>*>(arg.get());
@@ -827,7 +827,7 @@ public:
      * @throws argon::lookup_failure, argon::type_error
      */
     template <util::c_argument_value_type T = std::string>
-    [[nodiscard]] std::vector<T> values(std::string_view arg_name) const {
+    [[nodiscard]] const std::vector<T>& values(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
 
         const auto* typed_arg = dynamic_cast<const detail::typed_argument_base<T>*>(arg.get());

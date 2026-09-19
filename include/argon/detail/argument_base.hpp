@@ -90,12 +90,19 @@ protected:
     virtual std::weak_ordering nvalues_ordering() const noexcept = 0;
 };
 
+/// @brief Returns by value if it is a *small* and trivially copyable. Otherwise, returns by const reference.
+/// @note This trait was introduced to avoid problems with `std::vector<bool>` reference proxy objects.
+/// @todo Move to the `argon::traits` namespace
+template <typename T>
+using arg_return_type =
+    std::conditional_t<std::is_trivially_copyable_v<T> and sizeof(T) <= sizeof(void*), T, const T&>;
+
 /// @brief Strongly-typed intermediate argument interface
 template <typename T>
 class typed_argument_base : public argument_base {
 public:
     /// @return Reference to the stored value of the argument.
-    virtual T value() const = 0;
+    virtual arg_return_type<T> value() const = 0;
 
     /// @return Reference to the vector of parsed values of the argument.
     virtual const std::vector<T>& values() const = 0;

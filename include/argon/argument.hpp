@@ -552,7 +552,7 @@ private:
      * @note If multiple values are available, the first one is returned.
      * @throws std::logic_error if no values are available.
      */
-    [[nodiscard]] T value() const override {
+    [[nodiscard]] detail::arg_return_type<T> value() const override {
         if (this->has_parsed_values())
             return this->_values.front();
 

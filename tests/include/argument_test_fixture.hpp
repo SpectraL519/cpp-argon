@@ -5,6 +5,7 @@
 
 using argon::argument;
 using argon::argument_type;
+using argon::detail::arg_return_type;
 using argon::detail::argument_name;
 using argon::detail::help_builder;
 using argon::util::as_string;
@@ -77,7 +78,7 @@ struct argument_test_fixture {
     }
 
     template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] T get_value(const argument<ArgT, T>& arg) const {
+    [[nodiscard]] arg_return_type<T> get_value(const argument<ArgT, T>& arg) const {
         return arg.value();
     }
 

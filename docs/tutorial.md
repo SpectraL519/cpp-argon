@@ -1405,9 +1405,9 @@ Now all the values, that caused an exception for the `parse_args` example, are c
 You can retrieve the argument's value(s) with:
 
 ```cpp
-(const) value_type value = parser.value<value_type>("argument_name"); // (1)
-(const) value_type value = parser.value_or<value_type>("argument_name", fallback_value); // (2)
-(const) std::vector<value_type> values = parser.values<value_type>("argument_name"); // (3)
+/*const*/ value_type value = parser.value<value_type>("argument_name"); // (1)
+/*const*/ value_type value = parser.value_or<value_type>("argument_name", fallback_value); // (2)
+const std::vector<value_type>& values = parser.values<value_type>("argument_name"); // (3)
 ```
 
 1. Returns the given argument's value.
