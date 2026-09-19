@@ -18,11 +18,11 @@ namespace argon::action::util {
 
 /// @brief Template argument action callable type alias.
 /// @ingroup util
-template <argon::traits::c_value_action_specifier AS, argon::traits::c_argument_value_type T>
+template <traits::c_value_action_specifier AS, traits::c_argument_value_type T>
 using callable_type = typename AS::template type<T>;
 
 /// @brief Template argument action callabla variant type alias.
-template <argon::traits::c_argument_value_type T>
+template <traits::c_argument_value_type T>
 using value_action_variant_type = std::variant<
     callable_type<action_type::observe, T>,
     callable_type<action_type::transform, T>,
@@ -33,7 +33,7 @@ using value_action_variant_type = std::variant<
  * @tparam T The argument's value type
  * @ingroup util
  */
-template <argon::traits::c_argument_value_type T>
+template <traits::c_argument_value_type T>
 struct apply_visitor {
     using value_type = T;
 

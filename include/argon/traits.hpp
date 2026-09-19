@@ -73,7 +73,7 @@ concept c_argument_value_type =
 ///
 /// @note This trait was introduced to safely bypass the `std::vector<bool>` proxy reference trap,
 ///       ensuring boolean values are always returned by value while complex types avoid deep copies.
-template <typename T>
+template <c_argument_value_type T>
 using argument_result_type =
     std::conditional_t<std::is_trivially_copyable_v<T> and sizeof(T) <= sizeof(void*), T, const T&>;
 
