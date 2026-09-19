@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "argon/action/util/concepts.hpp"
+#include "argon/action/traits.hpp"
 
 #include <utility>
 #include <variant>
@@ -20,7 +20,7 @@ namespace argon::action::util {
 
 /// @brief Template argument action callable type alias.
 /// @ingroup util
-template <c_value_action_specifier AS, argon::traits::c_argument_value_type T>
+template <argon::traits::c_value_action_specifier AS, argon::traits::c_argument_value_type T>
 using callable_type = typename AS::template type<T>;
 
 /// @brief Template argument action callabla variant type alias.

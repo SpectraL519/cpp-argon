@@ -262,7 +262,7 @@ public:
      * @note - `value_type` is not `none_type`.
      * @note - `AS` is a valid value action specifier: `action_type::observe`, `action_type::transform`, `action_type::modify`.
      */
-    template <action::util::c_value_action_specifier AS, typename F>
+    template <argon::traits::c_value_action_specifier AS, typename F>
     argument& action(F&& action) noexcept
     requires(not traits::c_is_none<value_type>)
     {
@@ -279,7 +279,7 @@ public:
      * @return Reference to the argument instance.
      * @note The method is enabled only for optional arguments and if `AS` is `action_type::on_flag`.
      */
-    template <action::util::c_flag_action_specifier AS, typename F>
+    template <argon::traits::c_flag_action_specifier AS, typename F>
     argument& action(F&& action) noexcept
     requires(type == argument_type::optional)
     {

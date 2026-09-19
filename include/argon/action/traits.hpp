@@ -3,11 +3,9 @@
 // Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 
 /**
- * @file argon/action/util/concepts.hpp
- * @brief Defines action-related concepts.
+ * @file argon/action/traits.hpp
+ * @brief Defines action-related traits and concepts.
  */
-
-// TODO: move to action/traits.hpp, change namesapce to argon::action::traits
 
 #pragma once
 
@@ -16,12 +14,12 @@
 #include <utility>
 #include <variant>
 
-namespace argon::action::util {
+namespace argon::traits {
 
 /**
  * @brief The concept is satisfied when `AS` is a valid *value* action action specifier.
  * @tparam AS The action specifier type.
- * @ingroup util
+ * @ingroup traits
  */
 template <typename AS>
 concept c_value_action_specifier =
@@ -30,7 +28,7 @@ concept c_value_action_specifier =
 /**
  * @brief The concept is satisfied when `AS` is a valid *on-flag* action action specifier.
  * @tparam AS The action specifier type.
- * @ingroup util
+ * @ingroup traits
  */
 template <typename AS>
 concept c_flag_action_specifier = argon::traits::c_one_of<AS, action_type::on_flag>;
@@ -38,9 +36,9 @@ concept c_flag_action_specifier = argon::traits::c_one_of<AS, action_type::on_fl
 /**
  * @brief The concept is satisfied when `AS` is a valid action action specifier.
  * @tparam AS The action specifier type.
- * @ingroup util
+ * @ingroup traits
  */
 template <typename AS>
 concept c_action_specifier = c_value_action_specifier<AS> or std::same_as<AS, action_type::on_flag>;
 
-} // namespace argon::action::util
+} // namespace argon::traits
