@@ -3,11 +3,9 @@
 // Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 
 /**
- * @file argon/action/util/helpers.hpp
+ * @file argon/action/util.hpp
  * @brief Defines general action-related helper utility.
  */
-
-// TODO: move to action/util.hpp
 
 #pragma once
 
