@@ -526,9 +526,10 @@ TEST_CASE_FIXTURE(
 
     REQUIRE_THROWS_WITH_AS(
         set_value(sut, invalid_choice),
-        invalid_choice_msg(arg_name_primary, as_string(invalid_choice)).c_str(),
+        doctest::Contains(invalid_choice_msg(arg_name_primary, as_string(invalid_choice)).c_str()),
         parsing_failure
     );
+
     CHECK_FALSE(has_value(sut));
 }
 

@@ -703,10 +703,40 @@ private:
                 ));
         }
 
-        if (not this->_is_valid_choice(value))
-            throw parsing_failure(std::format(
-                "Value `{}` is not a valid choice for argument [{}].", str_value, this->_name.str()
-            ));
+        if (not this->_is_valid_choice(value)) {
+            if constexpr (traits::c_writable<value_type>) {
+                constexpr std::size_t max_display_choices = 5ull;
+
+                std::string choices_str = util::join(
+                    this->_choices | std::views::take(max_display_choices)
+                    | std::views::transform([](const auto& c) {
+                          return std::format("'{}'", util::as_string(c));
+                      })
+                );
+
+                if (this->_choices.size() > max_display_choices) {
+                    choices_str = std::format(
+                        "{}, ... and {} more",
+                        choices_str,
+                        this->_choices.size() - max_display_choices
+                    );
+                }
+
+                throw parsing_failure(std::format(
+                    "Value `{}` is not a valid choice for argument [{}]. Valid choices are: {}",
+                    str_value,
+                    this->_name.str(),
+                    choices_str
+                ));
+            }
+            else {
+                throw parsing_failure(std::format(
+                    "Value `{}` is not a valid choice for argument [{}].",
+                    str_value,
+                    this->_name.str()
+                ));
+            }
+        }
 
         const auto apply_visitor = action::util::apply_visitor<value_type>{value};
         for (const auto& action : this->_value_actions)
