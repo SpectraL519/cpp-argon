@@ -114,18 +114,18 @@ public:
 
     // --- argument value and state getters ---
 
-    // template <traits::c_argument_value_type T = std::string>
-    // [[nodiscard]] traits::argument_result_type<T> value(std::string_view arg_base_name) const;
+    [[nodiscard]] bool is_used(std::string_view arg_base_name) const noexcept;
+    [[nodiscard]] std::size_t count(std::string_view arg_base_name) const noexcept;
+    [[nodiscard]] bool has_value(std::string_view arg_base_name) const noexcept;
 
-    // template <traits::c_argument_value_type T = std::string, std::convertible_to<T> U>
-    // [[nodiscard]] T value_or(std::string_view arg_base_name, U&& fallback_value) const;
+    template <traits::c_argument_value_type T = std::string>
+    [[nodiscard]] traits::argument_result_type<T> value(std::string_view arg_base_name) const;
 
-    // template <traits::c_argument_value_type T = std::string>
-    // [[nodiscard]] const std::vector<T>& values(std::string_view arg_base_name) const;
+    template <traits::c_argument_value_type T = std::string, std::convertible_to<T> U>
+    [[nodiscard]] T value_or(std::string_view arg_base_name, U&& fallback_value) const;
 
-    // [[nodiscard]] bool is_used(std::string_view arg_base_name) const;
-    // [[nodiscard]] bool has_value(std::string_view arg_base_name) const;
-    // [[nodiscard]] std::size_t count(std::string_view arg_base_name) const;
+    template <traits::c_argument_value_type T = std::string>
+    [[nodiscard]] const std::vector<T>& values(std::string_view arg_base_name) const;
 
     friend class argument_parser;
 

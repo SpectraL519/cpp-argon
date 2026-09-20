@@ -1580,6 +1580,81 @@ TEST_CASE_FIXTURE(
     free_argv(argc, argv);
 }
 
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "argument_group's argument value and state getters should automatically apply prefixes and "
+    "suffixes and return correct values"
+) {
+    const std::string prefix = "mod_";
+    const std::string suffix = "_mod";
+    auto& group = sut.add_group("Modified Group").with_prefix(prefix).with_suffix(suffix);
+
+    const std::string pos_base_name = "pos_arg";
+    const std::string opt_base_name = "opt_arg";
+    const std::string flag_base_name = "flag";
+    const std::string unused_opt_base = "unused_opt";
+
+    // Add arguments to the group
+    sut.add_positional_argument(group, pos_base_name);
+    sut.add_optional_argument(group, opt_base_name).nargs(argon::nargs::any());
+    sut.add_flag(group, flag_base_name);
+    sut.add_optional_argument(group, unused_opt_base);
+
+    const std::string expected_opt_name = prefix + opt_base_name + suffix;
+    const std::string expected_flag_name = prefix + flag_base_name + suffix;
+
+    const std::string pos_val = "positional-value";
+    const std::string opt_val1 = "opt1";
+    const std::string opt_val2 = "opt2";
+    const std::string fallback_str = "fallback_value";
+
+    std::vector<std::string> argv_vec{
+        "program",
+        pos_val,
+        std::format("--{}", expected_opt_name),
+        opt_val1,
+        opt_val2,
+        std::format("--{}", expected_flag_name),
+    };
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(sut.parse_args(argc, argv));
+
+    // Verify group getters for a positional argument
+    CHECK(group.has_value(pos_base_name));
+    CHECK(group.is_used(pos_base_name));
+    CHECK_EQ(group.count(pos_base_name), 1ull);
+    CHECK_EQ(group.value(pos_base_name), pos_val);
+    CHECK_EQ(group.value_or(pos_base_name, fallback_str), pos_val);
+    CHECK_EQ(group.values(pos_base_name), std::vector<std::string>{pos_val});
+
+    // Verify group getters for a multi-value optional argument
+    CHECK(group.has_value(opt_base_name));
+    CHECK(group.is_used(opt_base_name));
+    CHECK_EQ(group.count(opt_base_name), 1ull); // Used once (one flag provided)
+    CHECK_EQ(group.value(opt_base_name), opt_val1);
+    CHECK_EQ(group.value_or(opt_base_name, fallback_str), opt_val1);
+    CHECK_EQ(group.values(opt_base_name), (std::vector<std::string>{opt_val1, opt_val2}));
+
+    // Verify group getters for a boolean flag
+    CHECK(group.has_value(flag_base_name));
+    CHECK(group.is_used(flag_base_name));
+    CHECK_EQ(group.count(flag_base_name), 1ull);
+    CHECK(group.value<bool>(flag_base_name));
+    CHECK(group.value_or<bool>(flag_base_name, false));
+
+    // Verify group getters for an unused optional argument
+    CHECK_FALSE(group.has_value(unused_opt_base));
+    CHECK_FALSE(group.is_used(unused_opt_base));
+    CHECK_EQ(group.count(unused_opt_base), 0ull);
+    CHECK_EQ(group.value_or(unused_opt_base, fallback_str), fallback_str);
+    CHECK_THROWS_AS(discard(group.value(unused_opt_base)), std::logic_error);
+
+    free_argv(argc, argv);
+}
+
 // subparsers
 
 TEST_CASE_FIXTURE(
