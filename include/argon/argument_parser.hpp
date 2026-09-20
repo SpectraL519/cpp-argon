@@ -244,19 +244,23 @@ public:
     }
 
     /**
-     * @brief Set the flag prefix character.
-     * @param prefix_char The flag prefix character.
+     * @brief Set the flag character.
+     * @param chr The flag character.
      * @return Reference to the argument parser.
-     * @throws argon::invalid_configuration
-     * @note The default flag prefix character is `'-'`.
+     * @throws argon::invalid_configuration if the flag character is not a printable
+     *         ASCII character or if any arguments have already been added to the parser.
+     * @note The default flag character is `'-'`.
      */
-    argument_parser& flag_prefix_char(const char prefix_char) {
-        if (not std::isprint(static_cast<unsigned char>(prefix_char)))
-            throw invalid_configuration("The flag prefix character must be a printable ASCII "
-                                        "character!");
+    argument_parser& flag_char(const char chr) {
+        if (not this->_positional_args.empty() or not this->_optional_args.empty())
+            throw invalid_configuration("The flag character must be set before adding any "
+                                        "arguments!");
 
-        this->_flag_prefix_char = prefix_char;
-        this->_primary_flag_prefix = std::string(2ull, prefix_char);
+        if (not std::isprint(static_cast<unsigned char>(chr)))
+            throw invalid_configuration("The flag character must be a printable ASCII character!");
+
+        this->_flag_char = chr;
+        this->_primary_flag_prefix = std::string(2ull, chr);
         return *this;
     }
 
@@ -391,11 +395,9 @@ public:
         const auto arg_name =
             name_discr == n_primary
                 ? detail::
-                      argument_name{std::make_optional<std::string>(full_name), std::nullopt, this->_flag_prefix_char}
+                      argument_name{std::make_optional<std::string>(full_name), std::nullopt, this->_flag_char}
                 : detail::argument_name{
-                      std::nullopt,
-                      std::make_optional<std::string>(full_name),
-                      this->_flag_prefix_char
+                      std::nullopt, std::make_optional<std::string>(full_name), this->_flag_char
                   };
 
         if (this->_is_arg_name_used(arg_name))
@@ -433,7 +435,7 @@ public:
         const detail::argument_name arg_name(
             std::make_optional<std::string>(full_primary_name),
             std::make_optional<std::string>(full_secondary_name),
-            this->_flag_prefix_char
+            this->_flag_char
         );
         if (this->_is_arg_name_used(arg_name))
             throw invalid_configuration::argument_name_used(arg_name);
@@ -971,12 +973,12 @@ private:
                 arg_name, "An argument name cannot contain whitespaces."
             );
 
-        if (arg_name.front() == this->_flag_prefix_char)
+        if (arg_name.front() == this->_flag_char)
             throw invalid_configuration::invalid_argument_name(
                 arg_name,
                 std::format(
                     "An argument name cannot begin with a flag prefix character ({}).",
-                    this->_flag_prefix_char
+                    this->_flag_char
                 )
             );
 
@@ -1187,7 +1189,7 @@ private:
         if (arg_value.starts_with(this->_primary_flag_prefix))
             return detail::argument_token::t_flag_primary;
 
-        if (arg_value.starts_with(this->_flag_prefix_char))
+        if (arg_value.starts_with(this->_flag_char))
             return detail::argument_token::t_flag_secondary;
 
         return detail::argument_token::t_value;
@@ -1569,7 +1571,7 @@ private:
     std::optional<std::string> _program_description =
         std::nullopt; ///< The description of the program.
     unknown_policy _unknown_policy = unknown_policy::fail; ///< Policy for unknown arguments.
-    char _flag_prefix_char = '-'; ///< The character used as a flag prefix.
+    char _flag_char = '-'; ///< The character used as a flag prefix.
     std::string _primary_flag_prefix = "--"; ///< The primary flag prefix.
 
     // --- parsing cfg & state ---

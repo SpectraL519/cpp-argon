@@ -109,7 +109,7 @@ struct argument_name {
      */
     [[nodiscard]] std::string str() const noexcept {
         // if flag_char = nullopt, then the fallback character doesn't matter - the string will be empty
-        const std::string fc(this->flag_char.has_value(), this->flag_char.value_or(char()));
+        const std::string fc(this->flag_char.has_value(), this->flag_char.value_or(char{}));
 
         std::string primary_str =
             this->primary ? std::format("{}{}{}", fc, fc, this->primary.value()) : "";
