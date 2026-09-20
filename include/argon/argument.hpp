@@ -417,6 +417,72 @@ public:
         return *this;
     }
 
+    // --- value and state getters ---
+
+    /// @return `true` if the argument is used, `false` otherwise.
+    [[nodiscard]] bool is_used() const noexcept override {
+        return this->count() > 0ull;
+    }
+
+    /**
+     * @return The number of times the argument has been used.
+     * @note - For positional arguments, the count is either `0` (not used) or `1` (used).
+     * @note - For optional arguments, the count reflects the number of times the argument's flag has been used.
+     */
+    [[nodiscard]] std::size_t count() const noexcept override {
+        if constexpr (type == argument_type::optional)
+            return this->_count;
+        else
+            return static_cast<std::size_t>(this->has_parsed_values());
+    }
+
+    /// @return `true` if the argument has a value, `false` otherwise.
+    /// @note An argument is considered to have a value if it has parsed values or predefined values (default/implicit).
+    [[nodiscard]] bool has_value() const noexcept override {
+        return this->has_parsed_values() or this->_has_predefined_values_impl();
+    }
+
+    /**
+     * @return Reference to the stored value of the argument.
+     * @note If multiple values are available, the first one is returned.
+     * @throws std::logic_error if no values are available.
+     */
+    [[nodiscard]] traits::argument_result_type<T> value() const override {
+        if (this->has_parsed_values())
+            return this->_values.front();
+
+        if constexpr (traits::c_is_none<value_type>)
+            throw std::logic_error(
+                std::format("No values parsed for argument '{}'.", this->_name.str())
+            );
+        else
+            return this->_predefined_values().front();
+    }
+
+    /**
+     * @brief Get the value of the argument, if it has any, or a fallback value, if not.
+     * @tparam U The fallback value type.
+     * @param fallback_value The fallback value.
+     * @return The value of the argument.
+     */
+    template <std::convertible_to<value_type> U>
+    [[nodiscard]] value_type value_or(U&& fallback_value) const
+    requires(not traits::c_is_none<value_type>)
+    {
+        try {
+            return this->value();
+        }
+        catch (const std::logic_error&) {
+            // No parsed values and no predefined (default/implicit) values
+            return value_type{std::forward<U>(fallback_value)};
+        }
+    }
+
+    /// @return Reference to the vector of parsed values for the argument.
+    [[nodiscard]] const std::vector<T>& values() const override {
+        return this->_values_impl();
+    }
+
 #ifdef AP_TESTING
     friend struct ::argon_testing::argument_test_fixture;
 #endif
@@ -495,23 +561,6 @@ private:
         return this->_accepts_further_values();
     }
 
-    /// @return `true` if the argument is used, `false` otherwise.
-    [[nodiscard]] bool is_used() const noexcept override {
-        return this->count() > 0ull;
-    }
-
-    /**
-     * @return The number of times the argument has been used.
-     * @note - For positional arguments, the count is either `0` (not used) or `1` (used).
-     * @note - For optional arguments, the count reflects the number of times the argument's flag has been used.
-     */
-    [[nodiscard]] std::size_t count() const noexcept override {
-        if constexpr (type == argument_type::optional)
-            return this->_count;
-        else
-            return static_cast<std::size_t>(this->has_parsed_values());
-    }
-
     /**
      * @brief Set the value for the optional argument.
      * @param str_value The string value to use.
@@ -520,12 +569,6 @@ private:
      */
     bool set_value(const std::string& str_value) override {
         return this->_set_value_impl(str_value);
-    }
-
-    /// @return `true` if the argument has a value, `false` otherwise.
-    /// @note An argument is considered to have a value if it has parsed values or predefined values (default/implicit).
-    [[nodiscard]] bool has_value() const noexcept override {
-        return this->has_parsed_values() or this->_has_predefined_values_impl();
     }
 
     /// @return `true` if parsed values are available for the argument, `false` otherwise.
@@ -544,28 +587,6 @@ private:
             return std::weak_ordering::equivalent;
 
         return this->_values.size() <=> this->_nargs_range;
-    }
-
-    /**
-     * @return Reference to the stored value of the argument.
-     * @note If multiple values are available, the first one is returned.
-     * @throws std::logic_error if no values are available.
-     */
-    [[nodiscard]] traits::argument_result_type<T> value() const override {
-        if (this->has_parsed_values())
-            return this->_values.front();
-
-        if constexpr (traits::c_is_none<value_type>)
-            throw std::logic_error(
-                std::format("No values parsed for argument '{}'.", this->_name.str())
-            );
-        else
-            return this->_predefined_values().front();
-    }
-
-    /// @return Reference to the vector of parsed values for the argument.
-    [[nodiscard]] const std::vector<T>& values() const override {
-        return this->_values_impl();
     }
 
     /// @return Reference to the vector of parsed values for the argument.

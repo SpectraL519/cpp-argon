@@ -23,16 +23,6 @@ struct argument_test_fixture {
     }
 
     template <argument_type ArgT, c_argument_value_type T>
-    bool is_used(const argument<ArgT, T>& arg) const {
-        return arg.is_used();
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
-    std::size_t get_count(const argument<ArgT, T>& arg) const {
-        return arg.count();
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
     bool set_value(argument<ArgT, T>& arg, const T& value) const {
         return set_value(arg, as_string(value));
     }
@@ -53,11 +43,6 @@ struct argument_test_fixture {
     }
 
     template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] bool has_value(const argument<ArgT, T>& arg) const {
-        return arg.has_value();
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
     [[nodiscard]] bool has_parsed_values(const argument<ArgT, T>& arg) const {
         return arg.has_parsed_values();
     }
@@ -70,16 +55,6 @@ struct argument_test_fixture {
     template <argument_type ArgT, c_argument_value_type T>
     [[nodiscard]] std::weak_ordering nvalues_ordering(const argument<ArgT, T>& arg) const {
         return arg.nvalues_ordering();
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] argument_result_type<T> get_value(const argument<ArgT, T>& arg) const {
-        return arg.value();
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] const std::vector<T>& get_values(const argument<ArgT, T>& arg) const {
-        return arg.values();
     }
 
     template <argument_type ArgT, c_argument_value_type T>
