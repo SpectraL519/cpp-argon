@@ -260,7 +260,7 @@ public:
             throw invalid_configuration("The flag character must be a printable ASCII character!");
 
         this->_flag_char = chr;
-        this->_primary_flag_prefix = std::string(2ull, chr);
+        this->_primary_flag_prefix = std::string(this->_primary_flag_prefix_length, chr);
         return *this;
     }
 
