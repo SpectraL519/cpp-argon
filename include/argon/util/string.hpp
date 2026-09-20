@@ -24,7 +24,7 @@ namespace argon::util {
  * @ingroup util
  */
 template <traits::c_writable T>
-[[nodiscard]] std::string as_string(const T& value) noexcept {
+[[nodiscard]] std::string as_string(T&& value) noexcept {
     std::ostringstream oss;
     oss << value;
     return oss.str();
@@ -45,7 +45,7 @@ template <traits::c_writable T>
  */
 template <std::ranges::range R>
 requires(traits::c_writable<std::ranges::range_value_t<R>>)
-[[nodiscard]] std::string join(const R& range, const std::string_view delimiter = ", ") {
+[[nodiscard]] std::string join(R&& range, const std::string_view delimiter = ", ") {
     std::ostringstream oss;
 
     auto it = std::ranges::begin(range);

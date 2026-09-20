@@ -1338,7 +1338,7 @@ private:
      * @param value The value to be set for the current argument.
      * @param state The current parsing state.
      */
-    void _set_argument_value(const std::string_view value, parsing_state& state) noexcept {
+    void _set_argument_value(const std::string_view value, parsing_state& state) {
         if (state.curr_arg->set_value(std::string(value)))
             return; // argument still accepts values
 
