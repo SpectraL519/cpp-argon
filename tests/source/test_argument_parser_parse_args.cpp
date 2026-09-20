@@ -1382,6 +1382,51 @@ TEST_CASE_FIXTURE(
     free_argv(argc, argv);
 }
 
+// flag prefix char
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "parse_args should throw when an argument flag is used with a prefix character that is not "
+    "recognized by the parser"
+) {
+    sut.flag_prefix_char('/');
+
+    const auto invalid_flag = "--invalid";
+    const std::vector<std::string> argv_vec{"program", invalid_flag};
+
+    const auto argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    CHECK_THROWS_WITH_AS(
+        sut.parse_args(argc, argv),
+        std::format("Failed to deduce the argument for values [{}]", invalid_flag).c_str(),
+        parsing_failure
+    );
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "parse_args should not throw when an argument flag is used with a prefix character that is "
+    "recognized by the parser"
+) {
+    sut.flag_prefix_char('/');
+
+    const auto valid_flag = "/valid";
+    sut.add_optional_argument("valid", argon::n_secondary);
+
+    const std::vector<std::string> argv_vec{"program", valid_flag};
+
+    const auto argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(sut.parse_args(argc, argv));
+    CHECK(sut.is_used("valid"));
+
+    free_argv(argc, argv);
+}
+
 // argument groups
 
 TEST_CASE_FIXTURE(

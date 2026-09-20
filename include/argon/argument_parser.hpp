@@ -244,6 +244,23 @@ public:
     }
 
     /**
+     * @brief Set the flag prefix character.
+     * @param prefix_char The flag prefix character.
+     * @return Reference to the argument parser.
+     * @throws argon::invalid_configuration
+     * @note The default flag prefix character is `'-'`.
+     */
+    argument_parser& flag_prefix_char(const char prefix_char) {
+        if (not std::isprint(static_cast<unsigned char>(prefix_char)))
+            throw invalid_configuration("The flag prefix character must be a printable ASCII "
+                                        "character!");
+
+        this->_flag_prefix_char = prefix_char;
+        this->_primary_flag_prefix = std::string(2ull, prefix_char);
+        return *this;
+    }
+
+    /**
      * @brief Add default arguments to the argument parser.
      * @tparam ArgvRange Type of the positional argument discriminator range.
      * @param arg_discriminators A range of default positional argument discriminators.
@@ -1167,7 +1184,7 @@ private:
         if (util::contains_whitespaces(arg_value))
             return detail::argument_token::t_value;
 
-        if (arg_value.starts_with(this->_flag_prefix))
+        if (arg_value.starts_with(this->_primary_flag_prefix))
             return detail::argument_token::t_flag_primary;
 
         if (arg_value.starts_with(this->_flag_prefix_char))
@@ -1543,14 +1560,19 @@ private:
         }
     }
 
+    // --- attributes ---
+
     std::string _name = ""; ///< The name of the parser.
     std::string _program_name =
         ""; ///< The name of the program in the format "<parent-parser-names>... <program-name>".
     std::optional<std::string> _program_version = std::nullopt; ///< The version of the program.
     std::optional<std::string> _program_description =
         std::nullopt; ///< The description of the program.
-    bool _verbose = false; ///< Verbosity flag.
     unknown_policy _unknown_policy = unknown_policy::fail; ///< Policy for unknown arguments.
+    char _flag_prefix_char = '-'; ///< The character used as a flag prefix.
+    std::string _primary_flag_prefix = "--"; ///< The primary flag prefix.
+
+    // --- parsing cfg & state ---
 
     arg_ptr_vec_t _positional_args = {}; ///< The list of positional arguments.
     arg_ptr_vec_t _optional_args = {}; ///< The list of optional arguments.
@@ -1559,15 +1581,22 @@ private:
     argument_group& _gr_optional_args; ///< The optional argument group.
     arg_parser_ptr_vec_t _subparsers = {}; ///< The list of subparsers.
 
-    bool _invoked =
+    // --- cfg flags ---
+
+    bool _verbose : 1 = false; ///< Verbosity flag.
+
+    // --- parsing state flags ---
+
+    bool _invoked : 1 =
         false; ///< A flag indicating whether the parser has been invoked to parse arguments.
-    bool _finalized = false; ///< A flag indicating whether the parsing process has been finalized.
+    bool _finalized : 1 =
+        false; ///< A flag indicating whether the parsing process has been finalized.
+
+    // --- constants ---
 
     static constexpr std::uint8_t _primary_flag_prefix_length = 2u;
     static constexpr std::uint8_t _secondary_flag_prefix_length = 1u;
-    static constexpr char _flag_prefix_char = '-';
-    static constexpr std::string_view _flag_prefix = "--";
-    static constexpr std::uint8_t _indent_width = 2;
+    static constexpr std::uint8_t _indent_width = 2u;
 };
 
 namespace detail {
