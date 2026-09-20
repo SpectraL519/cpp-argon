@@ -63,6 +63,18 @@ TEST_CASE("operator==(argument_name) should return true only if both primary and
     CHECK_NE(arg_name_full_1, arg_name_full_2);
 }
 
+TEST_CASE("has_primary() should return true only if the primary name is set") {
+    CHECK(arg_name_primary_1.has_primary());
+    CHECK_FALSE(arg_name_secondary_1.has_primary());
+    CHECK(arg_name_full_1.has_primary());
+}
+
+TEST_CASE("has_secondary() should return true only if the secondary name is set") {
+    CHECK_FALSE(arg_name_primary_1.has_secondary());
+    CHECK(arg_name_secondary_1.has_secondary());
+    CHECK(arg_name_full_1.has_secondary());
+}
+
 TEST_CASE("match(string_view, any) should return true if the given string matches at least one name"
 ) {
     // argument_name with primary name only

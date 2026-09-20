@@ -27,9 +27,6 @@ struct argument_name {
     };
     using enum match_type;
 
-    // --- constants ---
-    static constexpr char flag_char_sentinel = '\0'; ///< Sentinel value for the flag character.
-
     argument_name() = delete;
 
     argument_name& operator=(const argument_name&) = delete;
@@ -65,6 +62,16 @@ struct argument_name {
         return this->primary == other.primary and this->secondary == other.secondary;
     }
 
+    /// @brief Checks if the argument name instance has a primary name.
+    [[nodiscard]] bool has_primary() const noexcept {
+        return not this->primary.empty();
+    }
+
+    /// @brief Checks if the argument name instance has a secondary name.
+    [[nodiscard]] bool has_secondary() const noexcept {
+        return not this->secondary.empty();
+    }
+
     /**
      * @brief Matches the given string to the argument_name instance.
      * @param arg_name The name string to match.
@@ -75,12 +82,12 @@ struct argument_name {
         const noexcept {
         switch (m_type) {
         case m_any:
-            return (not this->primary.empty() and this->primary == arg_name)
-                or (not this->secondary.empty() and this->secondary == arg_name);
+            return (this->has_primary() and this->primary == arg_name)
+                or (this->has_secondary() and this->secondary == arg_name);
         case m_primary:
-            return not this->primary.empty() and this->primary == arg_name;
+            return this->has_primary() and this->primary == arg_name;
         case m_secondary:
-            return not this->secondary.empty() and this->secondary == arg_name;
+            return this->has_secondary() and this->secondary == arg_name;
         }
 
         return false;
@@ -89,17 +96,13 @@ struct argument_name {
     /**
      * @brief Matches the given argument name to the argument_name instance.
      * @param arg_name The argument_name instance to match.
-     * @param m_type UNUSED - necessary to match the signature of the `string_view` overload of the `match` function.
      * @return True if arg_name's primary or secondary value matches the argument_name instance.
-     * @todo Remove the m_type parameter
      */
-    [[nodiscard]] bool match(
-        const argument_name& arg_name, [[maybe_unused]] const match_type m_type = m_any
-    ) const noexcept {
-        if (not arg_name.primary.empty() and this->match(arg_name.primary))
+    [[nodiscard]] bool match(const argument_name& arg_name) const noexcept {
+        if (arg_name.has_primary() and this->match(arg_name.primary))
             return true;
 
-        if (not arg_name.secondary.empty())
+        if (arg_name.has_secondary())
             return this->match(arg_name.secondary);
 
         return false;
@@ -114,11 +117,10 @@ struct argument_name {
         );
 
         std::string primary_str =
-            not this->primary.empty() ? std::format("{}{}{}", fc, fc, this->primary) : "";
-        std::string separator =
-            not this->primary.empty() and not this->secondary.empty() ? ", " : "";
+            this->has_primary() ? std::format("{}{}{}", fc, fc, this->primary) : "";
+        std::string separator = this->has_primary() and this->has_secondary() ? ", " : "";
         std::string secondary_str =
-            not this->secondary.empty() ? std::format("{}{}", fc, this->secondary) : "";
+            this->has_secondary() ? std::format("{}{}", fc, this->secondary) : "";
 
         return std::format("{}{}{}", primary_str, separator, secondary_str);
     }
@@ -137,6 +139,9 @@ struct argument_name {
     const std::string primary; ///< The primary name of the argument.
     const std::string secondary; ///< The optional (short) name of the argument.
     const char flag_char; ///< The flag character (used for optional argument names).
+
+    // --- constants ---
+    static constexpr char flag_char_sentinel = '\0'; ///< Sentinel value for the flag character.
 };
 
 /**

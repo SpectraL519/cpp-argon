@@ -999,29 +999,19 @@ private:
     /**
      * @brief Returns a unary predicate function which checks if the given name matches the argument's name
      * @param arg_name The name of the argument.
-     * @param m_type The match type used within the predicate.
      * @return Argument predicate based on the provided name.
      */
-    [[nodiscard]] auto _name_match_predicate(
-        const detail::argument_name& arg_name,
-        const detail::argument_name::match_type m_type = detail::argument_name::m_any
-    ) const noexcept {
-        return [&arg_name, m_type](const arg_ptr_t& arg) {
-            return arg->name().match(arg_name, m_type);
-        };
+    [[nodiscard]] auto _name_match_predicate(const detail::argument_name& arg_name) const noexcept {
+        return [&arg_name](const arg_ptr_t& arg) { return arg->name().match(arg_name); };
     }
 
     /**
      * @brief Check if an argument name is already used.
      * @param arg_name The name of the argument.
-     * @param m_type The match type used to find the argument.
      * @return True if the argument name is already used, false otherwise.
      */
-    [[nodiscard]] bool _is_arg_name_used(
-        const detail::argument_name& arg_name,
-        const detail::argument_name::match_type m_type = detail::argument_name::m_any
-    ) const noexcept {
-        const auto predicate = this->_name_match_predicate(arg_name, m_type);
+    [[nodiscard]] bool _is_arg_name_used(const detail::argument_name& arg_name) const noexcept {
+        const auto predicate = this->_name_match_predicate(arg_name);
 
         if (std::ranges::find_if(this->_positional_args, predicate) != this->_positional_args.end())
             return true;
@@ -1467,7 +1457,7 @@ private:
      * @return The argument with the specified name, if found; otherwise, std::nullopt.
      * @throws argon::lookup_failure if an argument with the given name cannot be found.
      */
-    arg_ptr_t _get_argument(std::string_view arg_name) const {
+    [[nodiscard]] arg_ptr_t _get_argument(std::string_view arg_name) const {
         const auto predicate = this->_name_match_predicate(arg_name);
 
         if (auto pos_arg_it = std::ranges::find_if(this->_positional_args, predicate);
