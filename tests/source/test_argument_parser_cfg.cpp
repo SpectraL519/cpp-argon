@@ -95,12 +95,25 @@ TEST_CASE_FIXTURE(
 }
 
 TEST_CASE_FIXTURE(
+    test_argument_parser_cfg, "flag_char() should throw if the parser already has arguments"
+) {
+    sut.add_positional_argument("arg1");
+    sut.add_optional_argument("arg2");
+
+    CHECK_THROWS_WITH_AS(
+        sut.flag_char('/'),
+        "The flag character must be set before adding any arguments!",
+        invalid_configuration
+    );
+}
+
+TEST_CASE_FIXTURE(
     test_argument_parser_cfg,
-    "flag_prefix_char() should throw if the given character is not a printable ASCII character"
+    "flag_char() should throw if the given character is not a printable ASCII character"
 ) {
     CHECK_THROWS_WITH_AS(
-        sut.flag_prefix_char('\n'),
-        "The flag prefix character must be a printable ASCII character!",
+        sut.flag_char('\n'),
+        "The flag character must be a printable ASCII character!",
         invalid_configuration
     );
 }

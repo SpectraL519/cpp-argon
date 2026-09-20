@@ -1389,7 +1389,7 @@ TEST_CASE_FIXTURE(
     "parse_args should throw when an argument flag is used with a prefix character that is not "
     "recognized by the parser"
 ) {
-    sut.flag_prefix_char('/');
+    sut.flag_char('/');
 
     const auto invalid_flag = "--invalid";
     const std::vector<std::string> argv_vec{"program", invalid_flag};
@@ -1411,7 +1411,7 @@ TEST_CASE_FIXTURE(
     "parse_args should not throw when an argument flag is used with a prefix character that is "
     "recognized by the parser"
 ) {
-    sut.flag_prefix_char('/');
+    sut.flag_char('/');
 
     const auto valid_flag = "/valid";
     sut.add_optional_argument("valid", argon::n_secondary);
