@@ -326,10 +326,10 @@ public:
     ) {
         this->_validate_group(group);
 
-        const auto full_name = group._format_arg_name(base_name);
+        auto full_name = group._format_arg_name(base_name);
         this->_verify_arg_name_pattern(full_name);
 
-        const detail::argument_name arg_name(std::make_optional<std::string>(full_name));
+        const detail::argument_name arg_name(std::move(full_name));
         if (this->_is_arg_name_used(arg_name))
             throw invalid_configuration::argument_name_used(arg_name);
 
@@ -389,16 +389,13 @@ public:
     ) {
         this->_validate_group(group);
 
-        const auto full_name = group._format_arg_name(base_name);
+        auto full_name = group._format_arg_name(base_name);
         this->_verify_arg_name_pattern(full_name);
 
         const auto arg_name =
             name_discr == n_primary
-                ? detail::
-                      argument_name{std::make_optional<std::string>(full_name), std::nullopt, this->_flag_char}
-                : detail::argument_name{
-                      std::nullopt, std::make_optional<std::string>(full_name), this->_flag_char
-                  };
+                ? detail::argument_name{std::move(full_name), "", this->_flag_char}
+                : detail::argument_name{"", std::move(full_name), this->_flag_char};
 
         if (this->_is_arg_name_used(arg_name))
             throw invalid_configuration::argument_name_used(arg_name);
@@ -426,16 +423,14 @@ public:
     ) {
         this->_validate_group(group);
 
-        const auto full_primary_name = group._format_arg_name(base_primary_name);
+        auto full_primary_name = group._format_arg_name(base_primary_name);
         this->_verify_arg_name_pattern(full_primary_name);
 
-        const auto full_secondary_name = group._format_arg_name(base_secondary_name);
+        auto full_secondary_name = group._format_arg_name(base_secondary_name);
         this->_verify_arg_name_pattern(full_secondary_name);
 
         const detail::argument_name arg_name(
-            std::make_optional<std::string>(full_primary_name),
-            std::make_optional<std::string>(full_secondary_name),
-            this->_flag_char
+            std::move(full_primary_name), std::move(full_secondary_name), this->_flag_char
         );
         if (this->_is_arg_name_used(arg_name))
             throw invalid_configuration::argument_name_used(arg_name);

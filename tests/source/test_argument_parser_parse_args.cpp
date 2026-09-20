@@ -158,7 +158,8 @@ TEST_CASE_FIXTURE(
 
     CHECK_THROWS_WITH_AS(
         sut.parse_args(argc, argv),
-        required_argument_not_parsed_msg({init_arg_name_primary(last_pos_arg_idx)}).c_str(),
+        required_argument_not_parsed_msg(argument_name{init_arg_name_primary(last_pos_arg_idx)})
+            .c_str(),
         parsing_failure
     );
 
@@ -228,10 +229,7 @@ TEST_CASE_FIXTURE(
     add_arguments(n_positional_args, n_optional_args);
 
     const auto required_arg_name = init_arg_name(n_args_total, flag_char);
-    sut.add_optional_argument(
-           required_arg_name.primary.value(), required_arg_name.secondary.value()
-    )
-        .required();
+    sut.add_optional_argument(required_arg_name.primary, required_arg_name.secondary).required();
 
     const auto argc = get_argc(n_positional_args, n_optional_args);
     auto argv = init_argv(n_positional_args, n_optional_args);
@@ -255,7 +253,7 @@ TEST_CASE_FIXTURE(
     auto argv = init_argv(n_positional_args, n_optional_args);
 
     const auto range_arg_name = init_arg_name(n_args_total, flag_char);
-    sut.add_optional_argument(range_arg_name.primary.value(), range_arg_name.secondary.value())
+    sut.add_optional_argument(range_arg_name.primary, range_arg_name.secondary)
         .nargs(at_least(1ull));
 
     CHECK_THROWS_WITH_AS(
@@ -307,10 +305,10 @@ TEST_CASE_FIXTURE(
     std::string invalid_flag;
 
     SUBCASE("primary name with a secondary flag prefix") {
-        invalid_flag = "-" + opt_arg_name.primary.value();
+        invalid_flag = "-" + opt_arg_name.primary;
     }
     SUBCASE("secondary name with a primary flag prefix") {
-        invalid_flag = "--" + opt_arg_name.secondary.value();
+        invalid_flag = "--" + opt_arg_name.secondary;
     }
 
     CAPTURE(invalid_flag);
@@ -339,10 +337,7 @@ TEST_CASE_FIXTURE(
     add_arguments(n_positional_args, n_optional_args);
 
     const auto required_arg_name = init_arg_name(n_args_total);
-    sut.add_optional_argument(
-           required_arg_name.primary.value(), required_arg_name.secondary.value()
-    )
-        .required();
+    sut.add_optional_argument(required_arg_name.primary, required_arg_name.secondary).required();
 
     int argc;
     char** argv;
@@ -379,12 +374,12 @@ TEST_CASE_FIXTURE(
     "option enabled and is used"
 ) {
     const std::size_t n_positional_args = 1ull;
-    const auto bypass_required_arg_name = init_arg_name(n_positional_args - 1ull).primary.value();
+    const auto bypass_required_arg_name = init_arg_name(n_positional_args - 1ull).primary;
     sut.add_positional_argument(bypass_required_arg_name).required(false).suppress_arg_checks();
     const std::string bypass_required_arg_value = "bypass_required_arg_value";
 
     for (std::size_t i = 0ull; i < n_optional_args; ++i)
-        sut.add_optional_argument(init_arg_name(n_positional_args + i).primary.value()).required();
+        sut.add_optional_argument(init_arg_name(n_positional_args + i).primary).required();
 
     std::vector<std::string> argv_vec{"program", bypass_required_arg_value};
     const int argc = static_cast<int>(argv_vec.size());
@@ -406,7 +401,7 @@ TEST_CASE_FIXTURE(
 
     const auto bypass_required_arg_name = init_arg_name(n_args_total);
     sut.add_optional_argument<bool>(
-           bypass_required_arg_name.primary.value(), bypass_required_arg_name.secondary.value()
+           bypass_required_arg_name.primary, bypass_required_arg_name.secondary
     )
         .default_values(false)
         .implicit_values(true)
@@ -428,7 +423,7 @@ TEST_CASE_FIXTURE(
     const auto argv = to_char_2d_array(argv_vec);
 
     REQUIRE_NOTHROW(sut.parse_args(argc, argv));
-    CHECK(sut.value<bool>(bypass_required_arg_name.primary.value()));
+    CHECK(sut.value<bool>(bypass_required_arg_name.primary));
 
     free_argv(argc, argv);
 }
@@ -502,10 +497,7 @@ TEST_CASE_FIXTURE(
     add_arguments(n_positional_args, n_optional_args);
 
     const auto required_arg_name = init_arg_name(n_args_total);
-    sut.add_optional_argument(
-           required_arg_name.primary.value(), required_arg_name.secondary.value()
-    )
-        .required();
+    sut.add_optional_argument(required_arg_name.primary, required_arg_name.secondary).required();
 
     int argc;
     char** argv;
@@ -719,9 +711,9 @@ TEST_CASE_FIXTURE(
     for (std::size_t i = 0ull; i < n_args_total; ++i) {
         const auto arg_name = init_arg_name(i);
 
-        REQUIRE(sut.has_value(arg_name.primary.value()));
+        REQUIRE(sut.has_value(arg_name.primary));
         CHECK_THROWS_AS(
-            discard(sut.value<invalid_value_type>(arg_name.primary.value())), argon::type_error
+            discard(sut.value<invalid_value_type>(arg_name.primary)), argon::type_error
         );
     }
 
@@ -752,9 +744,9 @@ TEST_CASE_FIXTURE(
         const auto arg_name = init_arg_name(i);
         const auto arg_value = init_arg_value(i);
 
-        REQUIRE(sut.has_value(arg_name.primary.value()));
-        CHECK_EQ(sut.value(arg_name.primary.value()), arg_value);
-        CHECK_EQ(sut.value(arg_name.secondary.value()), arg_value);
+        REQUIRE(sut.has_value(arg_name.primary));
+        CHECK_EQ(sut.value(arg_name.primary), arg_value);
+        CHECK_EQ(sut.value(arg_name.secondary), arg_value);
     }
 
     free_argv(argc, argv);
@@ -767,7 +759,7 @@ TEST_CASE_FIXTURE(
 ) {
     for (std::size_t i = 0ull; i < n_optional_args; ++i) {
         const auto arg_name = init_arg_name(i);
-        sut.add_optional_argument(arg_name.primary.value(), arg_name.secondary.value())
+        sut.add_optional_argument(arg_name.primary, arg_name.secondary)
             .default_values(init_arg_value(i));
     }
 
@@ -775,9 +767,9 @@ TEST_CASE_FIXTURE(
         const auto arg_name = init_arg_name(i);
         const auto arg_value = init_arg_value(i);
 
-        REQUIRE(sut.has_value(arg_name.primary.value()));
-        CHECK_EQ(sut.value(arg_name.primary.value()), arg_value);
-        CHECK_EQ(sut.value(arg_name.secondary.value()), arg_value);
+        REQUIRE(sut.has_value(arg_name.primary));
+        CHECK_EQ(sut.value(arg_name.primary), arg_value);
+        CHECK_EQ(sut.value(arg_name.secondary), arg_value);
     }
 }
 
@@ -807,10 +799,9 @@ TEST_CASE_FIXTURE(
     for (std::size_t i = 0ull; i < n_args_total; ++i) {
         const auto arg_name = init_arg_name(i);
 
-        REQUIRE(sut.has_value(arg_name.primary.value()));
+        REQUIRE(sut.has_value(arg_name.primary));
         CHECK_THROWS_AS(
-            discard(sut.value_or<invalid_value_type>(arg_name.primary.value(), invalid_value_type{})
-            ),
+            discard(sut.value_or<invalid_value_type>(arg_name.primary, invalid_value_type{})),
             argon::type_error
         );
     }
@@ -842,9 +833,9 @@ TEST_CASE_FIXTURE(
         const auto arg_name = init_arg_name(i);
         const auto arg_value = init_arg_value(i);
 
-        REQUIRE(sut.has_value(arg_name.primary.value()));
-        CHECK_EQ(sut.value_or(arg_name.primary.value(), empty_str), arg_value);
-        CHECK_EQ(sut.value_or(arg_name.secondary.value(), empty_str), arg_value);
+        REQUIRE(sut.has_value(arg_name.primary));
+        CHECK_EQ(sut.value_or(arg_name.primary, empty_str), arg_value);
+        CHECK_EQ(sut.value_or(arg_name.secondary, empty_str), arg_value);
     }
 
     free_argv(argc, argv);
@@ -857,7 +848,7 @@ TEST_CASE_FIXTURE(
 ) {
     for (std::size_t i = 0ull; i < n_optional_args; ++i) {
         const auto arg_name = init_arg_name(i);
-        sut.add_optional_argument(arg_name.primary.value(), arg_name.secondary.value())
+        sut.add_optional_argument(arg_name.primary, arg_name.secondary)
             .default_values(init_arg_value(i));
     }
 
@@ -865,9 +856,9 @@ TEST_CASE_FIXTURE(
         const auto arg_name = init_arg_name(i);
         const auto arg_value = init_arg_value(i);
 
-        REQUIRE(sut.has_value(arg_name.primary.value()));
-        CHECK_EQ(sut.value_or(arg_name.primary.value(), empty_str), arg_value);
-        CHECK_EQ(sut.value_or(arg_name.secondary.value(), empty_str), arg_value);
+        REQUIRE(sut.has_value(arg_name.primary));
+        CHECK_EQ(sut.value_or(arg_name.primary, empty_str), arg_value);
+        CHECK_EQ(sut.value_or(arg_name.secondary, empty_str), arg_value);
     }
 }
 
@@ -893,12 +884,8 @@ TEST_CASE_FIXTURE(
         const auto arg_name = init_arg_name(i);
         const default_value_type fallback_value = 2 * static_cast<default_value_type>(i);
 
-        CHECK_EQ(
-            sut.value_or<value_type>(arg_name.primary.value(), fallback_value), fallback_value
-        );
-        CHECK_EQ(
-            sut.value_or<value_type>(arg_name.secondary.value(), fallback_value), fallback_value
-        );
+        CHECK_EQ(sut.value_or<value_type>(arg_name.primary, fallback_value), fallback_value);
+        CHECK_EQ(sut.value_or<value_type>(arg_name.secondary, fallback_value), fallback_value);
     }
 }
 
@@ -918,8 +905,8 @@ TEST_CASE_FIXTURE(
         const auto arg_name = init_arg_name(i);
         const auto fallback_value = init_arg_value(i);
 
-        CHECK_EQ(sut.value_or(arg_name.primary.value(), fallback_value), fallback_value);
-        CHECK_EQ(sut.value_or(arg_name.secondary.value(), fallback_value), fallback_value);
+        CHECK_EQ(sut.value_or(arg_name.primary, fallback_value), fallback_value);
+        CHECK_EQ(sut.value_or(arg_name.secondary, fallback_value), fallback_value);
     }
 }
 

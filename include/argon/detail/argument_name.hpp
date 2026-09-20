@@ -8,7 +8,8 @@
 
 #include <cstdint>
 #include <format>
-#include <optional>
+#include <ostream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -26,6 +27,9 @@ struct argument_name {
     };
     using enum match_type;
 
+    // --- constants ---
+    static constexpr char flag_char_sentinel = '\0'; ///< Sentinel value for the flag character.
+
     argument_name() = delete;
 
     argument_name& operator=(const argument_name&) = delete;
@@ -40,15 +44,11 @@ struct argument_name {
      * @param secondary The secondary (short) name of the argument.
      * @param flag_char The flag character (used for optional argument names).
      */
-    argument_name(
-        std::optional<std::string> primary,
-        std::optional<std::string> secondary = std::nullopt,
-        std::optional<char> flag_char = std::nullopt
+    explicit argument_name(
+        std::string primary, std::string secondary = "", char flag_char = flag_char_sentinel
     )
-    : primary(std::move(primary)),
-      secondary(std::move(secondary)),
-      flag_char(std::move(flag_char)) {
-        if (not (this->primary or this->secondary))
+    : primary(std::move(primary)), secondary(std::move(secondary)), flag_char(flag_char) {
+        if (this->primary.empty() and this->secondary.empty())
             throw std::logic_error("An argument name cannot be empty! At least one of "
                                    "primary/secondary must be specified");
     }
@@ -75,11 +75,12 @@ struct argument_name {
         const noexcept {
         switch (m_type) {
         case m_any:
-            return this->primary == arg_name or this->secondary == arg_name;
+            return (not this->primary.empty() and this->primary == arg_name)
+                or (not this->secondary.empty() and this->secondary == arg_name);
         case m_primary:
-            return this->primary == arg_name;
+            return not this->primary.empty() and this->primary == arg_name;
         case m_secondary:
-            return this->secondary == arg_name;
+            return not this->secondary.empty() and this->secondary == arg_name;
         }
 
         return false;
@@ -90,32 +91,34 @@ struct argument_name {
      * @param arg_name The argument_name instance to match.
      * @param m_type UNUSED - necessary to match the signature of the `string_view` overload of the `match` function.
      * @return True if arg_name's primary or secondary value matches the argument_name instance.
+     * @todo Remove the m_type parameter
      */
     [[nodiscard]] bool match(
         const argument_name& arg_name, [[maybe_unused]] const match_type m_type = m_any
     ) const noexcept {
-        if (arg_name.primary and this->match(arg_name.primary.value()))
+        if (not arg_name.primary.empty() and this->match(arg_name.primary))
             return true;
 
-        if (arg_name.secondary)
-            return this->match(arg_name.secondary.value());
+        if (not arg_name.secondary.empty())
+            return this->match(arg_name.secondary);
 
         return false;
     }
 
     /**
      * @brief Get a string representation of the argument_name.
-     * @param flag_char The character used for the argument flag prefix.
      */
     [[nodiscard]] std::string str() const noexcept {
-        // if flag_char = nullopt, then the fallback character doesn't matter - the string will be empty
-        const std::string fc(this->flag_char.has_value(), this->flag_char.value_or(char{}));
+        const std::string fc(
+            static_cast<std::size_t>(this->flag_char != flag_char_sentinel), this->flag_char
+        );
 
         std::string primary_str =
-            this->primary ? std::format("{}{}{}", fc, fc, this->primary.value()) : "";
-        std::string separator = this->primary and this->secondary ? ", " : "";
+            not this->primary.empty() ? std::format("{}{}{}", fc, fc, this->primary) : "";
+        std::string separator =
+            not this->primary.empty() and not this->secondary.empty() ? ", " : "";
         std::string secondary_str =
-            this->secondary ? std::format("{}{}", fc, this->secondary.value()) : "";
+            not this->secondary.empty() ? std::format("{}{}", fc, this->secondary) : "";
 
         return std::format("{}{}{}", primary_str, separator, secondary_str);
     }
@@ -131,9 +134,9 @@ struct argument_name {
         return os;
     }
 
-    const std::optional<std::string> primary; ///< The primary name of the argument.
-    const std::optional<std::string> secondary; ///< The optional (short) name of the argument.
-    const std::optional<char> flag_char; ///< The flag character (used for optional argument names).
+    const std::string primary; ///< The primary name of the argument.
+    const std::string secondary; ///< The optional (short) name of the argument.
+    const char flag_char; ///< The flag character (used for optional argument names).
 };
 
 /**

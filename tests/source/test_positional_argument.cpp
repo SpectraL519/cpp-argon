@@ -16,8 +16,8 @@ namespace {
 
 constexpr std::string_view help_msg = "test help msg";
 
-constexpr std::string_view name_value = "test";
-const argument_name arg_name(std::make_optional<std::string>(name_value), std::nullopt);
+const std::string name_value = "test";
+const argument_name arg_name{name_value};
 
 using sut_value_type = int;
 using sut_type = positional_argument<sut_value_type>;
