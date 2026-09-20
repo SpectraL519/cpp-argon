@@ -244,6 +244,27 @@ public:
     }
 
     /**
+     * @brief Set the flag character.
+     * @param chr The flag character.
+     * @return Reference to the argument parser.
+     * @throws argon::invalid_configuration if the flag character is not a printable
+     *         ASCII character or if any arguments have already been added to the parser.
+     * @note The default flag character is `'-'`.
+     */
+    argument_parser& flag_char(const char chr) {
+        if (not this->_positional_args.empty() or not this->_optional_args.empty())
+            throw invalid_configuration("The flag character must be set before adding any "
+                                        "arguments!");
+
+        if (not std::isprint(static_cast<unsigned char>(chr)))
+            throw invalid_configuration("The flag character must be a printable ASCII character!");
+
+        this->_flag_char = chr;
+        this->_primary_flag_prefix = std::string(this->_primary_flag_prefix_length, chr);
+        return *this;
+    }
+
+    /**
      * @brief Add default arguments to the argument parser.
      * @tparam ArgvRange Type of the positional argument discriminator range.
      * @param arg_discriminators A range of default positional argument discriminators.
@@ -305,10 +326,10 @@ public:
     ) {
         this->_validate_group(group);
 
-        const auto full_name = group._format_arg_name(base_name);
+        auto full_name = group._format_arg_name(base_name);
         this->_verify_arg_name_pattern(full_name);
 
-        const detail::argument_name arg_name(std::make_optional<std::string>(full_name));
+        const detail::argument_name arg_name(std::move(full_name));
         if (this->_is_arg_name_used(arg_name))
             throw invalid_configuration::argument_name_used(arg_name);
 
@@ -368,18 +389,13 @@ public:
     ) {
         this->_validate_group(group);
 
-        const auto full_name = group._format_arg_name(base_name);
+        auto full_name = group._format_arg_name(base_name);
         this->_verify_arg_name_pattern(full_name);
 
         const auto arg_name =
             name_discr == n_primary
-                ? detail::
-                      argument_name{std::make_optional<std::string>(full_name), std::nullopt, this->_flag_prefix_char}
-                : detail::argument_name{
-                      std::nullopt,
-                      std::make_optional<std::string>(full_name),
-                      this->_flag_prefix_char
-                  };
+                ? detail::argument_name{std::move(full_name), "", this->_flag_char}
+                : detail::argument_name{"", std::move(full_name), this->_flag_char};
 
         if (this->_is_arg_name_used(arg_name))
             throw invalid_configuration::argument_name_used(arg_name);
@@ -407,16 +423,14 @@ public:
     ) {
         this->_validate_group(group);
 
-        const auto full_primary_name = group._format_arg_name(base_primary_name);
+        auto full_primary_name = group._format_arg_name(base_primary_name);
         this->_verify_arg_name_pattern(full_primary_name);
 
-        const auto full_secondary_name = group._format_arg_name(base_secondary_name);
+        auto full_secondary_name = group._format_arg_name(base_secondary_name);
         this->_verify_arg_name_pattern(full_secondary_name);
 
         const detail::argument_name arg_name(
-            std::make_optional<std::string>(full_primary_name),
-            std::make_optional<std::string>(full_secondary_name),
-            this->_flag_prefix_char
+            std::move(full_primary_name), std::move(full_secondary_name), this->_flag_char
         );
         if (this->_is_arg_name_used(arg_name))
             throw invalid_configuration::argument_name_used(arg_name);
@@ -954,12 +968,12 @@ private:
                 arg_name, "An argument name cannot contain whitespaces."
             );
 
-        if (arg_name.front() == this->_flag_prefix_char)
+        if (arg_name.front() == this->_flag_char)
             throw invalid_configuration::invalid_argument_name(
                 arg_name,
                 std::format(
                     "An argument name cannot begin with a flag prefix character ({}).",
-                    this->_flag_prefix_char
+                    this->_flag_char
                 )
             );
 
@@ -985,29 +999,19 @@ private:
     /**
      * @brief Returns a unary predicate function which checks if the given name matches the argument's name
      * @param arg_name The name of the argument.
-     * @param m_type The match type used within the predicate.
      * @return Argument predicate based on the provided name.
      */
-    [[nodiscard]] auto _name_match_predicate(
-        const detail::argument_name& arg_name,
-        const detail::argument_name::match_type m_type = detail::argument_name::m_any
-    ) const noexcept {
-        return [&arg_name, m_type](const arg_ptr_t& arg) {
-            return arg->name().match(arg_name, m_type);
-        };
+    [[nodiscard]] auto _name_match_predicate(const detail::argument_name& arg_name) const noexcept {
+        return [&arg_name](const arg_ptr_t& arg) { return arg->name().match(arg_name); };
     }
 
     /**
      * @brief Check if an argument name is already used.
      * @param arg_name The name of the argument.
-     * @param m_type The match type used to find the argument.
      * @return True if the argument name is already used, false otherwise.
      */
-    [[nodiscard]] bool _is_arg_name_used(
-        const detail::argument_name& arg_name,
-        const detail::argument_name::match_type m_type = detail::argument_name::m_any
-    ) const noexcept {
-        const auto predicate = this->_name_match_predicate(arg_name, m_type);
+    [[nodiscard]] bool _is_arg_name_used(const detail::argument_name& arg_name) const noexcept {
+        const auto predicate = this->_name_match_predicate(arg_name);
 
         if (std::ranges::find_if(this->_positional_args, predicate) != this->_positional_args.end())
             return true;
@@ -1167,10 +1171,10 @@ private:
         if (util::contains_whitespaces(arg_value))
             return detail::argument_token::t_value;
 
-        if (arg_value.starts_with(this->_flag_prefix))
+        if (arg_value.starts_with(this->_primary_flag_prefix))
             return detail::argument_token::t_flag_primary;
 
-        if (arg_value.starts_with(this->_flag_prefix_char))
+        if (arg_value.starts_with(this->_flag_char))
             return detail::argument_token::t_flag_secondary;
 
         return detail::argument_token::t_value;
@@ -1453,7 +1457,7 @@ private:
      * @return The argument with the specified name, if found; otherwise, std::nullopt.
      * @throws argon::lookup_failure if an argument with the given name cannot be found.
      */
-    arg_ptr_t _get_argument(std::string_view arg_name) const {
+    [[nodiscard]] arg_ptr_t _get_argument(std::string_view arg_name) const {
         const auto predicate = this->_name_match_predicate(arg_name);
 
         if (auto pos_arg_it = std::ranges::find_if(this->_positional_args, predicate);
@@ -1543,14 +1547,19 @@ private:
         }
     }
 
+    // --- attributes ---
+
     std::string _name = ""; ///< The name of the parser.
     std::string _program_name =
         ""; ///< The name of the program in the format "<parent-parser-names>... <program-name>".
     std::optional<std::string> _program_version = std::nullopt; ///< The version of the program.
     std::optional<std::string> _program_description =
         std::nullopt; ///< The description of the program.
-    bool _verbose = false; ///< Verbosity flag.
     unknown_policy _unknown_policy = unknown_policy::fail; ///< Policy for unknown arguments.
+    char _flag_char = '-'; ///< The character used as a flag prefix.
+    std::string _primary_flag_prefix = "--"; ///< The primary flag prefix.
+
+    // --- parsing cfg & state ---
 
     arg_ptr_vec_t _positional_args = {}; ///< The list of positional arguments.
     arg_ptr_vec_t _optional_args = {}; ///< The list of optional arguments.
@@ -1559,15 +1568,22 @@ private:
     argument_group& _gr_optional_args; ///< The optional argument group.
     arg_parser_ptr_vec_t _subparsers = {}; ///< The list of subparsers.
 
-    bool _invoked =
+    // --- cfg flags ---
+
+    bool _verbose : 1 = false; ///< Verbosity flag.
+
+    // --- parsing state flags ---
+
+    bool _invoked : 1 =
         false; ///< A flag indicating whether the parser has been invoked to parse arguments.
-    bool _finalized = false; ///< A flag indicating whether the parsing process has been finalized.
+    bool _finalized : 1 =
+        false; ///< A flag indicating whether the parsing process has been finalized.
+
+    // --- constants ---
 
     static constexpr std::uint8_t _primary_flag_prefix_length = 2u;
     static constexpr std::uint8_t _secondary_flag_prefix_length = 1u;
-    static constexpr char _flag_prefix_char = '-';
-    static constexpr std::string_view _flag_prefix = "--";
-    static constexpr std::uint8_t _indent_width = 2;
+    static constexpr std::uint8_t _indent_width = 2u;
 };
 
 namespace detail {

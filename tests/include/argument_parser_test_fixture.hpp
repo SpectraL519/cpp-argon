@@ -108,11 +108,9 @@ struct argument_parser_test_fixture {
     }
 
     [[nodiscard]] argument_name init_arg_name(
-        const std::size_t i, std::optional<char> flag_char = std::nullopt
+        const std::size_t i, char flag_char = argument_name::flag_char_sentinel
     ) const {
-        return argument_name(
-            init_arg_name_primary(i), init_arg_name_secondary(i), std::move(flag_char)
-        );
+        return argument_name{init_arg_name_primary(i), init_arg_name_secondary(i), flag_char};
     }
 
     template <

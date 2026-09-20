@@ -10,31 +10,25 @@ TEST_SUITE_BEGIN("test_argument_name");
 
 namespace {
 
-constexpr std::string_view primary_1 = "primary_1";
-constexpr std::string_view secondary_1 = "s1";
+const std::string primary_1 = "primary_1";
+const std::string secondary_1 = "s1";
 
-const auto primary_1_opt = std::make_optional<std::string>(primary_1);
-const auto secondary_1_opt = std::make_optional<std::string>(secondary_1);
+const argument_name arg_name_primary_1{primary_1};
+const argument_name arg_name_secondary_1{"", secondary_1};
+const argument_name arg_name_full_1{primary_1, secondary_1};
 
-const argument_name arg_name_primary_1{primary_1_opt};
-const argument_name arg_name_secondary_1{std::nullopt, secondary_1_opt};
-const argument_name arg_name_full_1{primary_1_opt, secondary_1_opt};
+const std::string primary_2 = "primary_2";
+const std::string secondary_2 = "s2";
 
-constexpr std::string_view primary_2 = "primary_2";
-constexpr std::string_view secondary_2 = "s2";
-
-const auto primary_2_opt = std::make_optional<std::string>(primary_2);
-const auto secondary_2_opt = std::make_optional<std::string>(secondary_2);
-
-const argument_name arg_name_primary_2{primary_2_opt};
-const argument_name arg_name_secondary_2{std::nullopt, secondary_2_opt};
-const argument_name arg_name_full_2{primary_2_opt, secondary_2_opt};
+const argument_name arg_name_primary_2{primary_2};
+const argument_name arg_name_secondary_2{"", secondary_2};
+const argument_name arg_name_full_2{primary_2, secondary_2};
 
 } // namespace
 
 TEST_CASE("arugment_name construction should throw if both primary and secondary names are null") {
     CHECK_THROWS_WITH_AS(
-        (argument_name{std::nullopt, std::nullopt}),
+        (argument_name{"", ""}),
         "An argument name cannot be empty! At least one of primary/secondary must be specified",
         std::logic_error
     );
@@ -42,9 +36,9 @@ TEST_CASE("arugment_name construction should throw if both primary and secondary
 
 TEST_CASE("argument_name members should be initialzed properly") {
     CHECK_EQ(arg_name_primary_1.primary, primary_1);
-    CHECK_FALSE(arg_name_primary_1.secondary.has_value());
+    CHECK(arg_name_primary_1.secondary.empty());
 
-    CHECK_FALSE(arg_name_secondary_1.primary.has_value());
+    CHECK(arg_name_secondary_1.primary.empty());
     CHECK_EQ(arg_name_secondary_1.secondary, secondary_1);
 
     CHECK_EQ(arg_name_full_1.primary, primary_1);
@@ -67,6 +61,18 @@ TEST_CASE("operator==(argument_name) should return true only if both primary and
     CHECK_NE(arg_name_primary_1, arg_name_primary_2);
     CHECK_NE(arg_name_secondary_1, arg_name_secondary_2);
     CHECK_NE(arg_name_full_1, arg_name_full_2);
+}
+
+TEST_CASE("has_primary() should return true only if the primary name is set") {
+    CHECK(arg_name_primary_1.has_primary());
+    CHECK_FALSE(arg_name_secondary_1.has_primary());
+    CHECK(arg_name_full_1.has_primary());
+}
+
+TEST_CASE("has_secondary() should return true only if the secondary name is set") {
+    CHECK_FALSE(arg_name_primary_1.has_secondary());
+    CHECK(arg_name_secondary_1.has_secondary());
+    CHECK(arg_name_full_1.has_secondary());
 }
 
 TEST_CASE("match(string_view, any) should return true if the given string matches at least one name"
@@ -130,17 +136,17 @@ TEST_CASE("match(argument_name) should return true if either the primary or the 
           "the passed argument_name matches at least one name") {
     // argument_name with primary name only
     CHECK(arg_name_primary_1.match(arg_name_primary_1));
-    CHECK(arg_name_primary_1.match(argument_name{primary_2_opt, primary_1_opt}));
+    CHECK(arg_name_primary_1.match(argument_name{primary_2, primary_1}));
 
     // argument_name with primary name only
     CHECK(arg_name_secondary_1.match(arg_name_secondary_1));
-    CHECK(arg_name_secondary_1.match(argument_name{secondary_1_opt, secondary_2_opt}));
+    CHECK(arg_name_secondary_1.match(argument_name{secondary_1, secondary_2}));
 
     // argument_name with both names
-    CHECK(arg_name_full_1.match(argument_name{primary_1_opt, secondary_2_opt}));
-    CHECK(arg_name_full_1.match(argument_name{secondary_1_opt, primary_1_opt}));
-    CHECK(arg_name_full_1.match(argument_name{primary_2_opt, primary_1_opt}));
-    CHECK(arg_name_full_1.match(argument_name{primary_2_opt, secondary_1_opt}));
+    CHECK(arg_name_full_1.match(argument_name{primary_1, secondary_2}));
+    CHECK(arg_name_full_1.match(argument_name{secondary_1, primary_1}));
+    CHECK(arg_name_full_1.match(argument_name{primary_2, primary_1}));
+    CHECK(arg_name_full_1.match(argument_name{primary_2, secondary_1}));
 }
 
 TEST_CASE("match(argument_name) should return false if neither the primary nor the secondary name "

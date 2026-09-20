@@ -15,26 +15,16 @@ TEST_SUITE_BEGIN("test_argument_parser_args_cfg");
 struct test_argument_parser_args_cfg : public argument_parser_test_fixture {
     const char flag_char = '-';
 
-    const std::string_view primary_name_1 = "primary_name_1";
-    const std::string_view secondary_name_1 = "s1";
+    const std::string primary_name_1 = "primary_name_1";
+    const std::string secondary_name_1 = "s1";
 
-    const std::optional<std::string> primary_name_1_opt =
-        std::make_optional<std::string>(primary_name_1);
-    const std::optional<std::string> secondary_name_1_opt =
-        std::make_optional<std::string>(secondary_name_1);
+    const std::string primary_name_2 = "primary_name_2";
+    const std::string secondary_name_2 = "s2";
 
-    const std::string_view primary_name_2 = "primary_name_2";
-    const std::string_view secondary_name_2 = "s2";
-
-    const std::optional<std::string> primary_name_2_opt =
-        std::make_optional<std::string>(primary_name_2);
-    const std::optional<std::string> secondary_name_2_opt =
-        std::make_optional<std::string>(secondary_name_2);
-
-    const std::string_view invalid_name_empty = "";
-    const std::string_view invalid_name_whitespace = "invalid name";
-    const std::string_view invalid_name_flag_prefix = "-invalid";
-    const std::string_view invalid_name_digit = "1invalid";
+    const std::string invalid_name_empty = "";
+    const std::string invalid_name_whitespace = "invalid name";
+    const std::string invalid_name_flag_prefix = "-invalid";
+    const std::string invalid_name_digit = "1invalid";
 };
 
 TEST_CASE_FIXTURE(
@@ -172,7 +162,7 @@ TEST_CASE_FIXTURE(
     // adding argument with a previously used name
     CHECK_THROWS_WITH_AS(
         sut.add_positional_argument(primary_name_1),
-        invalid_configuration::argument_name_used({primary_name_1_opt}).what(),
+        invalid_configuration::argument_name_used(argument_name{primary_name_1}).what(),
         invalid_configuration
     );
 }
@@ -191,7 +181,7 @@ TEST_CASE_FIXTURE(
         CHECK_THROWS_WITH_AS(
             sut.add_optional_argument(primary_name_1, secondary_name_2),
             invalid_configuration::argument_name_used(
-                {primary_name_1_opt, secondary_name_2_opt, flag_char}
+                argument_name{primary_name_1, secondary_name_2, flag_char}
             )
                 .what(),
             invalid_configuration
@@ -202,7 +192,7 @@ TEST_CASE_FIXTURE(
         CHECK_THROWS_WITH_AS(
             sut.add_optional_argument(primary_name_2, secondary_name_1),
             invalid_configuration::argument_name_used(
-                {primary_name_2_opt, secondary_name_1_opt, flag_char}
+                argument_name{primary_name_2, secondary_name_1, flag_char}
             )
                 .what(),
             invalid_configuration
@@ -251,7 +241,7 @@ TEST_CASE_FIXTURE(
         CHECK_THROWS_WITH_AS(
             sut.add_flag(primary_name_1, secondary_name_2),
             invalid_configuration::argument_name_used(
-                {primary_name_1_opt, secondary_name_2_opt, flag_char}
+                argument_name{primary_name_1, secondary_name_2, flag_char}
             )
                 .what(),
             invalid_configuration
@@ -262,7 +252,7 @@ TEST_CASE_FIXTURE(
         CHECK_THROWS_WITH_AS(
             sut.add_flag(primary_name_2, secondary_name_1),
             invalid_configuration::argument_name_used(
-                {primary_name_2_opt, secondary_name_1_opt, flag_char}
+                argument_name{primary_name_2, secondary_name_1, flag_char}
             )
                 .what(),
             invalid_configuration

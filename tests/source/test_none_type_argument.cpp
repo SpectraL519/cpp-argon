@@ -11,13 +11,10 @@ using argon::detail::argument_name;
 
 namespace {
 
-constexpr std::string_view primary_name = "test";
-const auto primary_name_opt = std::make_optional<std::string>(primary_name);
+const std::string primary_name = "test";
+const std::string secondary_name = "t";
 
-constexpr std::string_view secondary_name = "t";
-const auto secondary_name_opt = std::make_optional<std::string>(secondary_name);
-
-const argument_name arg_name(primary_name_opt, secondary_name_opt);
+const argument_name arg_name{primary_name, secondary_name};
 
 using sut_value_type = argon::none_type;
 using sut_type = optional_argument<sut_value_type>;
