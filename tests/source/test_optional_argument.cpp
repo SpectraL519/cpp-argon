@@ -276,22 +276,22 @@ TEST_CASE_FIXTURE(
 
 TEST_CASE_FIXTURE(argument_test_fixture, "is_used() should return false by default") {
     const auto sut = sut_type(arg_name_primary);
-    CHECK_FALSE(is_used(sut));
+    CHECK_FALSE(sut.is_used());
 }
 
 TEST_CASE_FIXTURE(
     argument_test_fixture, "is_used() should return true if the argument's flag has been used"
 ) {
     auto sut = sut_type(arg_name_primary);
-    REQUIRE_FALSE(is_used(sut));
+    REQUIRE_FALSE(sut.is_used());
 
     mark_used(sut);
-    CHECK(is_used(sut));
+    CHECK(sut.is_used());
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "count() should return 0 by default") {
     const auto sut = sut_type(arg_name_primary);
-    CHECK_EQ(get_count(sut), 0ull);
+    CHECK_EQ(sut.count(), 0ull);
 }
 
 TEST_CASE_FIXTURE(
@@ -305,7 +305,7 @@ TEST_CASE_FIXTURE(
     for (std::size_t n = 0ull; n < count; ++n)
         mark_used(sut);
 
-    CHECK_EQ(get_count(sut), count);
+    CHECK_EQ(sut.count(), count);
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "argument flag usage should trigger the on-flag actions") {
@@ -319,13 +319,13 @@ TEST_CASE_FIXTURE(argument_test_fixture, "argument flag usage should trigger the
 
 TEST_CASE_FIXTURE(argument_test_fixture, "has_value() should return false by default") {
     const auto sut = sut_type(arg_name_primary);
-    CHECK_FALSE(has_value(sut));
+    CHECK_FALSE(sut.has_value());
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "has_value() should return true if value is set") {
     auto sut = sut_type(arg_name_primary);
     set_value(sut, arbitrary_value);
-    CHECK(has_value(sut));
+    CHECK(sut.has_value());
 }
 
 TEST_CASE_FIXTURE(
@@ -336,8 +336,8 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name_primary);
     sut.default_values(default_value);
 
-    REQUIRE(has_value(sut));
-    CHECK_EQ(get_value(sut), default_value);
+    REQUIRE(sut.has_value());
+    CHECK_EQ(sut.value(), default_value);
 }
 
 TEST_CASE_FIXTURE(
@@ -347,7 +347,7 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name_primary);
     sut.implicit_values(implicit_value);
 
-    CHECK_FALSE(has_value(sut));
+    CHECK_FALSE(sut.has_value());
 }
 
 TEST_CASE_FIXTURE(
@@ -359,8 +359,8 @@ TEST_CASE_FIXTURE(
 
     mark_used(sut);
 
-    REQUIRE(has_value(sut));
-    CHECK_EQ(get_value(sut), implicit_value);
+    REQUIRE(sut.has_value());
+    CHECK_EQ(sut.value(), implicit_value);
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "has_parsed_values() should return false by default") {
@@ -452,8 +452,8 @@ TEST_CASE_FIXTURE(
 ) {
     auto sut = sut_type(arg_name_primary);
 
-    REQUIRE_FALSE(has_value(sut));
-    CHECK_THROWS_AS(discard(get_value(sut)), std::logic_error);
+    REQUIRE_FALSE(sut.has_value());
+    CHECK_THROWS_AS(discard(sut.value()), std::logic_error);
 }
 
 TEST_CASE_FIXTURE(
@@ -463,8 +463,8 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name_primary);
     sut.default_values(arbitrary_value);
 
-    REQUIRE(has_value(sut));
-    CHECK_EQ(get_value(sut), arbitrary_value);
+    REQUIRE(sut.has_value());
+    CHECK_EQ(sut.value(), arbitrary_value);
 }
 
 TEST_CASE_FIXTURE(
@@ -476,8 +476,8 @@ TEST_CASE_FIXTURE(
 
     mark_used(sut);
 
-    REQUIRE(has_value(sut));
-    CHECK_EQ(get_value(sut), implicit_value);
+    REQUIRE(sut.has_value());
+    CHECK_EQ(sut.value(), implicit_value);
 }
 
 TEST_CASE_FIXTURE(
@@ -488,8 +488,58 @@ TEST_CASE_FIXTURE(
     sut.implicit_values(implicit_value);
     set_value(sut, arbitrary_value);
 
-    REQUIRE(has_value(sut));
-    CHECK_EQ(get_value(sut), arbitrary_value);
+    REQUIRE(sut.has_value());
+    CHECK_EQ(sut.value(), arbitrary_value);
+}
+
+TEST_CASE_FIXTURE(
+    argument_test_fixture,
+    "value_or() should return the fallback value if the argument's value has not been set"
+) {
+    auto sut = sut_type(arg_name_primary);
+    constexpr sut_value_type fallback_value = 999;
+
+    REQUIRE_FALSE(sut.has_value());
+    CHECK_EQ(sut.value_or(fallback_value), fallback_value);
+}
+
+TEST_CASE_FIXTURE(
+    argument_test_fixture,
+    "value_or() should return the default value if one has been provided and argument is not used"
+) {
+    auto sut = sut_type(arg_name_primary);
+    sut.default_values(arbitrary_value);
+    constexpr sut_value_type fallback_value = 999;
+
+    REQUIRE(sut.has_value());
+    CHECK_EQ(sut.value_or(fallback_value), arbitrary_value);
+}
+
+TEST_CASE_FIXTURE(
+    argument_test_fixture,
+    "value_or() should return the implicit value if one has been provided and argument is used"
+) {
+    auto sut = sut_type(arg_name_primary);
+    sut.implicit_values(implicit_value);
+    constexpr sut_value_type fallback_value = 999;
+
+    mark_used(sut);
+
+    REQUIRE(sut.has_value());
+    CHECK_EQ(sut.value_or(fallback_value), implicit_value);
+}
+
+TEST_CASE_FIXTURE(
+    argument_test_fixture, "value_or() should return the argument's value if it has been set"
+) {
+    auto sut = sut_type(arg_name_primary);
+    sut.default_values(default_value);
+    sut.implicit_values(implicit_value);
+    set_value(sut, arbitrary_value);
+    constexpr sut_value_type fallback_value = 999;
+
+    REQUIRE(sut.has_value());
+    CHECK_EQ(sut.value_or(fallback_value), arbitrary_value);
 }
 
 TEST_CASE_FIXTURE(
@@ -505,7 +555,7 @@ TEST_CASE_FIXTURE(
             invalid_value_msg(arg_name_primary, empty_str).c_str(),
             parsing_failure
         );
-        CHECK_FALSE(has_value(sut));
+        CHECK_FALSE(sut.has_value());
     }
     SUBCASE("given string is non-convertible to value_type") {
         REQUIRE_THROWS_WITH_AS(
@@ -513,7 +563,7 @@ TEST_CASE_FIXTURE(
             invalid_value_msg(arg_name_primary, invalid_value_str).c_str(),
             parsing_failure
         );
-        CHECK_FALSE(has_value(sut));
+        CHECK_FALSE(sut.has_value());
     }
 }
 
@@ -530,7 +580,7 @@ TEST_CASE_FIXTURE(
         parsing_failure
     );
 
-    CHECK_FALSE(has_value(sut));
+    CHECK_FALSE(sut.has_value());
 }
 
 TEST_CASE_FIXTURE(
@@ -543,7 +593,7 @@ TEST_CASE_FIXTURE(
     for (const auto value : choices)
         REQUIRE_NOTHROW(set_value(sut, value));
 
-    REQUIRE_EQ(get_values(sut), choices);
+    REQUIRE_EQ(sut.values(), choices);
 
     CHECK_THROWS_WITH_AS(
         set_value(sut, arbitrary_value),
@@ -570,7 +620,7 @@ TEST_CASE_FIXTURE(
 
         sut_value_type valid_value = 16;
         REQUIRE_NOTHROW(set_value(sut, valid_value));
-        CHECK_EQ(get_value(sut), valid_value);
+        CHECK_EQ(sut.value(), valid_value);
     }
 
     SUBCASE("transform action") {
@@ -579,7 +629,7 @@ TEST_CASE_FIXTURE(
 
         set_value(sut, arbitrary_value);
 
-        CHECK_EQ(get_value(sut), double_action(arbitrary_value));
+        CHECK_EQ(sut.value(), double_action(arbitrary_value));
     }
 
     SUBCASE("modify action") {
@@ -591,7 +641,7 @@ TEST_CASE_FIXTURE(
         set_value(sut, test_value);
 
         double_action(test_value);
-        CHECK_EQ(get_value(sut), test_value);
+        CHECK_EQ(sut.value(), test_value);
     }
 }
 

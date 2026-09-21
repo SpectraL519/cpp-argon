@@ -31,6 +31,9 @@
   - [Creating New Groups](#creating-new-groups)
   - [Adding Arguments to Groups](#adding-arguments-to-groups)
   - [Group Attributes](#group-attributes)
+    - [Validation Rules](#validation-rules)
+    - [Naming Modifiers](#naming-modifiers)
+    - [Visibility](#visibility)
   - [Complete Example](#complete-example)
   - [Suppressing Argument Group Checks](#suppressing-argument-group-checks)
 - [Parsing Arguments](#parsing-arguments)
@@ -42,6 +45,9 @@
   - [Compound Arguments](#compound-arguments)
   - [Parsing Known Arguments](#parsing-known-arguments)
 - [Retrieving Argument Values](#retrieving-argument-values)
+  - [Using the Parser](#using-the-parser)
+  - [Using Argument References](#using-argument-references)
+  - [Using Argument Groups](#using-argument-groups)
 - [Subparsers](#subparsers)
   - [Creating Subparsers](#creating-subparsers)
   - [Using Multiple Subparsers](#using-multiple-subparsers)
@@ -894,12 +900,14 @@ parser.add_flag(out_opts, "print", "p")
 
 ### Group Attributes
 
-User-defined groups can be configured with special attributes that change how the parser enforces their usage:
+User-defined groups can be configured with special attributes that change how the parser enforces their usage, modifies their arguments' names, or handles their visibility in the help output:
+
+#### Validation Rules
 
 - `required()` – at least one argument from the group must be provided by the user, otherwise parsing will fail.
 - `mutually_exclusive()` – at most one argument from the group can be provided; using more than one at the same time results in an error.
 
-Both attributes are **off by default**, and they can be combined (e.g., a group can require that exactly one argument is chosen).
+Both attributes are **off by default**, and they can be combined (i.e., a group can require that exactly one argument is chosen).
 
 ```cpp
 auto& out_opts = parser.add_group("Output Options")
@@ -911,16 +919,34 @@ auto& out_opts = parser.add_group("Output Options")
 >
 > If a group is defined as **mutually exclusive** and an argument from this group is used, then the `required` and `nargs` attribute requirements of other arguments from the group **will NOT be verified**.
 >
-> Consider the example in the section below. Normally the `--output, -o` argument would expect a value to be given in the command-line. However, if the `--print, -p` flag is used, then the `nargs` requirement of the `--output, -o` argument will not be verified, and therefore no exception will be thrown, even though the `nargs` requirement is not satisfied.
+> Consider the example in the [Complete Example](#complete-example) section. Normally the `--out-file, -out-f` argument would expect a value to be given in the command-line due to the `.nargs(1)` parameter. However, if the `--out-console, -out-c` flag is used, then the `nargs` requirement of the `--out-file, -out-f` argument will not be verified, and therefore no exception will be thrown, even though the `nargs` requirement is not satisfied.
 
-Additionally, argument groups can be marked `hidden` - a hidden group will not be visible in the parser's help output (even if it has visible arguments).
+#### Naming Modifiers
+
+Groups can automatically apply modifiers to the names of all arguments registered to them. This is especially useful for preventing name collisions or grouping related arguments under a common namespace.
+
+* `with_prefix("str")` – prepends the specified string to the argument's base name.
+* `with_suffix("str")` – appends the specified string to the argument's base name.
+
+```cpp
+auto& net_opts = parser.add_group("Network Options").with_prefix("net-").with_suffix("-cfg");
+net_opts.add_optional_argument("port"); // Registered in the parser as "net-port-cfg"
+```
+
+> [!NOTE]
+>
+> When using naming modifiers, the argument is registered in the main parser under its fully modified name. To learn how to easily retrieve values using only the base names, see [Retrieving Values from Groups](https://www.google.com/search?q=%2523using-argument-groups&utm_source=gemini).
+
+#### Visibility
+
+* `hidden()` – If this option is set, the entire group (including all of its visible arguments) will be hidden from the program's help description.
 
 ```cpp
 auto& hidden_opts = parser.add_group("Hidden Options").hidden();
-parser.add_optional_argument("visible").help("A visible arg");
+parser.add_optional_argument(hidden_opts, "visible").help("A visible arg");
 ```
 
-In the example above, neither the `Hidden Options` group nor the `visible` arg will be visible in the parser's help output.
+In the example above, neither the `Hidden Options` group nor the `visible` arg will be printed in the parser's help output.
 
 ### Complete Example
 
@@ -935,15 +961,16 @@ int main(int argc, char* argv[]) {
 
     // create the argument group
     auto& out_opts = parser.add_group("Output Options")
+                           .with_prefix("out-")
                            .required()
                            .mutually_exclusive();
 
     // add arguments to the custom group
-    parser.add_optional_argument(out_opts, "output", "o")
+    parser.add_optional_argument(out_opts, "file", "f")
           .nargs(1)
           .help("Print output to a given file");
 
-    parser.add_flag(out_opts, "print", "p")
+    parser.add_flag(out_opts, "console", "c")
           .help("Print output to the console");
 
     parser.try_parse_args(argc, argv);
@@ -957,10 +984,14 @@ When invoked with the `--help` flag, the above program produces a help message t
 ```
 Program: myprog
 
+Optional Arguments:
+
+  --help, -h : Display the help message
+
 Output Options: (required, mutually exclusive)
 
-  --output, -o : Print output to a given file
-  --print, -p  : Print output to the console
+  --out-file, -out-f    : Print output to a given file
+  --out-console, -out-c : Print output to the console
 ```
 
 ### Suppressing Argument Group Checks
@@ -1402,40 +1433,97 @@ Now all the values, that caused an exception for the `parse_args` example, are c
 
 ## Retrieving Argument Values
 
-You can retrieve the argument's value(s) with:
+Once parsing is complete, you can extract your data using three different interfaces depending on how you organized your arguments: via the parser, via direct argument references, or via argument groups.
+
+### Using the Parser
+
+You can retrieve an argument's value(s) using the parser instance by providing the argument's registered name:
 
 ```cpp
-/*const*/ value_type value = parser.value<value_type>("argument_name"); // (1)
+/*const*/ value_type value /*&*/ = parser.value<value_type>("argument_name"); // (1)
 /*const*/ value_type value = parser.value_or<value_type>("argument_name", fallback_value); // (2)
 const std::vector<value_type>& values = parser.values<value_type>("argument_name"); // (3)
+
 ```
 
 1. Returns the given argument's value.
+* Returns the argument's parsed value if it has one.
+* If more than one value has been parsed for the argument, this function will return the first parsed value.
+* Returns the argument's predefined value if no value has been parsed for the argument.
+> [!NOTE]
+> For simple/small types (e.g. booleans, integers) this method returns by value. Otherwise, the argument's value is returned by reference.
 
-    - Returns the argument's parsed value if it has one.
-    - If more than one value has been parsed for the argument, this function will return the first parsed value.
-    - Returns the argument's predefined value if no value has been parsed for the argument.
+1. Returns the given argument's value or the specified fallback value if the argument has no values.
+* If the argument has a value (parsed or predefined), the behavior is the same as in case **(1)**.
+* If the argument has no values, this will return `value_type{std::forward<U>(fallback_value)}` (where `U` is the deduced type of `fallback_value`).
+> [!NOTE]
+> Because of the fallback value, the function always returns by value, even if the argument's value type is large.
 
-2. Returns the given argument's value or the specified fallback value if the argument has no values.
+1. Returns a vector of the given argument's values.
+* If the argument has any values (parsed or predefined), they will be returned as a `std::vector<value_type>`.
+* If the argument has no values an empty vector will be returned.
 
-    - If the argument has a value (parsed or predefined), the behavior is the same as in case **(1)**.
-    - If the argument has no values, this will return `value_type{std::forward<U>(fallback_value)}` (where `U` is the deduced type of `fallback_value`).
 
-3. Returns a vector of the given argument's values.
-
-    - If the argument has any values (parsed or predefined), they will be returned as a `std::vector<value_type>`.
-    - If the argument has no values an empty vector will be returned.
 
 > [!NOTE]
->
 > The argument value getter functions might throw an exception if:
-> - An argument with the given name does not exist
-> - The argument does not contain any values - parsed or predefined (only getter function `(1)`)
-> - The specified `value_type` does not match the value type of the argument
+> * An argument with the given name does not exist
+> * The argument does not contain any values - parsed or predefined (only getter function `(1)`)
+> * The specified `value_type` does not match the value type of the argument
 
-<br/>
-<br/>
-<br/>
+### Using Argument References
+
+When you define an argument, the parser returns a strongly-typed reference to the argument object. You can use this reference to retrieve the argument's state and values directly.
+
+Because the argument reference is inherently aware of its own `value_type`, you **do not** need to provide template parameters when calling these methods, making it entirely type-safe.
+
+```cpp
+// Capture the returned references
+auto& port_arg = parser.add_optional_argument<int>("port", "p");
+auto& verbose_arg = parser.add_optional_argument<argon::none_type>("verbose", "v")
+                         .help("Set the verbosity level (e.g. -vvv)");
+
+parser.try_parse_args(argc, argv);
+
+// Retrieve values directly without template parameters
+int port = port_arg.value_or(8080);
+
+// Query argument state (count tracks the number of times the flag was used)
+std::size_t verbosity_level = verbose_arg.count();
+
+if (port_arg.is_used() and verbosity_level >= 2) {
+    std::cout << "Port explicitly set to " << port << '\n';
+}
+```
+
+The argument instance provides the exact same API as the parser (`value()`, `value_or()`, `values()`, `has_value()`, `is_used()`, `count()`), but tied directly to itself.
+
+### Using Argument Groups
+
+If you organize your arguments into an `argument_group` configured with a `prefix` or `suffix`, retrieving values via the `argument_parser` requires you to use the fully formatted name (e.g., `parser.value("mod_output_mod")`).
+
+To simplify this, the `argument_group` class provides its own value and state getters. These methods automatically apply the group's naming modifiers, allowing you to query arguments using their simple base names.
+
+```cpp
+auto& out_opts = parser.add_group("Output").with_prefix("out-");
+
+out_opts.add_optional_argument("file"); // Registered in the parser as "out-file"
+out_opts.add_optional_argument<argon::none_type>("verbose", "v"); // Registered as "out-verbose"
+
+parser.try_parse_args(argc, argv);
+
+// Querying the parser requires the full name:
+std::size_t verbosity_level = parser.count("out-verbose");
+
+// Querying the group requires ONLY the base name:
+std::size_t verbosity_level_grp = out_opts.count("verbose");
+std::string out_file = out_opts.value_or("file", "default.txt");
+
+// State getters are also available:
+if (out_opts.is_used("file")) {
+    std::cout << "Writing to " << out_file << " at verbosity level " << verbosity_level_grp << '\n';
+}
+```
 
 <br/>
 <br/>

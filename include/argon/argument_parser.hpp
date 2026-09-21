@@ -1586,6 +1586,37 @@ private:
     static constexpr std::uint8_t _indent_width = 2u;
 };
 
+// --- argument_group method implementations ---
+
+inline bool argument_group::is_used(std::string_view arg_base_name) const noexcept {
+    return this->_parser->is_used(this->_format_arg_name(arg_base_name));
+}
+
+inline std::size_t argument_group::count(std::string_view arg_base_name) const noexcept {
+    return this->_parser->count(this->_format_arg_name(arg_base_name));
+}
+
+inline bool argument_group::has_value(std::string_view arg_base_name) const noexcept {
+    return this->_parser->has_value(this->_format_arg_name(arg_base_name));
+}
+
+template <traits::c_argument_value_type T>
+inline traits::argument_result_type<T> argument_group::value(std::string_view arg_base_name) const {
+    return this->_parser->value<T>(this->_format_arg_name(arg_base_name));
+}
+
+template <traits::c_argument_value_type T, std::convertible_to<T> U>
+inline T argument_group::value_or(std::string_view arg_base_name, U&& fallback_value) const {
+    return this->_parser->value_or<T>(
+        this->_format_arg_name(arg_base_name), std::forward<U>(fallback_value)
+    );
+}
+
+template <traits::c_argument_value_type T>
+inline const std::vector<T>& argument_group::values(std::string_view arg_base_name) const {
+    return this->_parser->values<T>(this->_format_arg_name(arg_base_name));
+}
+
 namespace detail {
 
 /**
