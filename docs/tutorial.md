@@ -929,7 +929,7 @@ Groups can automatically apply modifiers to the names of all arguments registere
 * `with_suffix("str")` – appends the specified string to the argument's base name.
 
 ```cpp
-auto& net_opts = parser.add_group("Network").with_prefix("net-").with_suffix("-cfg");
+auto& net_opts = parser.add_group("Network Options").with_prefix("net-").with_suffix("-cfg");
 net_opts.add_optional_argument("port"); // Registered in the parser as "net-port-cfg"
 ```
 
@@ -1450,12 +1450,14 @@ const std::vector<value_type>& values = parser.values<value_type>("argument_name
 * Returns the argument's parsed value if it has one.
 * If more than one value has been parsed for the argument, this function will return the first parsed value.
 * Returns the argument's predefined value if no value has been parsed for the argument.
-> **NOTE:** For simple/small types (e.g. booleans, integers) this method returns by value. Otherwise, the argument's value is returned by reference.
+> [!NOTE]
+> For simple/small types (e.g. booleans, integers) this method returns by value. Otherwise, the argument's value is returned by reference.
 
 1. Returns the given argument's value or the specified fallback value if the argument has no values.
 * If the argument has a value (parsed or predefined), the behavior is the same as in case **(1)**.
 * If the argument has no values, this will return `value_type{std::forward<U>(fallback_value)}` (where `U` is the deduced type of `fallback_value`).
-> **NOTE:** Because of the fallback value, the function always returns by value, even if the argument's value type is large.
+> [!NOTE]
+> Because of the fallback value, the function always returns by value, even if the argument's value type is large.
 
 1. Returns a vector of the given argument's values.
 * If the argument has any values (parsed or predefined), they will be returned as a `std::vector<value_type>`.

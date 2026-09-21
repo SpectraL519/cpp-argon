@@ -1586,7 +1586,7 @@ private:
     static constexpr std::uint8_t _indent_width = 2u;
 };
 
-// --- argument_group inline implementations ---
+// --- argument_group method implementations ---
 
 inline bool argument_group::is_used(std::string_view arg_base_name) const noexcept {
     return this->_parser->is_used(this->_format_arg_name(arg_base_name));
