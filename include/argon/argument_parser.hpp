@@ -1210,9 +1210,6 @@ private:
 
         // Iterate over all argument groups to check for matching affixes
         for (const auto& group : this->_argument_groups) {
-            const std::string_view prefix = group->_prefix;
-            const std::string_view suffix = group->_suffix;
-
             // The token must be long enough to contain the affixes and at least one compound character
             if (actual_tok_value.length() <= group->_prefix.length() + group->_suffix.length())
                 continue;
