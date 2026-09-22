@@ -43,6 +43,7 @@
     - [3. Positional arguments consume free values](#3-positional-arguments-consume-free-values)
     - [4. Unknown Argument Flag Handling](#4-unknown-argument-flag-handling)
   - [Compound Arguments](#compound-arguments)
+    - [Compound Flags within Argument Groups](#compound-flags-within-argument-groups)
   - [Parsing Known Arguments](#parsing-known-arguments)
 - [Retrieving Argument Values](#retrieving-argument-values)
   - [Using the Parser](#using-the-parser)
@@ -1328,9 +1329,29 @@ Numbers: 1, 2, 3
 ```
 
 > [!IMPORTANT]
->
-> - If there exists an argument whose secondary name matches a possible compound of other arguments, the parser will still treat the flag as a flag of the **single matching argument**, not as multiple flags.
-> - The argument parser will try to assign the values following a compound argument flag to the argument represented by the **last character** of the compound flag.
+> * If there exists an argument whose secondary name matches a possible compound of other arguments, the parser will still treat the flag as a flag of the **single matching argument**, not as multiple flags.
+> * The argument parser will try to assign the values following a compound argument flag to the argument represented by the **last character** of the compound flag.
+
+#### Compound Flags within Argument Groups
+
+If you have organized arguments into an [argument group](#argument-groups) that uses a [prefix and/or suffix](#naming-modifiers), you can still use compound flags. To do this, the compound flag must strictly start with the group's prefix and end with the group's suffix. The characters nested between them will be treated as the secondary names of the arguments registered exclusively to that group.
+
+```cpp
+auto& log_opts = parser.add_group("Logging Options").with_prefix("log-").with_suffix("-opt");
+
+log_opts.add_optional_argument<argon::none_type>("verbose", "v");
+log_opts.add_optional_argument<argon::none_type>("quiet", "q");
+log_opts.add_optional_argument<argon::none_type>("debug", "d");
+
+parser.try_parse_args(argc, argv);
+
+/*
+> ./program -log-vvqd-opt
+This is equivalent to passing: -log-v-opt -log-v-opt -log-q-opt -log-d-opt
+```
+
+> [!NOTE]
+> The parser automatically handles prefix overlaps. For instance, if you type `-log` and your group prefix is `log` but no valid group compound can be formed, the parser safely falls back to standard compound parsing (evaluating it as `-l`, `-o`, `-g` if those individual arguments exist).
 
 <br />
 

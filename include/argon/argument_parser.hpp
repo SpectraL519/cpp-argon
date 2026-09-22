@@ -1207,26 +1207,66 @@ private:
             return false;
 
         const auto actual_tok_value = this->_strip_flag_prefix(tok);
-        tok.args.reserve(actual_tok_value.size());
 
-        for (const char c : actual_tok_value) {
-            const auto opt_arg_it = std::ranges::find_if(
-                this->_optional_args,
-                this->_name_match_predicate(
-                    std::string_view(&c, 1ull), detail::argument_name::m_secondary
-                )
+        // Iterate over all argument groups to check for matching affixes
+        for (const auto& group : this->_argument_groups) {
+            // The token must be long enough to contain the affixes and at least one compound character
+            if (actual_tok_value.length() <= group->_prefix.length() + group->_suffix.length())
+                continue;
+
+            // The token must correctly start and end with the group's affixes
+            if (not (
+                    actual_tok_value.starts_with(group->_prefix)
+                    and actual_tok_value.ends_with(group->_suffix)
+                ))
+                continue;
+
+            // Extract the middle characters which represent the actual compound flag
+            const std::string_view flag = actual_tok_value.substr(
+                group->_prefix.length(),
+                actual_tok_value.length() - group->_prefix.length() - group->_suffix.length()
             );
 
-            if (opt_arg_it == this->_optional_args.end()) {
-                tok.args.clear();
-                return false;
+            tok.args.clear();
+            tok.args.reserve(flag.length());
+
+            bool all_match = true;
+            std::string expected_secondary_name;
+            expected_secondary_name.reserve(
+                group->_prefix.length() + 1ull + group->_suffix.length()
+            );
+
+            for (const char c : flag) {
+                // Reconstruct the expected secondary name
+                expected_secondary_name = group->_prefix;
+                expected_secondary_name += c;
+                expected_secondary_name += group->_suffix;
+
+                const auto opt_arg_it = std::ranges::find_if(
+                    this->_optional_args,
+                    this->_name_match_predicate(
+                        expected_secondary_name, detail::argument_name::m_secondary
+                    )
+                );
+
+                if (opt_arg_it == this->_optional_args.end()) {
+                    all_match = false;
+                    break;
+                }
+
+                tok.args.emplace_back(*opt_arg_it);
             }
 
-            tok.args.emplace_back(*opt_arg_it);
+            // If every reconstructed character matched an argument in this group, it's valid
+            if (all_match) {
+                tok.type = detail::argument_token::t_flag_compound;
+                return true;
+            }
         }
 
-        tok.type = detail::argument_token::t_flag_compound;
-        return true;
+        // If no group matched entirely, clear arguments and fail
+        tok.args.clear();
+        return false;
     }
 
     /**

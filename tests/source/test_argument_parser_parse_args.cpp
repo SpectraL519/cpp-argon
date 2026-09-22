@@ -1191,6 +1191,113 @@ TEST_CASE_FIXTURE(
     free_argv(argc, argv);
 }
 
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "argument_parser should properly handle valid compound flags with group prefixes and suffixes"
+) {
+    const std::string prefix = "log-";
+    const std::string suffix = "-opt";
+    auto& group = sut.add_group("Log Group").with_prefix(prefix).with_suffix(suffix);
+
+    // add arguments to the group
+    sut.add_optional_argument(group, "verbose", "v").nargs(argon::nargs::any());
+    sut.add_optional_argument(group, "quiet", "q");
+    sut.add_optional_argument(group, "debug", "d");
+
+    std::size_t verbose_count, quiet_count, debug_count;
+    std::string compound_flag;
+
+    SUBCASE("one usage of each group argument") {
+        compound_flag = "-log-vqd-opt";
+        verbose_count = quiet_count = debug_count = 1ull;
+    }
+    SUBCASE("complex usage with repeated flags") {
+        compound_flag = "-log-vvqvd-opt";
+        verbose_count = 3ull;
+        quiet_count = debug_count = 1ull;
+    }
+
+    CAPTURE(verbose_count);
+    CAPTURE(quiet_count);
+    CAPTURE(debug_count);
+    CAPTURE(compound_flag);
+
+    std::vector<std::string> argv_vec{"program", compound_flag};
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    // parse args
+    REQUIRE_NOTHROW(sut.parse_args(argc, argv));
+
+    // validate argument usage counts
+    CHECK_EQ(sut.count("log-verbose-opt"), verbose_count);
+    CHECK_EQ(sut.count("log-quiet-opt"), quiet_count);
+    CHECK_EQ(sut.count("log-debug-opt"), debug_count);
+
+    // cleanup
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "argument_parser should fall back to standard compound parsing if a group prefix overlaps but "
+    "the token is not a valid group compound"
+) {
+    // Create a group with the prefix "log"
+    auto& log_group = sut.add_group("Log Group").with_prefix("log");
+    sut.add_optional_argument(log_group, "dummy", "d");
+
+    // Create normal arguments (not in the group) that happen to spell "log"
+    sut.add_optional_argument("list", "l");
+    sut.add_optional_argument("output", "o");
+    sut.add_optional_argument("generate", "g");
+
+    // The token is "-log".
+    // It starts with the group prefix "log", but leaving an empty middle "" or matching "g" as a middle fails group matching.
+    // It should safely fall back to the default group and parse as standard '-l', '-o', '-g'.
+    std::vector<std::string> argv_vec{"program", "-log"};
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(sut.parse_args(argc, argv));
+
+    CHECK_EQ(sut.count("list"), 1ull);
+    CHECK_EQ(sut.count("output"), 1ull);
+    CHECK_EQ(sut.count("generate"), 1ull);
+    CHECK_EQ(sut.count("logdummy"), 0ull); // Ensure the group argument wasn't touched
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "argument_parser should throw if an invalid compound group flag is used"
+) {
+    auto& group = sut.add_group("Log Group").with_prefix("log-");
+    sut.add_optional_argument(group, "verbose", "v");
+    sut.add_optional_argument(group, "debug", "d");
+
+    // 'x' is not a valid secondary flag in this group
+    const std::string invalid_flag = "-log-vdx";
+    std::vector<std::string> argv_vec{"program", invalid_flag};
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    CHECK_THROWS_WITH_AS(
+        sut.parse_args(argc, argv),
+        parsing_failure::unknown_argument(invalid_flag).what(),
+        parsing_failure
+    );
+
+    CHECK_EQ(sut.count("log-verbose"), 0ull);
+    CHECK_EQ(sut.count("log-debug"), 0ull);
+
+    free_argv(argc, argv);
+}
+
 // greedy arguments
 
 TEST_CASE_FIXTURE(
