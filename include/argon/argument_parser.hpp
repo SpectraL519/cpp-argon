@@ -265,6 +265,33 @@ public:
     }
 
     /**
+     * @brief Set the assignment character.
+     * @param chr The assignment character.
+     * @return Reference to the argument parser.
+     * @throws argon::invalid_configuration if the assignment character is not a printable
+     *         ASCII character, is a space, is identical to the flag character, or if any
+     *         arguments have already been added to the parser.
+     * @note The default assignment character is '='.
+     */
+    argument_parser& assign_char(const char chr) {
+        if (not this->_positional_args.empty() or not this->_optional_args.empty())
+            throw invalid_configuration("The assignment character must be set before adding any "
+                                        "arguments!");
+
+        if (not std::isprint(static_cast<unsigned char>(chr))
+            or std::isspace(static_cast<unsigned char>(chr)))
+            throw invalid_configuration("The assignment character must be a non-space printable "
+                                        "ASCII character!");
+
+        if (chr == this->_flag_char)
+            throw invalid_configuration("The assignment character cannot be the same as the flag "
+                                        "prefix character!");
+
+        this->_assign_char = chr;
+        return *this;
+    }
+
+    /**
      * @brief Add default arguments to the argument parser.
      * @tparam ArgvRange Type of the positional argument discriminator range.
      * @param arg_discriminators A range of default positional argument discriminators.
@@ -1124,33 +1151,53 @@ private:
     void _tokenize_arg(
         const std::string_view arg_value, arg_token_vec_t& toks, const parsing_state& state
     ) {
+        std::string_view flag_str = arg_value;
+        std::optional<std::string_view> inline_value = std::nullopt;
+
+        // Split the token if it starts with a flag and contains the assignment character
+        if (arg_value.starts_with(this->_flag_char)) {
+            if (const auto assign_pos = arg_value.find(this->_assign_char);
+                assign_pos != std::string_view::npos) {
+                flag_str = arg_value.substr(0, assign_pos);
+                inline_value = arg_value.substr(assign_pos + 1);
+            }
+        }
+
         detail::argument_token tok{
-            .type = this->_deduce_token_type(arg_value), .value = std::string(arg_value)
+            .type = this->_deduce_token_type(flag_str), .value = std::string(flag_str)
         };
 
         if (not tok.is_flag_token() or this->_validate_flag_token(tok)) {
             toks.emplace_back(std::move(tok));
+            if (inline_value.has_value()) { // push the additional value token
+                toks.emplace_back(detail::argument_token{
+                    .type = detail::argument_token::t_value,
+                    .value = std::string(inline_value.value())
+                });
+            }
             return;
         }
 
         // not a value token -> flag token
         // flag token could not be validated -> unknown flag
         if (state.parse_known_only) { // do nothing (will be handled during parsing)
+            tok.value = std::string(arg_value); // Restore the original argument value
             toks.emplace_back(std::move(tok));
             return;
         }
 
         switch (this->_unknown_policy) {
         case unknown_policy::fail:
-            throw parsing_failure::unknown_argument(tok.value);
+            throw parsing_failure::unknown_argument(arg_value);
         case unknown_policy::warn:
-            std::cerr << "[argon::warning] Unknown argument '" << tok.value << "' will be ignored."
+            std::cerr << "[argon::warning] Unknown argument '" << arg_value << "' will be ignored."
                       << std::endl;
             [[fallthrough]];
         case unknown_policy::ignore:
             return;
         case unknown_policy::as_values:
             tok.type = detail::argument_token::t_value;
+            tok.value = std::string(arg_value);
             toks.emplace_back(std::move(tok));
             break;
         }
@@ -1596,7 +1643,9 @@ private:
     std::optional<std::string> _program_description =
         std::nullopt; ///< The description of the program.
     unknown_policy _unknown_policy = unknown_policy::fail; ///< Policy for unknown arguments.
+
     char _flag_char = '-'; ///< The character used as a flag prefix.
+    char _assign_char = '='; ///< The character used to assign values inline.
     std::string _primary_flag_prefix = "--"; ///< The primary flag prefix.
 
     // --- parsing cfg & state ---
