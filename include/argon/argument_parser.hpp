@@ -259,35 +259,12 @@ public:
         if (not std::isprint(static_cast<unsigned char>(chr)))
             throw invalid_configuration("The flag character must be a printable ASCII character!");
 
+        if (chr == this->_assign_char)
+            throw invalid_configuration("The flag character cannot be the same as the assignment "
+                                        "character!");
+
         this->_flag_char = chr;
         this->_primary_flag_prefix = std::string(this->_primary_flag_prefix_length, chr);
-        return *this;
-    }
-
-    /**
-     * @brief Set the assignment character.
-     * @param chr The assignment character.
-     * @return Reference to the argument parser.
-     * @throws argon::invalid_configuration if the assignment character is not a printable
-     *         ASCII character, is a space, is identical to the flag character, or if any
-     *         arguments have already been added to the parser.
-     * @note The default assignment character is '='.
-     */
-    argument_parser& assign_char(const char chr) {
-        if (not this->_positional_args.empty() or not this->_optional_args.empty())
-            throw invalid_configuration("The assignment character must be set before adding any "
-                                        "arguments!");
-
-        if (not std::isprint(static_cast<unsigned char>(chr))
-            or std::isspace(static_cast<unsigned char>(chr)))
-            throw invalid_configuration("The assignment character must be a non-space printable "
-                                        "ASCII character!");
-
-        if (chr == this->_flag_char)
-            throw invalid_configuration("The assignment character cannot be the same as the flag "
-                                        "prefix character!");
-
-        this->_assign_char = chr;
         return *this;
     }
 
@@ -1645,7 +1622,6 @@ private:
     unknown_policy _unknown_policy = unknown_policy::fail; ///< Policy for unknown arguments.
 
     char _flag_char = '-'; ///< The character used as a flag prefix.
-    char _assign_char = '='; ///< The character used to assign values inline.
     std::string _primary_flag_prefix = "--"; ///< The primary flag prefix.
 
     // --- parsing cfg & state ---
@@ -1670,6 +1646,7 @@ private:
 
     // --- constants ---
 
+    static constexpr char _assign_char = '=';
     static constexpr std::uint8_t _primary_flag_prefix_length = 2u;
     static constexpr std::uint8_t _secondary_flag_prefix_length = 1u;
     static constexpr std::uint8_t _indent_width = 2u;

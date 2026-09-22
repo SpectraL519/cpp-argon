@@ -118,4 +118,15 @@ TEST_CASE_FIXTURE(
     );
 }
 
+TEST_CASE_FIXTURE(
+    test_argument_parser_cfg,
+    "flag_char() should throw if the given character is the same as the assignment character"
+) {
+    CHECK_THROWS_WITH_AS(
+        sut.flag_char('='),
+        "The flag character cannot be the same as the assignment character!",
+        invalid_configuration
+    );
+}
+
 TEST_SUITE_END(); // test_argument_parser_cfg
