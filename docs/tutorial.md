@@ -1334,7 +1334,7 @@ Numbers: 1, 2, 3
 
 #### Compound Flags within Argument Groups
 
-If you have organized arguments into an [argument group](https://www.google.com/search?q=%2523argument-groups&utm_source=gemini) that uses a prefix and/or suffix, you can still use compound flags. To do this, the compound flag must strictly start with the group's prefix and end with the group's suffix. The characters nested between them will be treated as the secondary names of the arguments registered exclusively to that group.
+If you have organized arguments into an [argument group](#argument-groups) that uses a [prefix and/or suffix](#naming-modifiers), you can still use compound flags. To do this, the compound flag must strictly start with the group's prefix and end with the group's suffix. The characters nested between them will be treated as the secondary names of the arguments registered exclusively to that group.
 
 ```cpp
 auto& log_opts = parser.add_group("Logging Options").with_prefix("log-").with_suffix("-opt");
