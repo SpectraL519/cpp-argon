@@ -42,6 +42,7 @@
     - [2. Positional arguments are parsed in the order of definition](#2-positional-arguments-are-parsed-in-the-order-of-definition)
     - [3. Positional arguments consume free values](#3-positional-arguments-consume-free-values)
     - [4. Unknown Argument Flag Handling](#4-unknown-argument-flag-handling)
+    - [5. Inline Value Assignment](#5-inline-value-assignment)
   - [Compound Arguments](#compound-arguments)
     - [Compound Flags within Argument Groups](#compound-flags-within-argument-groups)
   - [Parsing Known Arguments](#parsing-known-arguments)
@@ -1293,6 +1294,43 @@ The available policies are:
 > known =
 > unknown = --unknown
 > ```
+
+<br />
+
+#### 5. Inline Value Assignment
+
+By default, optional arguments accept values separated by spaces (e.g., `--number 42`). CPP-ARGON also natively supports inline value assignment using the `=` character.
+
+```cpp
+parser.add_optional_argument<int>("number", "n");
+parser.add_optional_argument("string", "s");
+parser.add_optional_argument("names").nargs(argon::nargs::at_least(1));
+```
+
+You can use the assignment character with primary flags, secondary flags, and even at the end of [compound flags](#compound-arguments) (where the assigned value is automatically passed to the argument represented by the last character in the compound flag):
+
+```txt
+> ./program --number=42 -s=hello
+> ./program -vvn=5
+```
+
+> [!WARNING]
+> * **Do not place spaces around the assignment character.** Command-line shells (like Bash, Zsh, or PowerShell) split arguments by spaces before the program ever processes them. Typing `--number = 42` will cause the parser to treat `=` as the value for `--number` (which will fail during integer conversion).
+>
+> * If your assigned value contains spaces, quote the value directly after the assignment character:
+>   ```txt
+>   > ./program --string="hello world"
+>   ```
+
+**Multiple Values**
+
+If an argument is configured to accept multiple values (e.g., via `.nargs(argon::nargs::at_least(1))`), you can seamlessly combine inline assignment for the first value with standard space-separated values for the rest:
+
+```txt
+> ./program --names=Kowalski Wisniewski Nowak
+```
+
+In this case, the parser automatically assigns all three names to the `--names` argument.
 
 <br />
 <br />
