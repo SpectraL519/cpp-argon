@@ -1521,6 +1521,118 @@ TEST_CASE_FIXTURE(
     free_argv(argc, argv);
 }
 
+// assignment character
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "parse_args should correctly assign values using the assignment character (=)"
+) {
+    sut.add_optional_argument<int>("number", "n");
+    sut.add_optional_argument("string", "s");
+
+    std::vector<std::string> argv_vec{"program", "--number=42", "-s=hello world"};
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(sut.parse_args(argc, argv));
+
+    CHECK(sut.has_value("number"));
+    CHECK_EQ(sut.value<int>("number"), 42);
+
+    CHECK(sut.has_value("string"));
+    CHECK_EQ(sut.value("string"), "hello world");
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "parse_args should correctly handle multiple values when the first is assigned inline"
+) {
+    sut.add_optional_argument("names").nargs(argon::nargs::at_least(1));
+
+    std::vector<std::string> argv_vec{"program", "--names=Kowalski", "Wisniewski", "Nowak"};
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(sut.parse_args(argc, argv));
+
+    CHECK(sut.has_value("names"));
+    CHECK_EQ(sut.count("names"), 1ull);
+
+    const std::vector<std::string> expected_names{"Kowalski", "Wisniewski", "Nowak"};
+    CHECK_EQ(sut.values("names"), expected_names);
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "parse_args should correctly assign inline values to the final argument of a compound flag"
+) {
+    sut.add_flag("verbose", "v");
+    sut.add_optional_argument<int>("level", "l");
+
+    std::vector<std::string> argv_vec{"program", "-vvl=5"};
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(sut.parse_args(argc, argv));
+
+    CHECK_EQ(sut.count("verbose"), 2ull);
+    CHECK(sut.has_value("level"));
+    CHECK_EQ(sut.value<int>("level"), 5);
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "parse_known_args should preserve the full assignment string for unknown arguments"
+) {
+    sut.add_optional_argument("known", "k");
+
+    const std::string unknown_arg = "--unknown=invalid_value";
+    std::vector<std::string> argv_vec{"program", "--known=valid_value", unknown_arg};
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    std::vector<std::string> unknown_args;
+    REQUIRE_NOTHROW(unknown_args = sut.parse_known_args(argc, argv));
+
+    CHECK(sut.has_value("known"));
+    CHECK_EQ(sut.value("known"), "valid_value");
+
+    REQUIRE_EQ(unknown_args.size(), 1ull);
+    CHECK_EQ(unknown_args.front(), unknown_arg);
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "parse_args should throw when spaces around the assignment character lead to invalid values"
+) {
+    sut.add_optional_argument<int>("number", "n");
+
+    std::vector<std::string> argv_vec{"program", "--number", "=", "42"};
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    CHECK_THROWS_WITH_AS(
+        sut.parse_args(argc, argv),
+        "Cannot parse value `=` for argument [--number, -n].",
+        parsing_failure
+    );
+
+    free_argv(argc, argv);
+}
+
 // argument groups
 
 TEST_CASE_FIXTURE(
