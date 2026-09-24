@@ -397,8 +397,7 @@ public:
      */
     template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
-        const std::string_view base_name,
-        const detail::argument_name_discriminator name_discr = n_primary
+        const std::string_view base_name, const argument_name_discriminator name_discr = n_primary
     ) {
         return this->add_optional_argument<T>(this->_gr_optional_args, base_name, name_discr);
     }
@@ -433,7 +432,7 @@ public:
     optional_argument<T>& add_optional_argument(
         argument_group& group,
         const std::string_view base_name,
-        const detail::argument_name_discriminator name_discr = n_primary
+        const argument_name_discriminator name_discr = n_primary
     ) {
         this->_validate_group(group);
 
@@ -499,8 +498,7 @@ public:
      */
     template <bool StoreImplicitly = true>
     optional_argument<bool>& add_flag(
-        const std::string_view base_name,
-        const detail::argument_name_discriminator name_discr = n_primary
+        const std::string_view base_name, const argument_name_discriminator name_discr = n_primary
     ) {
         return this->add_optional_argument<bool>(base_name, name_discr)
             .default_values(not StoreImplicitly)
@@ -539,7 +537,7 @@ public:
     optional_argument<bool>& add_flag(
         argument_group& group,
         const std::string_view base_name,
-        const detail::argument_name_discriminator name_discr = n_primary
+        const argument_name_discriminator name_discr = n_primary
     ) {
         return this->add_optional_argument<bool>(group, base_name, name_discr)
             .default_values(not StoreImplicitly)

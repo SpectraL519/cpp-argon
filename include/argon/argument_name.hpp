@@ -159,8 +159,6 @@ private:
     char _flag_char; ///< The flag character (used for optional argument names).
 };
 
-namespace detail {
-
 /**
  * @brief Argument name member discriminator.
  *
@@ -171,8 +169,6 @@ enum class argument_name_discriminator : bool {
     n_secondary ///< Represents the secondary name (used with a short flag prefix --).
 };
 
-} // namespace detail
-
-using enum detail::argument_name_discriminator;
+using enum argument_name_discriminator;
 
 } // namespace argon
