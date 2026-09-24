@@ -7,9 +7,9 @@
 using namespace argon_testing;
 using namespace argon::nargs;
 
+using argon::argument_name;
 using argon::optional_argument;
 using argon::parsing_failure;
-using argon::detail::argument_name;
 using argon::detail::parameter_descriptor;
 
 TEST_SUITE_BEGIN("test_optional_argument");
@@ -47,7 +47,7 @@ const range non_default_range = range{1ull, choices.size()};
 TEST_CASE_FIXTURE(argument_test_fixture, "name() should return the proper argument_name instance") {
     SUBCASE("initialized with the primary name only") {
         const auto sut = sut_type(arg_name_primary);
-        const auto name = get_name(sut);
+        const auto name = sut.name();
 
         CHECK(name.match(primary_name));
         CHECK_FALSE(name.match(secondary_name));
@@ -55,7 +55,7 @@ TEST_CASE_FIXTURE(argument_test_fixture, "name() should return the proper argume
 
     SUBCASE("initialized with the primary and secondary names") {
         const auto sut = sut_type(arg_name);
-        const auto name = get_name(sut);
+        const auto name = sut.name();
 
         CHECK(name.match(primary_name));
         CHECK(name.match(secondary_name));
@@ -64,14 +64,14 @@ TEST_CASE_FIXTURE(argument_test_fixture, "name() should return the proper argume
 
 TEST_CASE_FIXTURE(argument_test_fixture, "help() should return nullopt by default") {
     const auto sut = sut_type(arg_name_primary);
-    CHECK_FALSE(get_help(sut));
+    CHECK_FALSE(sut.help());
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "help() should return a massage set for the argument") {
     auto sut = sut_type(arg_name_primary);
     sut.help(help_msg);
 
-    const auto stored_help_msg = get_help(sut);
+    const auto stored_help_msg = sut.help();
 
     REQUIRE(stored_help_msg);
     CHECK_EQ(stored_help_msg, help_msg);
@@ -86,14 +86,14 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name);
 
     auto bld = get_help_builder(sut, verbose);
-    REQUIRE_EQ(bld.name, get_name(sut).str());
+    REQUIRE_EQ(bld.name, sut.name().str());
     CHECK_FALSE(bld.help);
     CHECK(bld.params.empty());
 
     // with a help msg
     sut.help(help_msg);
     bld = get_help_builder(sut, verbose);
-    REQUIRE_EQ(bld.name, get_name(sut).str());
+    REQUIRE_EQ(bld.name, sut.name().str());
     CHECK(bld.help);
     CHECK_EQ(bld.help.value(), help_msg);
     CHECK(bld.params.empty());
@@ -108,7 +108,7 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name);
 
     auto bld = get_help_builder(sut, verbose);
-    REQUIRE_EQ(bld.name, get_name(sut).str());
+    REQUIRE_EQ(bld.name, sut.name().str());
     CHECK_FALSE(bld.help);
     CHECK(bld.params.empty());
 
@@ -174,10 +174,10 @@ TEST_CASE_FIXTURE(
     "is_hidden() should return false by default or the value passed in the attribute setter"
 ) {
     auto sut = sut_type(arg_name_primary);
-    REQUIRE_FALSE(is_hidden(sut));
+    REQUIRE_FALSE(sut.is_hidden());
 
     sut.hidden();
-    CHECK(is_hidden(sut));
+    CHECK(sut.is_hidden());
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "is_required() should return false by default") {
@@ -365,7 +365,7 @@ TEST_CASE_FIXTURE(
 
 TEST_CASE_FIXTURE(argument_test_fixture, "has_parsed_values() should return false by default") {
     const auto sut = sut_type(arg_name_primary);
-    CHECK_FALSE(has_parsed_values(sut));
+    CHECK_FALSE(sut.has_parsed_values());
 }
 
 TEST_CASE_FIXTURE(
@@ -377,30 +377,30 @@ TEST_CASE_FIXTURE(
 
     SUBCASE("default_values") {
         sut.default_values(default_value);
-        CHECK_FALSE(has_parsed_values(sut));
+        CHECK_FALSE(sut.has_parsed_values());
     }
 
     SUBCASE("implicit_values") {
         sut.implicit_values(implicit_value);
-        CHECK_FALSE(has_parsed_values(sut));
+        CHECK_FALSE(sut.has_parsed_values());
     }
 
     SUBCASE("default_values and implicit_values") {
         sut.default_values(default_value);
         sut.implicit_values(implicit_value);
-        CHECK_FALSE(has_parsed_values(sut));
+        CHECK_FALSE(sut.has_parsed_values());
     }
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "has_parsed_values() should true if the value is set") {
     auto sut = sut_type(arg_name_primary);
     set_value(sut, arbitrary_value);
-    CHECK(has_parsed_values(sut));
+    CHECK(sut.has_parsed_values());
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "has_predefined_values() should return false by default") {
     const auto sut = sut_type(arg_name_primary);
-    CHECK_FALSE(has_predefined_values(sut));
+    CHECK_FALSE(sut.has_predefined_values());
 }
 
 TEST_CASE_FIXTURE(
@@ -409,7 +409,7 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name_primary);
     sut.default_values(default_value);
 
-    CHECK(has_predefined_values(sut));
+    CHECK(sut.has_predefined_values());
 }
 
 TEST_CASE_FIXTURE(
@@ -420,7 +420,7 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name_primary);
     sut.implicit_values(implicit_value);
 
-    CHECK_FALSE(has_predefined_values(sut));
+    CHECK_FALSE(sut.has_predefined_values());
 }
 
 TEST_CASE_FIXTURE(
@@ -433,7 +433,7 @@ TEST_CASE_FIXTURE(
 
     mark_used(sut);
 
-    CHECK(has_predefined_values(sut));
+    CHECK(sut.has_predefined_values());
 }
 
 TEST_CASE_FIXTURE(
@@ -444,7 +444,7 @@ TEST_CASE_FIXTURE(
     sut.default_values(default_value);
     sut.implicit_values(implicit_value);
 
-    CHECK(has_predefined_values(sut));
+    CHECK(sut.has_predefined_values());
 }
 
 TEST_CASE_FIXTURE(

@@ -8,7 +8,7 @@
 
 #include "argon/action/predefined.hpp"
 #include "argon/action/util.hpp"
-#include "argon/detail/argument_base.hpp"
+#include "argon/argument_base.hpp"
 #include "argon/detail/help_builder.hpp"
 #include "argon/nargs/range.hpp"
 #include "argon/traits.hpp"
@@ -54,7 +54,7 @@ enum class argument_type : bool { positional, optional };
  * @tparam T The value type accepted by the argument (defaults to std::string).
  */
 template <argument_type ArgT, traits::c_argument_value_type T = std::string>
-class argument : public detail::typed_argument_base<T> {
+class argument : public typed_argument_base<T> {
 public:
     using value_type = T; ///< The argument's value type alias.
     using count_type = nargs::count_type; ///< The argument's count type alias.
@@ -68,7 +68,7 @@ public:
      * @param name The name of the positional argument.
      * @note The constructor is enabled only if `type` is `argument_type::positional`.
      */
-    argument(const detail::argument_name& name)
+    argument(const argument_name& name)
     requires(type == argument_type::positional)
     : _name(name), _nargs_range(_default_nargs_range_actual), _required(_default_required) {}
 
@@ -77,7 +77,7 @@ public:
      * @param name The name of the optional argument.
      * @note The constructor is enabled only if `type` is `argument_type::optional`.
      */
-    argument(const detail::argument_name& name)
+    argument(const argument_name& name)
     requires(type == argument_type::optional)
     : _name(name),
       _nargs_range(_default_nargs_range_actual),
@@ -97,7 +97,7 @@ public:
     }
 
     /// @return Reference the name of the positional argument.
-    [[nodiscard]] const argon::detail::argument_name& name() const noexcept override {
+    [[nodiscard]] const argon::argument_name& name() const noexcept override {
         return this->_name;
     }
 
@@ -442,6 +442,16 @@ public:
         return this->has_parsed_values() or this->_has_predefined_values_impl();
     }
 
+    /// @return `true` if parsed values are available for the argument, `false` otherwise.
+    [[nodiscard]] bool has_parsed_values() const noexcept override {
+        return not this->_values.empty();
+    }
+
+    /// @return `true` if the argument has predefined values, `false` otherwise.
+    [[nodiscard]] bool has_predefined_values() const noexcept override {
+        return this->_has_predefined_values_impl();
+    }
+
     /**
      * @return Reference to the stored value of the argument.
      * @note If multiple values are available, the first one is returned.
@@ -569,16 +579,6 @@ private:
      */
     bool set_value(const std::string& str_value) override {
         return this->_set_value_impl(str_value);
-    }
-
-    /// @return `true` if parsed values are available for the argument, `false` otherwise.
-    [[nodiscard]] bool has_parsed_values() const noexcept override {
-        return not this->_values.empty();
-    }
-
-    /// @return `true` if the argument has predefined values, `false` otherwise.
-    [[nodiscard]] bool has_predefined_values() const noexcept override {
-        return this->_has_predefined_values_impl();
     }
 
     /// @return The ordering relationship of the argument's values and its nargs range attribute.
@@ -768,7 +768,7 @@ private:
     }
 
     // attributes
-    const argon::detail::argument_name _name; ///< The argument's name.
+    const argon::argument_name _name; ///< The argument's name.
     std::optional<std::string> _help_msg; ///< The argument's help message.
     nargs::range _nargs_range; ///< The argument's nargs range attribute value.
     [[no_unique_address]] value_arg_specific_type<std::vector<value_type>>

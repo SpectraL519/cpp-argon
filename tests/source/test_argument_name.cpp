@@ -1,10 +1,10 @@
 #include "doctest.h"
 
-#include <argon/detail/argument_name.hpp>
+#include <argon/argument_name.hpp>
 
 #include <sstream>
 
-using namespace argon::detail;
+using argon::argument_name;
 
 TEST_SUITE_BEGIN("test_argument_name");
 
@@ -35,14 +35,14 @@ TEST_CASE("arugment_name construction should throw if both primary and secondary
 }
 
 TEST_CASE("argument_name members should be initialzed properly") {
-    CHECK_EQ(arg_name_primary_1.primary, primary_1);
-    CHECK(arg_name_primary_1.secondary.empty());
+    CHECK_EQ(arg_name_primary_1.primary(), primary_1);
+    CHECK(arg_name_primary_1.secondary().empty());
 
-    CHECK(arg_name_secondary_1.primary.empty());
-    CHECK_EQ(arg_name_secondary_1.secondary, secondary_1);
+    CHECK(arg_name_secondary_1.primary().empty());
+    CHECK_EQ(arg_name_secondary_1.secondary(), secondary_1);
 
-    CHECK_EQ(arg_name_full_1.primary, primary_1);
-    CHECK_EQ(arg_name_full_1.secondary, secondary_1);
+    CHECK_EQ(arg_name_full_1.primary(), primary_1);
+    CHECK_EQ(arg_name_full_1.secondary(), secondary_1);
 }
 
 TEST_CASE("operator==(argument_name) should return true only if both primary and secondary names "

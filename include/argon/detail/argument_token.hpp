@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "argon/detail/argument_base.hpp"
+#include "argon/argument_base.hpp"
 
 #include <cstdint>
 #include <memory>
@@ -17,7 +17,7 @@ namespace argon::detail {
 
 /// @brief Structure representing a single command-line argument token.
 struct argument_token {
-    using arg_ptr_t = std::shared_ptr<detail::argument_base>; ///< Argument pointer type alias.
+    using arg_ptr_t = std::shared_ptr<argument_base>; ///< Argument pointer type alias.
     using arg_ptr_vec_t = std::vector<arg_ptr_t>;
 
     /// @brief The token type discriminator.

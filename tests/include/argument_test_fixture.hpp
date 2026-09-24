@@ -4,8 +4,8 @@
 #include <argon/util/string.hpp>
 
 using argon::argument;
+using argon::argument_name;
 using argon::argument_type;
-using argon::detail::argument_name;
 using argon::detail::help_builder;
 using argon::traits::argument_result_type;
 using argon::traits::c_argument_value_type;
@@ -43,49 +43,14 @@ struct argument_test_fixture {
     }
 
     template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] bool has_parsed_values(const argument<ArgT, T>& arg) const {
-        return arg.has_parsed_values();
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] bool has_predefined_values(const argument<ArgT, T>& arg) const {
-        return arg.has_predefined_values();
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
     [[nodiscard]] std::weak_ordering nvalues_ordering(const argument<ArgT, T>& arg) const {
         return arg.nvalues_ordering();
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] const argument_name& get_name(const argument<ArgT, T>& arg) const {
-        return arg.name();
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] const std::optional<std::string>& get_help(const argument<ArgT, T>& arg) const {
-        return arg._help_msg;
     }
 
     template <argument_type ArgT, c_argument_value_type T>
     [[nodiscard]] help_builder get_help_builder(const argument<ArgT, T>& arg, const bool verbose)
         const {
         return arg.help_builder(verbose);
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] bool is_hidden(const argument<ArgT, T>& arg) const {
-        return arg.is_hidden();
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] bool is_required(const argument<ArgT, T>& arg) const {
-        return arg.is_required();
-    }
-
-    template <argument_type ArgT, c_argument_value_type T>
-    [[nodiscard]] bool is_bypass_required_enabled(const argument<ArgT, T>& arg) const {
-        return arg.is_bypass_required_enabled();
     }
 
     // exception message builders

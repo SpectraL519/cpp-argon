@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "argon/detail/argument_name.hpp"
+#include "argon/argument_name.hpp"
 #include "argon/traits.hpp"
 #include "argon/util/string.hpp"
 

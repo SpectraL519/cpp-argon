@@ -5,9 +5,9 @@ using namespace argon_testing;
 
 TEST_SUITE_BEGIN("test_none_type_argument");
 
+using argon::argument_name;
 using argon::optional_argument;
 using argon::parsing_failure;
-using argon::detail::argument_name;
 
 namespace {
 

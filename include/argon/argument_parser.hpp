@@ -187,6 +187,25 @@ public:
 
     ~argument_parser() = default;
 
+    /// @brief Returns the parser's name.
+    [[nodiscard]] std::string_view name() const noexcept {
+        return this->_name;
+    }
+
+    /**
+     * @brief Returns the parser's full program name.
+     *
+     * - For top-level parsers, this is the same as the parser's name.
+     * - For subparsers, the name is prefixed with its parent parser names.
+     *
+     * Top-level parser: `git`
+     * Subparser: `git submodule`
+     * Nested subparser : `git submodule init`
+     */
+    [[nodiscard]] std::string_view program_name() const noexcept {
+        return this->_program_name;
+    }
+
     /**
      * @brief Set the program version.
      * @param version The version of the program.
@@ -211,6 +230,11 @@ public:
         return *this;
     }
 
+    /// @return The program version if set, std::nullopt otherwise.
+    [[nodiscard]] const std::optional<std::string>& program_version() const noexcept {
+        return this->_program_version;
+    }
+
     /**
      * @brief Set the program description.
      * @param description The description of the program.
@@ -219,6 +243,11 @@ public:
     argument_parser& program_description(std::string_view description) noexcept {
         this->_program_description.emplace(description);
         return *this;
+    }
+
+    /// @return The program description if set, std::nullopt otherwise.
+    [[nodiscard]] const std::optional<std::string>& program_description() const noexcept {
+        return this->_program_description;
     }
 
     /**
@@ -232,6 +261,11 @@ public:
         return *this;
     }
 
+    /// @return The configured verbosity mode flag.
+    [[nodiscard]] bool is_verbose() const noexcept {
+        return this->_verbose;
+    }
+
     /**
      * @brief Set the unknown argument flags handling policy.
      * @param policy The unknown arguments policy value.
@@ -241,6 +275,11 @@ public:
     argument_parser& unknown_arguments_policy(const unknown_policy policy) noexcept {
         this->_unknown_policy = policy;
         return *this;
+    }
+
+    /// @return The configured unknown arguments policy.
+    [[nodiscard]] unknown_policy unknown_arguments_policy() const noexcept {
+        return this->_unknown_policy;
     }
 
     /**
@@ -266,6 +305,11 @@ public:
         this->_flag_char = chr;
         this->_primary_flag_prefix = std::string(this->_primary_flag_prefix_length, chr);
         return *this;
+    }
+
+    /// @return The configured flag character.
+    [[nodiscard]] char flag_char() const noexcept {
+        return this->_flag_char;
     }
 
     /**
@@ -333,7 +377,7 @@ public:
         auto full_name = group._format_arg_name(base_name);
         this->_verify_arg_name_pattern(full_name);
 
-        const detail::argument_name arg_name(std::move(full_name));
+        const argument_name arg_name(std::move(full_name));
         if (this->_is_arg_name_used(arg_name))
             throw invalid_configuration::argument_name_used(arg_name);
 
@@ -353,8 +397,7 @@ public:
      */
     template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
-        const std::string_view base_name,
-        const detail::argument_name_discriminator name_discr = n_primary
+        const std::string_view base_name, const argument_name_discriminator name_discr = n_primary
     ) {
         return this->add_optional_argument<T>(this->_gr_optional_args, base_name, name_discr);
     }
@@ -389,7 +432,7 @@ public:
     optional_argument<T>& add_optional_argument(
         argument_group& group,
         const std::string_view base_name,
-        const detail::argument_name_discriminator name_discr = n_primary
+        const argument_name_discriminator name_discr = n_primary
     ) {
         this->_validate_group(group);
 
@@ -398,8 +441,8 @@ public:
 
         const auto arg_name =
             name_discr == n_primary
-                ? detail::argument_name{std::move(full_name), "", this->_flag_char}
-                : detail::argument_name{"", std::move(full_name), this->_flag_char};
+                ? argument_name{std::move(full_name), "", this->_flag_char}
+                : argument_name{"", std::move(full_name), this->_flag_char};
 
         if (this->_is_arg_name_used(arg_name))
             throw invalid_configuration::argument_name_used(arg_name);
@@ -433,7 +476,7 @@ public:
         auto full_secondary_name = group._format_arg_name(base_secondary_name);
         this->_verify_arg_name_pattern(full_secondary_name);
 
-        const detail::argument_name arg_name(
+        const argument_name arg_name(
             std::move(full_primary_name), std::move(full_secondary_name), this->_flag_char
         );
         if (this->_is_arg_name_used(arg_name))
@@ -455,8 +498,7 @@ public:
      */
     template <bool StoreImplicitly = true>
     optional_argument<bool>& add_flag(
-        const std::string_view base_name,
-        const detail::argument_name_discriminator name_discr = n_primary
+        const std::string_view base_name, const argument_name_discriminator name_discr = n_primary
     ) {
         return this->add_optional_argument<bool>(base_name, name_discr)
             .default_values(not StoreImplicitly)
@@ -495,7 +537,7 @@ public:
     optional_argument<bool>& add_flag(
         argument_group& group,
         const std::string_view base_name,
-        const detail::argument_name_discriminator name_discr = n_primary
+        const argument_name_discriminator name_discr = n_primary
     ) {
         return this->add_optional_argument<bool>(group, base_name, name_discr)
             .default_values(not StoreImplicitly)
@@ -525,12 +567,54 @@ public:
     }
 
     /**
+     * @brief Retrieves an argument's base configuration interface by its name.
+     * @param arg_name The name of the argument.
+     * @return Constant reference to the argument base.
+     * @throws argon::lookup_failure if an argument with the given name cannot be found.
+     */
+    [[nodiscard]] const argument_base& argument(std::string_view arg_name) const {
+        return *this->_get_argument(arg_name);
+    }
+
+    /**
      * @brief Adds an argument group with the given name to the parser's configuration.
      * @param name Name of the group.
      * @return Reference to the added argument group.
      */
     argument_group& add_group(const std::string_view name) noexcept {
         return *this->_argument_groups.emplace_back(argument_group::create(*this, name));
+    }
+
+    /**
+     * @brief Retrieves an argument group by its name.
+     * @param name The name of the group.
+     * @return Reference to the argument group.
+     * @throws argon::lookup_failure if a group with the given name does not exist.
+     */
+    [[nodiscard]] argument_group& group(std::string_view name) {
+        const auto it = std::ranges::find_if(this->_argument_groups, [name](const auto& grp) {
+            return grp->_name == name;
+        });
+        if (it == this->_argument_groups.end())
+            throw lookup_failure(std::format("Argument group with given name [{}] not found.", name)
+            );
+        return **it;
+    }
+
+    /**
+     * @brief Retrieves an argument group by its name.
+     * @param name The name of the group.
+     * @return Constant reference to the argument group.
+     * @throws argon::lookup_failure if a group with the given name does not exist.
+     */
+    [[nodiscard]] const argument_group& group(std::string_view name) const {
+        const auto it = std::ranges::find_if(this->_argument_groups, [name](const auto& grp) {
+            return grp->_name == name;
+        });
+        if (it == this->_argument_groups.end())
+            throw lookup_failure(std::format("Argument group with given name [{}] not found.", name)
+            );
+        return **it;
     }
 
     /**
@@ -552,6 +636,36 @@ public:
         return *this->_subparsers.emplace_back(
             std::unique_ptr<argument_parser>(new argument_parser(name, this->_program_name))
         );
+    }
+
+    /**
+     * @brief Retrieves a subparser by its name.
+     * @param name The name of the subparser.
+     * @return Reference to the subparser.
+     * @throws argon::lookup_failure if a subparser with the given name does not exist.
+     */
+    [[nodiscard]] argument_parser& subparser(std::string_view name) {
+        const auto it = std::ranges::find_if(this->_subparsers, [name](const auto& sub) {
+            return sub->_name == name;
+        });
+        if (it == this->_subparsers.end())
+            throw lookup_failure(std::format("Subparser with given name [{}] not found.", name));
+        return **it;
+    }
+
+    /**
+     * @brief Retrieves a subparser by its name.
+     * @param name The name of the subparser.
+     * @return Constant reference to the subparser.
+     * @throws argon::lookup_failure if a subparser with the given name does not exist.
+     */
+    [[nodiscard]] const argument_parser& subparser(std::string_view name) const {
+        const auto it = std::ranges::find_if(this->_subparsers, [name](const auto& sub) {
+            return sub->_name == name;
+        });
+        if (it == this->_subparsers.end())
+            throw lookup_failure(std::format("Subparser with given name [{}] not found.", name));
+        return **it;
     }
 
     /**
@@ -715,24 +829,7 @@ public:
         }
     }
 
-    /// @brief Returns the parser's name.
-    [[nodiscard]] std::string_view name() const noexcept {
-        return this->_name;
-    }
-
-    /**
-     * @brief Returns the parser's full program name.
-     *
-     * - For top-level parsers, this is the same as the parser's name.
-     * - For subparsers, the name is prefixed with its parent parser names.
-     *
-     * Top-level parser: `git`
-     * Subparser: `git submodule`
-     * Nested subparser : `git submodule init`
-     */
-    [[nodiscard]] std::string_view program_name() const noexcept {
-        return this->_program_name;
-    }
+    // --- parsing state and argument value getters ---
 
     /**
      * @brief Check whether this parser was invoked.
@@ -802,7 +899,7 @@ public:
     [[nodiscard]] traits::argument_result_type<T> value(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
 
-        const auto* typed_arg = dynamic_cast<const detail::typed_argument_base<T>*>(arg.get());
+        const auto* typed_arg = dynamic_cast<const typed_argument_base<T>*>(arg.get());
         if (not typed_arg)
             throw type_error::invalid_value_type<T>(arg->name());
 
@@ -822,7 +919,7 @@ public:
     [[nodiscard]] T value_or(std::string_view arg_name, U&& fallback_value) const {
         const auto arg = this->_get_argument(arg_name);
 
-        const auto* typed_arg = dynamic_cast<const detail::typed_argument_base<T>*>(arg.get());
+        const auto* typed_arg = dynamic_cast<const typed_argument_base<T>*>(arg.get());
         if (not typed_arg)
             throw type_error::invalid_value_type<T>(arg->name());
 
@@ -847,7 +944,7 @@ public:
     [[nodiscard]] const std::vector<T>& values(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
 
-        const auto* typed_arg = dynamic_cast<const detail::typed_argument_base<T>*>(arg.get());
+        const auto* typed_arg = dynamic_cast<const typed_argument_base<T>*>(arg.get());
         if (not typed_arg)
             throw type_error::invalid_value_type<T>(arg->name());
 
@@ -902,13 +999,18 @@ public:
         return os;
     }
 
+    /// @return The universal assignment character used to assign values inline.
+    [[nodiscard]] static constexpr char assign_char() noexcept {
+        return _assign_char;
+    }
+
 #ifdef AP_TESTING
     /// @brief Friend struct for testing purposes.
     friend struct ::argon_testing::argument_parser_test_fixture;
 #endif
 
 private:
-    using arg_ptr_t = std::shared_ptr<detail::argument_base>;
+    using arg_ptr_t = std::shared_ptr<argument_base>;
     using arg_ptr_vec_t = std::vector<arg_ptr_t>;
     using arg_ptr_vec_iter_t = typename arg_ptr_vec_t::iterator;
 
@@ -995,7 +1097,7 @@ private:
      */
     [[nodiscard]] auto _name_match_predicate(
         const std::string_view arg_name,
-        const detail::argument_name::match_type m_type = detail::argument_name::m_any
+        const argument_name::match_type m_type = argument_name::m_any
     ) const noexcept {
         return [=](const arg_ptr_t& arg) { return arg->name().match(arg_name, m_type); };
     }
@@ -1005,7 +1107,7 @@ private:
      * @param arg_name The name of the argument.
      * @return Argument predicate based on the provided name.
      */
-    [[nodiscard]] auto _name_match_predicate(const detail::argument_name& arg_name) const noexcept {
+    [[nodiscard]] auto _name_match_predicate(const argument_name& arg_name) const noexcept {
         return [&arg_name](const arg_ptr_t& arg) { return arg->name().match(arg_name); };
     }
 
@@ -1014,7 +1116,7 @@ private:
      * @param arg_name The name of the argument.
      * @return True if the argument name is already used, false otherwise.
      */
-    [[nodiscard]] bool _is_arg_name_used(const detail::argument_name& arg_name) const noexcept {
+    [[nodiscard]] bool _is_arg_name_used(const argument_name& arg_name) const noexcept {
         const auto predicate = this->_name_match_predicate(arg_name);
 
         if (std::ranges::find_if(this->_positional_args, predicate) != this->_positional_args.end())
@@ -1268,9 +1370,7 @@ private:
 
                 const auto opt_arg_it = std::ranges::find_if(
                     this->_optional_args,
-                    this->_name_match_predicate(
-                        expected_secondary_name, detail::argument_name::m_secondary
-                    )
+                    this->_name_match_predicate(expected_secondary_name, argument_name::m_secondary)
                 );
 
                 if (opt_arg_it == this->_optional_args.end()) {
@@ -1307,8 +1407,8 @@ private:
         const auto actual_tok_value = this->_strip_flag_prefix(flag_tok);
         const auto match_type =
             flag_tok.type == detail::argument_token::t_flag_primary
-                ? detail::argument_name::m_primary
-                : detail::argument_name::m_secondary;
+                ? argument_name::m_primary
+                : argument_name::m_secondary;
 
         return std::ranges::find_if(
             this->_optional_args, this->_name_match_predicate(actual_tok_value, match_type)
