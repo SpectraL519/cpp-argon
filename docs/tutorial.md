@@ -163,7 +163,7 @@ parser.program_version("alpha")
 >   * [Arguments](#arguments) - specify the values/options accepted by the program.
 >   * [The unknown argument flags handling policy](#4-unknown-argument-flag-handling).
 >   * [Argument Groups](#argument-groups) - organize related optional arguments into sections and optionally enforce usage rules.
->   * [Subparsers] - create hierarchical CLI subcommand structures.
+>   * [Subparsers](#subparsers) - create hierarchical CLI subcommand structures.
 
 > [!TIP]
 > You can specify the program version using a string (like in the example above) or using the `argon::version` structure:

@@ -24,7 +24,7 @@ struct dynamic_name_t {
     explicit dynamic_name_t() = default;
 };
 
-/// @brief TODO
+/// @brief Tag value that enables dynamic deduction of the program name.
 inline constexpr dynamic_name_t dynamic_name{};
 
 /// @brief A helper structure used to represent a program's version.
