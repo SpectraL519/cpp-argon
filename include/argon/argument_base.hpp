@@ -26,6 +26,8 @@ class argument_base {
 public:
     virtual ~argument_base() = default;
 
+    // --- attribute getters ---
+
     /// @return `true` if the argument is a positional argument instance, `false` otherwise.
     virtual bool is_positional() const noexcept = 0;
 
@@ -53,6 +55,23 @@ public:
     /// @return `true` if the argument is greedy, `false` otherwise.
     virtual bool is_greedy() const noexcept = 0;
 
+    // --- state getters ---
+
+    /// @return `true` if the argument has been used, `false` otherwise.
+    virtual bool is_used() const noexcept = 0;
+
+    /// @return The number of times an argument has been used.
+    virtual std::size_t count() const noexcept = 0;
+
+    /// @return `true` if the argument has a value, `false` otherwise.
+    virtual bool has_value() const noexcept = 0;
+
+    /// @return `true` if the argument has parsed values., `false` otherwise.
+    virtual bool has_parsed_values() const noexcept = 0;
+
+    /// @return `true` if the argument has predefined values, `false` otherwise.
+    virtual bool has_predefined_values() const noexcept = 0;
+
     friend class ::argon::argument_parser;
 
 protected:
@@ -64,25 +83,10 @@ protected:
     /// @return `true` if the argument accepts further values, `false` otherwise.
     virtual bool mark_used() = 0;
 
-    /// @return `true` if the argument has been used, `false` otherwise.
-    virtual bool is_used() const noexcept = 0;
-
-    /// @return The number of times an argument has been used.
-    virtual std::size_t count() const noexcept = 0;
-
     /// @brief Set the value for the argument.
     /// @param value The string representation of the value.
     /// @return `true` if the argument accepts further values, `false` otherwise.
     virtual bool set_value(const std::string& value) = 0;
-
-    /// @return `true` if the argument has a value, `false` otherwise.
-    virtual bool has_value() const noexcept = 0;
-
-    /// @return `true` if the argument has parsed values., `false` otherwise.
-    virtual bool has_parsed_values() const noexcept = 0;
-
-    /// @return `true` if the argument has predefined values, `false` otherwise.
-    virtual bool has_predefined_values() const noexcept = 0;
 
     /// @return The ordering relationship of argument range.
     virtual std::weak_ordering nvalues_ordering() const noexcept = 0;

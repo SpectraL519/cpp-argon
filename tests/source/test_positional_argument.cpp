@@ -37,19 +37,19 @@ const range non_default_range = range{1ull, choices.size()};
 
 TEST_CASE_FIXTURE(argument_test_fixture, "name() should return the proper argument_name instance") {
     const auto sut = sut_type(arg_name);
-    CHECK_EQ(get_name(sut), arg_name);
+    CHECK_EQ(sut.name(), arg_name);
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "help() should return nullopt by default") {
     const auto sut = sut_type(arg_name);
-    CHECK_FALSE(get_help(sut));
+    CHECK_FALSE(sut.help());
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "help() should return a massage set for the argument") {
     auto sut = sut_type(arg_name);
     sut.help(help_msg);
 
-    const auto stored_help_msg = get_help(sut);
+    const auto stored_help_msg = sut.help();
 
     REQUIRE(stored_help_msg);
     CHECK_EQ(stored_help_msg, help_msg);
@@ -64,14 +64,14 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name);
 
     auto bld = get_help_builder(sut, verbose);
-    REQUIRE_EQ(bld.name, get_name(sut).str());
+    REQUIRE_EQ(bld.name, sut.name().str());
     CHECK_FALSE(bld.help);
     CHECK(bld.params.empty());
 
     // with a help msg
     sut.help(help_msg);
     bld = get_help_builder(sut, verbose);
-    REQUIRE_EQ(bld.name, get_name(sut).str());
+    REQUIRE_EQ(bld.name, sut.name().str());
     CHECK(bld.help);
     CHECK_EQ(bld.help.value(), help_msg);
     CHECK(bld.params.empty());
@@ -86,7 +86,7 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name);
 
     auto bld = get_help_builder(sut, verbose);
-    REQUIRE_EQ(bld.name, get_name(sut).str());
+    REQUIRE_EQ(bld.name, sut.name().str());
     CHECK_FALSE(bld.help);
     CHECK(bld.params.empty());
 
@@ -290,7 +290,7 @@ TEST_CASE_FIXTURE(
 
 TEST_CASE_FIXTURE(argument_test_fixture, "has_parsed_values() should return false by default") {
     const auto sut = sut_type(arg_name);
-    CHECK_FALSE(has_parsed_values(sut));
+    CHECK_FALSE(sut.has_parsed_values());
 }
 
 TEST_CASE_FIXTURE(
@@ -300,19 +300,19 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name);
     sut.default_values(default_value);
 
-    CHECK_FALSE(has_parsed_values(sut));
+    CHECK_FALSE(sut.has_parsed_values());
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "has_parsed_values() should true if the value is set") {
     auto sut = sut_type(arg_name);
     set_value(sut, valid_value);
 
-    CHECK(has_parsed_values(sut));
+    CHECK(sut.has_parsed_values());
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "has_predefined_values() should return false by default") {
     const auto sut = sut_type(arg_name);
-    CHECK_FALSE(has_predefined_values(sut));
+    CHECK_FALSE(sut.has_predefined_values());
 }
 
 TEST_CASE_FIXTURE(
@@ -321,7 +321,7 @@ TEST_CASE_FIXTURE(
     auto sut = sut_type(arg_name);
     sut.default_values(default_value);
 
-    CHECK(has_predefined_values(sut));
+    CHECK(sut.has_predefined_values());
 }
 
 TEST_CASE_FIXTURE(

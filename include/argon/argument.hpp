@@ -442,6 +442,16 @@ public:
         return this->has_parsed_values() or this->_has_predefined_values_impl();
     }
 
+    /// @return `true` if parsed values are available for the argument, `false` otherwise.
+    [[nodiscard]] bool has_parsed_values() const noexcept override {
+        return not this->_values.empty();
+    }
+
+    /// @return `true` if the argument has predefined values, `false` otherwise.
+    [[nodiscard]] bool has_predefined_values() const noexcept override {
+        return this->_has_predefined_values_impl();
+    }
+
     /**
      * @return Reference to the stored value of the argument.
      * @note If multiple values are available, the first one is returned.
@@ -569,16 +579,6 @@ private:
      */
     bool set_value(const std::string& str_value) override {
         return this->_set_value_impl(str_value);
-    }
-
-    /// @return `true` if parsed values are available for the argument, `false` otherwise.
-    [[nodiscard]] bool has_parsed_values() const noexcept override {
-        return not this->_values.empty();
-    }
-
-    /// @return `true` if the argument has predefined values, `false` otherwise.
-    [[nodiscard]] bool has_predefined_values() const noexcept override {
-        return this->_has_predefined_values_impl();
     }
 
     /// @return The ordering relationship of the argument's values and its nargs range attribute.

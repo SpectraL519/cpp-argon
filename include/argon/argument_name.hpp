@@ -15,6 +15,7 @@
 
 namespace argon {
 
+// TODO: make a class with private members
 /// @brief Structure holding the argument's name.
 struct argument_name {
     /// @brief Specifies the type of argument name match.
