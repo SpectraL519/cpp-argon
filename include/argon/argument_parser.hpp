@@ -183,7 +183,12 @@ public:
     argument_parser(argument_parser&&) = delete;
     argument_parser& operator=(argument_parser&&) = delete;
 
-    argument_parser(const std::string_view name) : argument_parser(name, "") {}
+    /// Constructs a parser with the given name
+    argument_parser(const std::string_view name) : argument_parser(name, "", false) {}
+
+    /// @brief Constructs a parser with the name dynamically deduced from argv[0]
+    /// @param tag The argon::dynamic_name tag.
+    argument_parser(dynamic_name_t) : argument_parser("", "", true) {}
 
     ~argument_parser() = default;
 
@@ -634,7 +639,7 @@ public:
             ));
 
         return *this->_subparsers.emplace_back(
-            std::unique_ptr<argument_parser>(new argument_parser(name, this->_program_name))
+            std::unique_ptr<argument_parser>(new argument_parser(name, this->_program_name, false))
         );
     }
 
@@ -671,7 +676,7 @@ public:
     /**
      * @brief Parses the command-line arguments.
      *
-     * Equivalent to:
+     * Roughly equivalent to:
      * ```cpp
      * parse_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
      * ```
@@ -682,6 +687,9 @@ public:
      * @attention The first argument (the program name) is ignored.
      */
     void parse_args(int argc, char* argv[]) {
+        if (argc > 0)
+            this->_resolve_name(argv[0]);
+
         this->parse_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)));
     }
 
@@ -695,6 +703,10 @@ public:
      */
     template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     void parse_args(const ArgvRange& argv_rng) {
+        if (not this->_is_name_resolved)
+            throw std::logic_error("Dynamic program name must be resolved before calling "
+                                   "range-based parse_args.");
+
         parsing_state state(*this);
         this->_parse_args_impl(std::ranges::begin(argv_rng), std::ranges::end(argv_rng), state);
 
@@ -707,7 +719,7 @@ public:
     /**
      * @brief Parses the command-line arguments and exits on error.
      *
-     * Equivalent to:
+     * Roughly equivalent to:
      * ```cpp
      * try_parse_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
      * ```
@@ -717,6 +729,9 @@ public:
      * @note The first argument (the program name) is ignored.
      */
     void try_parse_args(int argc, char* argv[]) {
+        if (argc > 0)
+            this->_resolve_name(argv[0]);
+
         this->try_parse_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)));
     }
 
@@ -747,7 +762,7 @@ public:
     /**
      * @brief Parses the known command-line arguments.
      *
-     * Equivalent to:
+     * Roughly equivalent to:
      * ```cpp
      * try_parse_known_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
      * ```
@@ -763,6 +778,9 @@ public:
      * @attention The first argument (the program name) is ignored.
      */
     std::vector<std::string> parse_known_args(int argc, char* argv[]) {
+        if (argc > 0)
+            this->_resolve_name(argv[0]);
+
         return this->parse_known_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)));
     }
 
@@ -790,7 +808,7 @@ public:
     /**
      * @brief Parses the known command-line arguments and exits on error.
      *
-     * Equivalent to:
+     * Roughly equivalent to:
      * ```cpp
      * try_parse_known_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
      * ```
@@ -801,6 +819,9 @@ public:
      * @attention The first argument (the program name) is ignored.
      */
     std::vector<std::string> try_parse_known_args(int argc, char* argv[]) {
+        if (argc > 0)
+            this->_resolve_name(argv[0]);
+
         return this->try_parse_known_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)));
     }
 
@@ -1005,7 +1026,6 @@ public:
     }
 
 #ifdef AP_TESTING
-    /// @brief Friend struct for testing purposes.
     friend struct ::argon_testing::argument_parser_test_fixture;
 #endif
 
@@ -1023,35 +1043,38 @@ private:
     using arg_token_vec_t = std::vector<detail::argument_token>;
     using arg_token_vec_iter_t = typename arg_token_vec_t::const_iterator;
 
-    /// @brief A collection of values used during the parsing process.
     struct parsing_state {
         parsing_state(argument_parser& parser, const bool parse_known_only = false)
         : curr_arg(nullptr),
           curr_pos_arg_it(parser._positional_args.begin()),
           parse_known_only(parse_known_only) {}
 
-        /// @brief Update the parser-specific parameters of the state object.
-        /// @param parser The new parser.
         void set_parser(argument_parser& parser) {
             this->curr_arg = nullptr;
             this->curr_pos_arg_it = parser._positional_args.begin();
         }
 
-        arg_ptr_t curr_arg; ///< The currently processed argument.
-        arg_ptr_vec_iter_t
-            curr_pos_arg_it; ///< An iterator pointing to the next positional argument to be processed.
-        const bool
-            parse_known_only; ///< A flag indicating whether only known arguments should be parsed.
-        std::vector<std::string> unknown_args = {}; ///< A vector of unknown argument values.
+        arg_ptr_t curr_arg;
+        arg_ptr_vec_iter_t curr_pos_arg_it;
+        const bool parse_known_only;
+        std::vector<std::string> unknown_args = {};
     };
 
-    argument_parser(const std::string_view name, const std::string_view parent_name)
+    argument_parser(
+        const std::string_view name, const std::string_view parent_name, const bool dynamic
+    )
     : _name(name),
       _program_name(
-          std::format("{}{}{}", parent_name, std::string(not parent_name.empty(), ' '), name)
+          dynamic
+              ? ""
+              : std::format("{}{}{}", parent_name, std::string(not parent_name.empty(), ' '), name)
       ),
       _gr_positional_args(add_group("Positional Arguments")),
-      _gr_optional_args(add_group("Optional Arguments")) {
+      _gr_optional_args(add_group("Optional Arguments")),
+      _is_name_resolved(not dynamic) {
+        if (not this->_is_name_resolved)
+            return;
+
         if (name.empty())
             throw invalid_configuration("The program name cannot be empty!");
 
@@ -1059,10 +1082,20 @@ private:
             throw invalid_configuration("The program name cannot contain whitespace characters!");
     }
 
-    /**
-     * @brief Verifies the pattern of an argument name and if it's invalid, an error is thrown
-     * @throws argon::invalid_configuration
-     */
+    void _resolve_name(std::string_view path) {
+        if (this->_is_name_resolved)
+            return;
+
+        const auto pos = path.find_last_of("/\\");
+        this->_name = path.substr(pos == std::string_view::npos ? 0 : pos + 1);
+
+        if (this->_name.empty())
+            this->_name = "unknown";
+
+        this->_program_name = this->_name;
+        this->_is_name_resolved = true;
+    }
+
     void _verify_arg_name_pattern(const std::string_view arg_name) const {
         if (arg_name.empty())
             throw invalid_configuration::invalid_argument_name(
@@ -1089,12 +1122,6 @@ private:
             );
     }
 
-    /**
-     * @brief Returns a unary predicate function which checks if the given name matches the argument's name
-     * @param arg_name The name of the argument.
-     * @param m_type The match type used within the predicate.
-     * @return Argument predicate based on the provided name.
-     */
     [[nodiscard]] auto _name_match_predicate(
         const std::string_view arg_name,
         const argument_name::match_type m_type = argument_name::m_any
@@ -1102,20 +1129,10 @@ private:
         return [=](const arg_ptr_t& arg) { return arg->name().match(arg_name, m_type); };
     }
 
-    /**
-     * @brief Returns a unary predicate function which checks if the given name matches the argument's name
-     * @param arg_name The name of the argument.
-     * @return Argument predicate based on the provided name.
-     */
     [[nodiscard]] auto _name_match_predicate(const argument_name& arg_name) const noexcept {
         return [&arg_name](const arg_ptr_t& arg) { return arg->name().match(arg_name); };
     }
 
-    /**
-     * @brief Check if an argument name is already used.
-     * @param arg_name The name of the argument.
-     * @return True if the argument name is already used, false otherwise.
-     */
     [[nodiscard]] bool _is_arg_name_used(const argument_name& arg_name) const noexcept {
         const auto predicate = this->_name_match_predicate(arg_name);
 
@@ -1128,11 +1145,6 @@ private:
         return false;
     }
 
-    /**
-     * @brief Check if the given group belongs to the parser.
-     * @param group The group to validate.
-     * @throws std::logic_error if the group doesn't belong to the parser.
-     */
     void _validate_group(const argument_group& group) {
         if (group._parser != this)
             throw std::logic_error(std::format(
@@ -1140,15 +1152,6 @@ private:
             ));
     }
 
-    /**
-     * @brief Implementation of parsing command-line arguments.
-     * @tparam AIt The command-line argument value iterator type.
-     * @note `AIt` must be a `std::forward_iterator` with a value type convertible to `std::string`.
-     * @param args_begin The begin iterator for the command-line argument value range.
-     * @param args_end The end iterator for the command-line argument value range.
-     * @param state The current parsing state.
-     * @throws argon::invalid_configuration, argon::parsing_failure
-     */
     template <traits::c_forward_iterator_of<std::string, traits::type_validator::convertible> AIt>
     void _parse_args_impl(AIt args_begin, const AIt args_end, parsing_state& state) {
         this->_invoked = true;
@@ -1175,12 +1178,6 @@ private:
         this->_finalized = true;
     }
 
-    /**
-     * @brief Validate whether the definition/configuration of the parser's arguments is correct.
-     *
-     * What is verified:
-     * 1. No required positional argument can be added after a non-required positional argument.
-     */
     void _validate_argument_configuration() const {
         // step 1
         arg_ptr_t non_required_arg = nullptr;
@@ -1200,15 +1197,6 @@ private:
         }
     }
 
-    /**
-     * @brief Converts the command-line arguments into a list of tokens.
-     * @tparam AIt The command-line argument value iterator type.
-     * @note `AIt` must be a `std::forward_iterator` with a value type convertible to `std::string`.
-     * @param args_begin The begin iterator for the command-line argument value range.
-     * @param args_end The end iterator for the command-line argument value range.
-     * @param state The current parsing state.
-     * @return A list of preprocessed command-line argument tokens.
-     */
     template <traits::c_forward_iterator_of<std::string, traits::type_validator::convertible> AIt>
     [[nodiscard]] arg_token_vec_t _tokenize(
         AIt args_begin, const AIt args_end, const parsing_state& state
@@ -1221,12 +1209,6 @@ private:
         return toks;
     }
 
-    /**
-     * @brief Appends an argument token(s) created from `arg_value` to the `toks` vector.
-     * @param arg_value The command-line argument's value to be processed.
-     * @param toks The argument token list to which the processed token(s) will be appended.
-     * @param state The current parsing state.
-     */
     void _tokenize_arg(
         const std::string_view arg_value, arg_token_vec_t& toks, const parsing_state& state
     ) {
@@ -1282,15 +1264,11 @@ private:
         }
     }
 
-    /**
-     * @brief Returns the most appropriate *initial* token type based on a command-line argument's value.
-     *
-     * The token's *initial* type is deduced using the following rules:
-     * - `t_value`: an argument contains whitespace characters or cannot be a flag token
-     * - `t_flag_primary`: an argument begins with a primary flag prefix (`--`)
-     * - `t_flag_secondary`: an argument begins with a secondary flag prefix (`-`)
-     * - `t_flag_compound`: INITIALLY a token can NEVER have a compound flag type (may only be set when a flag token is validated)
-     */
+    // The token's *initial* type is deduced using the following rules:
+    // - `t_value`: an argument contains whitespace characters or cannot be a flag token
+    // - `t_flag_primary`: an argument begins with a primary flag prefix (`--`)
+    // - `t_flag_secondary`: an argument begins with a secondary flag prefix (`-`)
+    // - `t_flag_compound`: INITIALLY a token can NEVER have a compound flag type (may only be set when a flag token is validated)
     [[nodiscard]] detail::argument_token::token_type _deduce_token_type(
         const std::string_view arg_value
     ) const noexcept {
@@ -1306,12 +1284,8 @@ private:
         return detail::argument_token::t_value;
     }
 
-    /**
-     * @brief Check if a flag token is valid based on its value.
-     * @attention Extends the `args` member of the token if an argument with the given name (token's value) is present.
-     * @param tok The argument token to validate.
-     * @return `true` if the given token represents a valid argument flag.
-     */
+    // 1. Checks if a flag token is valid based on its value.
+    // 2. Extends the `args` member of the token if an argument(s) with the given name (token's value) is present.
     [[nodiscard]] bool _validate_flag_token(detail::argument_token& tok) noexcept {
         const auto opt_arg_it = this->_find_opt_arg(tok);
         if (opt_arg_it == this->_optional_args.end())
@@ -1321,13 +1295,8 @@ private:
         return true;
     }
 
-    /**
-     * @brief Check if a flag token is a valid compound argument flag based on its value.
-     * @attention If the token indeed represents valid compound flag, the token's type is changed to `t_flag_compuund`
-     * @attention and its `args` list is filled with all the arguments the token represents.
-     * @param tok The argument token to validate.
-     * @return `true` if the given token represents a valid compound argument flag.
-     */
+    // NOTE: If the token is a valid compound flag, its type is changed to `t_flag_compound`
+    //       and its `args` list is extended with all the arguments the token represents.
     bool _validate_compound_flag_token(detail::argument_token& tok) noexcept {
         if (tok.type != detail::argument_token::t_flag_secondary)
             return false;
@@ -1393,12 +1362,6 @@ private:
         return false;
     }
 
-    /**
-     * @brief Find an optional argument based on a flag token.
-     * @param flag_tok An argument_token instance, the value of which will be used to find the argument.
-     * @return An iterator to the argument's position.
-     * @note If the `flag_tok.type` is not a valid flag token, then the end iterator will be returned.
-     */
     [[nodiscard]] arg_ptr_vec_iter_t _find_opt_arg(const detail::argument_token& flag_tok
     ) noexcept {
         if (not flag_tok.is_flag_token())
@@ -1415,11 +1378,6 @@ private:
         );
     }
 
-    /**
-     * @brief Removes the flag prefix from a flag token's value.
-     * @param tok The argument token to be processed.
-     * @return The token's value without the flag prefix.
-     */
     [[nodiscard]] std::string_view _strip_flag_prefix(const detail::argument_token& tok
     ) const noexcept {
         switch (tok.type) {
@@ -1432,12 +1390,6 @@ private:
         }
     }
 
-    /**
-     * @brief Parse a single command-line argument token.
-     * @param tok The token to be parsed.
-     * @param state The current parsing state.
-     * @throws argon::parsing_failure
-     */
     void _parse_token(const detail::argument_token& tok, parsing_state& state) {
         if (state.curr_arg and state.curr_arg->is_greedy()) {
             this->_set_argument_value(tok.value, state);
@@ -1450,12 +1402,6 @@ private:
             this->_parse_value_token(tok, state);
     }
 
-    /**
-     * @brief Parse a single command-line argument *flag* token.
-     * @param tok The token to be parsed.
-     * @param state The current parsing state.
-     * @throws argon::parsing_failure
-     */
     void _parse_flag_token(const detail::argument_token& tok, parsing_state& state) {
         if (not tok.is_valid_flag_token()) {
             if (state.parse_known_only) {
@@ -1477,12 +1423,6 @@ private:
         }
     }
 
-    /**
-     * @brief Parse a single command-line argument *value* token.
-     * @param tok The token to be parsed.
-     * @param state The current parsing state.
-     * @throws argon::parsing_failure
-     */
     void _parse_value_token(const detail::argument_token& tok, parsing_state& state) {
         if (not state.curr_arg) {
             if (state.curr_pos_arg_it == this->_positional_args.end()) {
@@ -1496,12 +1436,7 @@ private:
         this->_set_argument_value(tok.value, state);
     }
 
-    /**
-     * @brief Set the value for the currently processed argument.
-     * @attention This function assumes that the current argument is set (i.e. `state.curr_arg != nullptr`).
-     * @param value The value to be set for the current argument.
-     * @param state The current parsing state.
-     */
+    // NOTE: This function assumes that the current argument is set (i.e. `state.curr_arg != nullptr`)
     void _set_argument_value(const std::string_view value, parsing_state& state) {
         if (state.curr_arg->set_value(std::string(value)))
             return; // argument still accepts values
@@ -1514,22 +1449,13 @@ private:
         state.curr_arg.reset();
     }
 
-    /**
-     * @brief Verifies the correctness of the parsed command-line arguments.
-     * @throws argon::parsing_failure if the state of the parsed arguments is invalid.
-     */
     void _verify_final_state() const {
         const auto [supress_group_checks, suppress_arg_checks] = this->_are_checks_suppressed();
         for (const auto& group : this->_argument_groups)
             this->_verify_group_requirements(*group, supress_group_checks, suppress_arg_checks);
     }
 
-    /**
-     * @brief Check whether required argument group checks or argument checks suppressing is enabled.
-     * @return A pair of boolean flags indicating whether suppressing is enabled.
-     * @note The first flag of the returned pair indicates whetehr argument group check suppressing is enabled,
-     * @note while the second flag indicated whether argument check suppressing is enabled.
-     */
+    // NOTE: Returns pair: <are-group-checks-suppressed, are-argument-checks-suppressed>
     [[nodiscard]] std::pair<bool, bool> _are_checks_suppressed() const noexcept {
         bool suppress_group_checks = false;
         bool suppress_arg_checks = false;
@@ -1549,12 +1475,6 @@ private:
         return {suppress_group_checks, suppress_arg_checks};
     }
 
-    /**
-     * @brief Verifies whether the requirements of the given argument group are satisfied.
-     * @param group The argument group to verify.
-     * @param suppress_arg_checks A flag indicating whether argument checks are suppressed.
-     * @throws argon::parsing_failure if the requirements are not satistied.
-     */
     void _verify_group_requirements(
         const argument_group& group,
         const bool suppress_group_checks,
@@ -1597,12 +1517,6 @@ private:
             this->_verify_argument_requirements(arg, suppress_arg_checks);
     }
 
-    /**
-     * @brief Verifies whether the requirements of the given argument are satisfied.
-     * @param arg The argument to verify.
-     * @param suppress_arg_checks A flag indicating whether argument checks are suppressed.
-     * @throws argon::parsing_failure if the requirements are not satistied.
-     */
     void _verify_argument_requirements(const arg_ptr_t& arg, const bool suppress_arg_checks) const {
         if (suppress_arg_checks)
             return;
@@ -1615,12 +1529,7 @@ private:
             throw parsing_failure::invalid_nvalues(arg->name(), nv_ord);
     }
 
-    /**
-     * @brief Get the argument with the specified name.
-     * @param arg_name The name of the argument.
-     * @return The argument with the specified name, if found; otherwise, std::nullopt.
-     * @throws argon::lookup_failure if an argument with the given name cannot be found.
-     */
+    // NOTE: Throws if not found
     [[nodiscard]] arg_ptr_t _get_argument(std::string_view arg_name) const {
         const auto predicate = this->_name_match_predicate(arg_name);
 
@@ -1659,13 +1568,7 @@ private:
         os << '\n';
     }
 
-    /**
-     * @brief Print the given argument list to an output stream.
-     * @param os The output stream to print to.
-     * @param group The argument group to print.
-     * @param verbose A verbosity mode indicator flag.
-     * @attention If a group has no visible arguments, nothing will be printed.
-     */
+    // NOTE: A group is only printed if it's not hidden and has at least one visible argument
     void _print_group(std::ostream& os, const argument_group& group, const bool verbose)
         const noexcept {
         if (group._hidden)
@@ -1713,36 +1616,34 @@ private:
 
     // --- attributes ---
 
-    std::string _name = ""; ///< The name of the parser.
+    std::string _name = "";
     std::string _program_name =
-        ""; ///< The name of the program in the format "<parent-parser-names>... <program-name>".
-    std::optional<std::string> _program_version = std::nullopt; ///< The version of the program.
-    std::optional<std::string> _program_description =
-        std::nullopt; ///< The description of the program.
-    unknown_policy _unknown_policy = unknown_policy::fail; ///< Policy for unknown arguments.
+        ""; // The name of the program in the format "<parent-parser-names>... <program-name>".
+    std::optional<std::string> _program_version = std::nullopt;
+    std::optional<std::string> _program_description = std::nullopt;
+    unknown_policy _unknown_policy = unknown_policy::fail;
 
-    char _flag_char = '-'; ///< The character used as a flag prefix.
-    std::string _primary_flag_prefix = "--"; ///< The primary flag prefix.
+    char _flag_char = '-';
+    std::string _primary_flag_prefix = "--";
 
     // --- parsing cfg & state ---
 
-    arg_ptr_vec_t _positional_args = {}; ///< The list of positional arguments.
-    arg_ptr_vec_t _optional_args = {}; ///< The list of optional arguments.
-    arg_group_ptr_vec_t _argument_groups = {}; ///< The list of argument groups.
-    argument_group& _gr_positional_args; ///< The positional argument group.
-    argument_group& _gr_optional_args; ///< The optional argument group.
-    arg_parser_ptr_vec_t _subparsers = {}; ///< The list of subparsers.
+    arg_ptr_vec_t _positional_args = {};
+    arg_ptr_vec_t _optional_args = {};
+    arg_group_ptr_vec_t _argument_groups = {};
+    argument_group& _gr_positional_args;
+    argument_group& _gr_optional_args;
+    arg_parser_ptr_vec_t _subparsers = {};
 
     // --- cfg flags ---
 
-    bool _verbose : 1 = false; ///< Verbosity flag.
+    bool _is_name_resolved : 1 = false;
+    bool _verbose : 1 = false;
 
     // --- parsing state flags ---
 
-    bool _invoked : 1 =
-        false; ///< A flag indicating whether the parser has been invoked to parse arguments.
-    bool _finalized : 1 =
-        false; ///< A flag indicating whether the parsing process has been finalized.
+    bool _invoked : 1 = false; // Indicates whether the parser has been invoked to parse arguments
+    bool _finalized : 1 = false; // Indicates whether the parsing process has been finalized.
 
     // --- constants ---
 
@@ -1785,11 +1686,6 @@ inline const std::vector<T>& argument_group::values(std::string_view arg_base_na
 
 namespace detail {
 
-/**
- * @brief Adds a predefined/default positional argument to the parser.
- * @param arg_discriminator The default argument discriminator.
- * @param arg_parser The argument parser to which the argument will be added.
- */
 inline void add_default_argument(
     const default_argument arg_discriminator, argument_parser& arg_parser
 ) noexcept {
@@ -1846,5 +1742,4 @@ inline void add_default_argument(
 }
 
 } // namespace detail
-
 } // namespace argon
