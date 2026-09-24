@@ -417,4 +417,89 @@ TEST_CASE_FIXTURE(
     );
 }
 
+// argument getters
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_args_cfg,
+    "argument() getter should throw if there is no argument with the given name"
+) {
+    CHECK_THROWS_AS(discard(sut.argument("nonexistent")), lookup_failure);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_args_cfg,
+    "argument() getter should return the correct argument base reference"
+) {
+    sut.add_positional_argument("pos_arg");
+    sut.add_optional_argument("opt_arg", "o");
+
+    CHECK_NOTHROW(discard(sut.argument("pos_arg")));
+    CHECK_EQ(sut.argument("pos_arg").name().primary(), "pos_arg");
+    CHECK(sut.argument("pos_arg").is_positional());
+
+    CHECK_NOTHROW(discard(sut.argument("opt_arg")));
+    CHECK_EQ(sut.argument("opt_arg").name().primary(), "opt_arg");
+    CHECK(sut.argument("opt_arg").is_optional());
+
+    // Should also be retrievable by the secondary name
+    CHECK_NOTHROW(discard(sut.argument("o")));
+    CHECK_EQ(sut.argument("o").name().secondary(), "o");
+}
+
+// group getters
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_args_cfg,
+    "group() getter should throw if there is no group with the given name"
+) {
+    CHECK_THROWS_AS(discard(sut.group("Nonexistent Group")), lookup_failure);
+
+    const auto& const_sut = sut;
+    CHECK_THROWS_AS(discard(const_sut.group("Nonexistent Group")), lookup_failure);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_args_cfg,
+    "group() getter should return the correct argument group reference"
+) {
+    const std::string group_name = "My Group";
+    sut.add_group(group_name);
+
+    // Non-const getter
+    CHECK_NOTHROW(discard(sut.group(group_name)));
+
+    // Const getter
+    const auto& const_sut = sut;
+    CHECK_NOTHROW(discard(const_sut.group(group_name)));
+}
+
+// subparser getters
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_args_cfg,
+    "subparser() getter should throw if there is no subparser with the given name"
+) {
+    CHECK_THROWS_AS(discard(sut.subparser("nonexistent")), lookup_failure);
+
+    const auto& const_sut = sut;
+    CHECK_THROWS_AS(discard(const_sut.subparser("nonexistent")), lookup_failure);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_args_cfg,
+    "subparser() getter should return the correct subparser reference"
+) {
+    const std::string sub_name = "my_sub";
+    sut.add_subparser(sub_name);
+
+    // Non-const getter
+    CHECK_NOTHROW(discard(sut.subparser(sub_name)));
+    CHECK_EQ(sut.subparser(sub_name).name(), sub_name);
+
+    // Const getter
+    const auto& const_sut = sut;
+    CHECK_NOTHROW(discard(const_sut.subparser(sub_name)));
+    CHECK_EQ(const_sut.subparser(sub_name).name(), sub_name);
+}
+
 TEST_SUITE_END(); // test_argument_parser_args_cfg
