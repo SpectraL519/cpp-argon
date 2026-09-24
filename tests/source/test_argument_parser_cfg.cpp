@@ -47,15 +47,17 @@ TEST_CASE_FIXTURE(
     CHECK_EQ(subparser.program_name(), std::format("{} {}", sut.name(), subparser_name));
 }
 
+// --- program_version ---
+
 TEST_CASE_FIXTURE(
-    test_argument_parser_cfg, "parser's program version member should be nullopt by default"
+    test_argument_parser_cfg, "program_version() getter should return nullopt by default"
 ) {
-    CHECK_FALSE(get_program_version());
+    CHECK_FALSE(sut.program_version());
 }
 
 TEST_CASE_FIXTURE(
     test_argument_parser_cfg,
-    "program_version() should throw if the version string contains whitespaces"
+    "program_version() setter should throw if the version string contains whitespaces"
 ) {
     CHECK_THROWS_WITH_AS(
         sut.program_version("invalid version"),
@@ -64,38 +66,82 @@ TEST_CASE_FIXTURE(
     );
 }
 
-TEST_CASE_FIXTURE(test_argument_parser_cfg, "version() should set the program version member") {
+TEST_CASE_FIXTURE(
+    test_argument_parser_cfg, "program_version() setter should update the version member"
+) {
     sut.program_version(test_version);
-    auto stored_program_version = get_program_version();
+    auto stored_program_version = sut.program_version();
     REQUIRE(stored_program_version);
     CHECK_EQ(stored_program_version.value(), test_version.str());
 
     sut.program_version(test_str_version);
-    stored_program_version = get_program_version();
+    stored_program_version = sut.program_version();
     REQUIRE(stored_program_version);
     CHECK_EQ(stored_program_version.value(), test_str_version);
 }
 
+// --- program_description ---
+
 TEST_CASE_FIXTURE(
-    test_argument_parser_cfg, "parser's program description member should be nullopt by default"
+    test_argument_parser_cfg, "program_description() getter should return nullopt by default"
 ) {
-    const auto stored_program_description = get_program_description();
-    CHECK_FALSE(stored_program_description);
+    CHECK_FALSE(sut.program_description());
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_cfg, "program_description() should set the program description member"
+    test_argument_parser_cfg, "program_description() setter should update the description member"
 ) {
     sut.program_description(test_description);
 
-    const auto stored_program_description = get_program_description();
+    const auto stored_program_description = sut.program_description();
 
     REQUIRE(stored_program_description);
     CHECK_EQ(stored_program_description.value(), test_description);
 }
 
+// --- is_verbose ---
+
+TEST_CASE_FIXTURE(test_argument_parser_cfg, "is_verbose() should return false by default") {
+    CHECK_FALSE(sut.is_verbose());
+}
+
+TEST_CASE_FIXTURE(test_argument_parser_cfg, "verbose() setter should update the verbosity mode") {
+    sut.verbose();
+    CHECK(sut.is_verbose());
+
+    sut.verbose(false);
+    CHECK_FALSE(sut.is_verbose());
+}
+
+// --- unknown_arguments_policy ---
+
 TEST_CASE_FIXTURE(
-    test_argument_parser_cfg, "flag_char() should throw if the parser already has arguments"
+    test_argument_parser_cfg, "unknown_arguments_policy() getter should return fail by default"
+) {
+    CHECK_EQ(sut.unknown_arguments_policy(), argon::unknown_policy::fail);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_cfg, "unknown_arguments_policy() setter should update the policy member"
+) {
+    sut.unknown_arguments_policy(argon::unknown_policy::warn);
+    CHECK_EQ(sut.unknown_arguments_policy(), argon::unknown_policy::warn);
+
+    sut.unknown_arguments_policy(argon::unknown_policy::ignore);
+    CHECK_EQ(sut.unknown_arguments_policy(), argon::unknown_policy::ignore);
+
+    sut.unknown_arguments_policy(argon::unknown_policy::as_values);
+    CHECK_EQ(sut.unknown_arguments_policy(), argon::unknown_policy::as_values);
+}
+
+// --- flag_char ---
+
+TEST_CASE_FIXTURE(test_argument_parser_cfg, "flag_char() getter should return '-' by default") {
+    CHECK_EQ(sut.flag_char(), '-');
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_cfg, "flag_char() setter should throw if the parser already has arguments"
 ) {
     sut.add_positional_argument("arg1");
     sut.add_optional_argument("arg2");
@@ -109,7 +155,7 @@ TEST_CASE_FIXTURE(
 
 TEST_CASE_FIXTURE(
     test_argument_parser_cfg,
-    "flag_char() should throw if the given character is not a printable ASCII character"
+    "flag_char() setter should throw if the given character is not a printable ASCII character"
 ) {
     CHECK_THROWS_WITH_AS(
         sut.flag_char('\n'),
@@ -120,13 +166,26 @@ TEST_CASE_FIXTURE(
 
 TEST_CASE_FIXTURE(
     test_argument_parser_cfg,
-    "flag_char() should throw if the given character is the same as the assignment character"
+    "flag_char() setter should throw if the given character is the same as the assignment character"
 ) {
     CHECK_THROWS_WITH_AS(
         sut.flag_char('='),
         "The flag character cannot be the same as the assignment character!",
         invalid_configuration
     );
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_cfg, "flag_char() setter should update the flag character member"
+) {
+    sut.flag_char('/');
+    CHECK_EQ(sut.flag_char(), '/');
+}
+
+// --- assign_char ---
+
+TEST_CASE_FIXTURE(test_argument_parser_cfg, "assign_char() getter should return '='") {
+    CHECK_EQ(argon::argument_parser::assign_char(), '=');
 }
 
 TEST_SUITE_END(); // test_argument_parser_cfg

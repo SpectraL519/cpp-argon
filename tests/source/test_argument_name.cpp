@@ -1,10 +1,10 @@
 #include "doctest.h"
 
-#include <argon/detail/argument_name.hpp>
+#include <argon/argument_name.hpp>
 
 #include <sstream>
 
-using namespace argon::detail;
+using argon::argument_name;
 
 TEST_SUITE_BEGIN("test_argument_name");
 

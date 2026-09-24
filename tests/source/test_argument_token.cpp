@@ -5,9 +5,9 @@
 
 using sut_type = argon::detail::argument_token;
 using enum sut_type::token_type;
+using argon::argument_base;
+using argon::argument_name;
 using argon::optional_argument;
-using argon::detail::argument_base;
-using argon::detail::argument_name;
 
 TEST_SUITE_BEGIN("test_argument_token");
 

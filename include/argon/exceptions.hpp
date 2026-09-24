@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "argon/detail/argument_name.hpp"
+#include "argon/argument_name.hpp"
 #include "argon/util/string.hpp"
 #include "argon/util/typing.hpp"
 
@@ -33,8 +33,7 @@ struct invalid_configuration : public argument_parser_exception {
         );
     }
 
-    static invalid_configuration argument_name_used(const detail::argument_name& arg_name
-    ) noexcept {
+    static invalid_configuration argument_name_used(const argument_name& arg_name) noexcept {
         return invalid_configuration(std::format("Given name [{}] already used.", arg_name.str()));
     }
 };
@@ -48,7 +47,7 @@ struct parsing_failure : public argument_parser_exception {
     }
 
     static parsing_failure invalid_nvalues(
-        const detail::argument_name& arg_name, const std::weak_ordering ordering
+        const argument_name& arg_name, const std::weak_ordering ordering
     ) noexcept {
         if (std::is_lt(ordering))
             return parsing_failure(
@@ -71,7 +70,7 @@ struct type_error : public argument_parser_exception {
     explicit type_error(const std::string& message) : argument_parser_exception(message) {}
 
     static type_error invalid_value_type(
-        const detail::argument_name& arg_name, const std::type_info& value_type
+        const argument_name& arg_name, const std::type_info& value_type
     ) noexcept {
         return type_error(std::format(
             "Invalid value type specified for argument [{}] = {}.",
@@ -81,7 +80,7 @@ struct type_error : public argument_parser_exception {
     }
 
     template <typename InvalidType>
-    static type_error invalid_value_type(const detail::argument_name& arg_name) noexcept {
+    static type_error invalid_value_type(const argument_name& arg_name) noexcept {
         return type_error(std::format(
             "Invalid value type specified for argument [{}] = {}.",
             arg_name.str(),

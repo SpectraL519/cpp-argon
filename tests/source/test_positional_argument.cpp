@@ -5,9 +5,9 @@
 using namespace argon_testing;
 using namespace argon::nargs;
 
+using argon::argument_name;
 using argon::parsing_failure;
 using argon::positional_argument;
-using argon::detail::argument_name;
 using argon::detail::parameter_descriptor;
 
 TEST_SUITE_BEGIN("test_positional_argument");

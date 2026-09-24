@@ -2,7 +2,7 @@
 // This file is part of the CPP-ARGON project (https://github.com/SpectraL519/cpp-argon).
 // Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 
-/// @file argon/detail/argument_name.hpp
+/// @file argon/argument_name.hpp
 
 #pragma once
 
@@ -14,8 +14,6 @@
 #include <string_view>
 
 namespace argon {
-
-namespace detail {
 
 /// @brief Structure holding the argument's name.
 struct argument_name {
@@ -143,6 +141,8 @@ struct argument_name {
     // --- constants ---
     static constexpr char flag_char_sentinel = '\0'; ///< Sentinel value for the flag character.
 };
+
+namespace detail {
 
 /**
  * @brief Argument name member discriminator.

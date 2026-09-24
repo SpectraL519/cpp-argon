@@ -3,13 +3,13 @@
 // Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 
 /**
- * @file argon/detail/argument_base.hpp
+ * @file argon/argument_base.hpp
  * @brief Defines the base argument class and common utility.
  */
 
 #pragma once
 
-#include "argon/detail/argument_name.hpp"
+#include "argon/argument_name.hpp"
 #include "argon/detail/help_builder.hpp"
 #include "argon/traits.hpp"
 
@@ -20,8 +20,6 @@
 namespace argon {
 
 class argument_parser;
-
-namespace detail {
 
 /// @brief Argument class interface
 class argument_base {
@@ -101,5 +99,4 @@ public:
     virtual const std::vector<T>& values() const = 0;
 };
 
-} // namespace detail
 } // namespace argon

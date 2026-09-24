@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "argon/detail/argument_base.hpp"
+#include "argon/argument_base.hpp"
 
 #include <memory>
 
@@ -130,7 +130,7 @@ public:
     friend class argument_parser;
 
 private:
-    using arg_ptr_t = std::shared_ptr<detail::argument_base>; ///< The argument pointer type alias.
+    using arg_ptr_t = std::shared_ptr<argument_base>; ///< The argument pointer type alias.
     using arg_ptr_vec_t = std::vector<arg_ptr_t>; ///< The argument pointer list type alias.
 
     /**

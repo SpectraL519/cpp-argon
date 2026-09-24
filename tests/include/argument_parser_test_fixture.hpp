@@ -5,9 +5,9 @@
 #include <cstring>
 #include <format>
 
+using argon::argument_name;
 using argon::optional_argument;
 using argon::positional_argument;
-using argon::detail::argument_name;
 using argon::detail::argument_token;
 using argon::traits::c_argument_value_type;
 using argon::traits::c_forward_iterator_of;
@@ -163,15 +163,6 @@ struct argument_parser_test_fixture {
         }
 
         return arg_tokens;
-    }
-
-    // argument_parser private member accessors
-    [[nodiscard]] const std::optional<std::string>& get_program_description() const {
-        return this->sut._program_description;
-    }
-
-    [[nodiscard]] const std::optional<std::string>& get_program_version() const {
-        return this->sut._program_version;
     }
 
     // private function callers

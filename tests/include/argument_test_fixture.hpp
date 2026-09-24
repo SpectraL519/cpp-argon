@@ -4,8 +4,8 @@
 #include <argon/util/string.hpp>
 
 using argon::argument;
+using argon::argument_name;
 using argon::argument_type;
-using argon::detail::argument_name;
 using argon::detail::help_builder;
 using argon::traits::argument_result_type;
 using argon::traits::c_argument_value_type;
