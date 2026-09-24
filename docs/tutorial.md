@@ -5,6 +5,7 @@
   - [Bazel Build System](#bazel-build-system)
   - [Downloading the Library](#downloading-the-library)
 - [The Parser Class](#the-parser-class)
+  - [Dynamic Program Name](#dynamic-program-name)
 - [Adding Arguments](#adding-arguments)
   - [Syntax](#syntax)
   - [Names](#names)
@@ -155,22 +156,17 @@ parser.program_version("alpha")
 ```
 
 > [!IMPORTANT]
->
-> - When creating an argument parser instance, you must provide a program name to the constructor.
->
->   The program name given to the parser cannot be empty and must not contain whitespace characters.
->
-> - Additional parameters you can specify for a parser instance include:
->   - The program's version and description - used in the parser's configuration output (`std::cout << parser`).
->   - Verbosity mode - `false` by default; if set to `true` the parser's configuration output will include more detailed info about arguments' parameters in addition to their names and help messages.
->   - [Arguments](#adding-arguments) - specify the values/options accepted by the program.
->   - [Argument Groups](#argument-groups) - organize related optional arguments into sections and optionally enforce usage rules.
->   - [The unknown argument flags handling policy](#4-unknown-argument-flag-handling).
+> * When creating an argument parser instance, you must provide either a strict program name string or the [`argon::dynamic_name` tag](#dynamic-program-name) to the constructor. If a strict program name is provided, it cannot be empty and must not contain whitespace characters.
+> * Additional parameters you can specify for a parser instance include:
+>   * The program's version and description - used in the parser's configuration output (`std::cout << parser`).
+>   * Verbosity mode - `false` by default; if set to `true` the parser's configuration output will include more detailed info about arguments' parameters in addition to their names and help messages.
+>   * [Arguments](#arguments) - specify the values/options accepted by the program.
+>   * [The unknown argument flags handling policy](#4-unknown-argument-flag-handling).
+>   * [Argument Groups](#argument-groups) - organize related optional arguments into sections and optionally enforce usage rules.
+>   * [Subparsers](#subparsers) - create hierarchical CLI subcommand structures.
 
 > [!TIP]
->
 > You can specify the program version using a string (like in the example above) or using the `argon::version` structure:
->
 > ```cpp
 > parser.program_version({0u, 0u, 0u})
 > parser.program_version({ .major = 1u, .minor = 1u, .patch = 1u });
@@ -179,9 +175,25 @@ parser.program_version("alpha")
 > ```
 >
 > **NOTE:** The `argon::version` struct
-> - contains the three members - `major`, `minor`, `patch` - all of which are of type `std::uint32_t`,
-> - defines a `std::string str() const` method which returns a `v{major}.{minor}.{path}` version string,
-> - defines the `std::ostream& operator<<` for stream insertion.
+> * contains the three members - `major`, `minor`, `patch` - all of which are of type `std::uint32_t`,
+> * defines a `std::string str() const` method which returns a `v{major}.{minor}.{path}` version string,
+> * defines the `std::ostream& operator<<` for stream insertion.
+
+### Dynamic Program Name
+
+If you prefer not to hardcode the program name, you can instruct the parser to dynamically deduce it from the command-line input (specifically `argv[0]`) by initializing it with the `argon::dynamic_name` tag:
+
+```cpp
+argon::argument_parser parser(argon::dynamic_name);
+
+// The program name is automatically resolved from argv[0] when parsing begins
+parser.try_parse_args(argc, argv);
+```
+
+When the parser processes `argc` and `argv`, it extracts the executable's base name, strips any preceding directory paths (e.g., `/usr/bin/my_app` or `C:\path\to\my_app.exe` cleanly becomes `my_app` / `my_app.exe`), and automatically propagates this resolved name down to all of its [subparsers](#subparsers).
+
+> [!WARNING]
+> If you configure a parser with `argon::dynamic_name`, you **must** use the `argc, argv` parsing overloads (like `parse_args(argc, argv)`). Attempting to use the range-based parsing functions (e.g., passing a `std::span` or `std::vector`) before the parser has resolved its name will result in a `std::logic_error`.
 
 <br/>
 <br/>

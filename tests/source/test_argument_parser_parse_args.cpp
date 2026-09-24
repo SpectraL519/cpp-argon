@@ -1908,4 +1908,102 @@ TEST_CASE_FIXTURE(
     CHECK_EQ(subparser.value(opt_arg_name), opt_arg_val);
 }
 
+// dynamic program name
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "range-based parse_args and parse_known_args should throw if the dynamic program name is "
+    "unresolved"
+) {
+    argon::argument_parser dynamic_parser(argon::dynamic_name);
+    std::vector<std::string> args = {"--help"};
+
+    CHECK_THROWS_WITH_AS(
+        dynamic_parser.parse_args(args),
+        "Dynamic program name must be resolved before calling parsing the program's arguments",
+        std::logic_error
+    );
+
+    CHECK_THROWS_WITH_AS(
+        dynamic_parser.parse_known_args(args),
+        "Dynamic program name must be resolved before calling parsing the program's arguments",
+        std::logic_error
+    );
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "parse_args(argc, argv) should correctly resolve the dynamic program name from argv[0] using "
+    "Unix paths"
+) {
+    argon::argument_parser dynamic_parser(argon::dynamic_name);
+    dynamic_parser.add_flag("help");
+
+    std::vector<std::string> argv_vec{"/usr/local/bin/my_app", "--help"};
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(dynamic_parser.parse_args(argc, argv));
+
+    CHECK_EQ(dynamic_parser.name(), "my_app");
+    CHECK_EQ(dynamic_parser.program_name(), "my_app");
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "parse_args(argc, argv) should correctly resolve the dynamic program name from argv[0] using "
+    "Windows paths"
+) {
+    argon::argument_parser dynamic_parser(argon::dynamic_name);
+    dynamic_parser.add_flag("help");
+
+    std::vector<std::string> argv_vec{"C:\\Program Files\\App\\my_app.exe", "--help"};
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(dynamic_parser.parse_args(argc, argv));
+
+    CHECK_EQ(dynamic_parser.name(), "my_app.exe");
+    CHECK_EQ(dynamic_parser.program_name(), "my_app.exe");
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "dynamic program name resolution should propagate to all nested subparsers"
+) {
+    argon::argument_parser dynamic_parser(argon::dynamic_name);
+
+    auto& sub_cmd = dynamic_parser.add_subparser("commit");
+    auto& nested_cmd = sub_cmd.add_subparser("now");
+
+    std::vector<std::string> argv_vec{"/usr/bin/git", "commit", "now"};
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    // Initial state check - subparser program names should be incomplete because the parent isn't resolved yet
+    CHECK_EQ(sub_cmd.program_name(), "commit");
+    CHECK_EQ(nested_cmd.program_name(), "commit now");
+
+    // Parse will trigger the resolution and propagation
+    REQUIRE_NOTHROW(dynamic_parser.parse_args(argc, argv));
+
+    // Verify root parser
+    CHECK_EQ(dynamic_parser.name(), "git");
+    CHECK_EQ(dynamic_parser.program_name(), "git");
+
+    // Verify first-level subparser
+    CHECK_EQ(sub_cmd.name(), "commit");
+    CHECK_EQ(sub_cmd.program_name(), "git commit");
+
+    // Verify nested subparser
+    CHECK_EQ(nested_cmd.name(), "now");
+    CHECK_EQ(nested_cmd.program_name(), "git commit now");
+
+    free_argv(argc, argv);
+}
+
 TEST_SUITE_END(); // test_argument_parser_parse_args;

@@ -19,6 +19,14 @@ namespace argon {
  */
 struct none_type {};
 
+/// @brief Tag type used to enable dynamic program name deduction.
+struct dynamic_name_t {
+    explicit dynamic_name_t() = default;
+};
+
+/// @brief Tag value that enables dynamic deduction of the program name.
+inline constexpr dynamic_name_t dynamic_name{};
+
 /// @brief A helper structure used to represent a program's version.
 struct version {
     std::uint32_t major = 0u; ///< The major version number.
