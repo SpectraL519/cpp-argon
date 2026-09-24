@@ -184,11 +184,11 @@ public:
     argument_parser& operator=(argument_parser&&) = delete;
 
     /// Constructs a parser with the given name
-    argument_parser(const std::string_view name) : argument_parser(name, "", false) {}
+    explicit argument_parser(const std::string_view name) : argument_parser(name, "", false) {}
 
     /// @brief Constructs a parser with the name dynamically deduced from argv[0]
     /// @param tag The argon::dynamic_name tag.
-    argument_parser(dynamic_name_t) : argument_parser("", "", true) {}
+    explicit argument_parser(dynamic_name_t) : argument_parser("", "", true) {}
 
     ~argument_parser() = default;
 
@@ -704,8 +704,8 @@ public:
     template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     void parse_args(const ArgvRange& argv_rng) {
         if (not this->_is_name_resolved)
-            throw std::logic_error("Dynamic program name must be resolved before calling "
-                                   "range-based parse_args.");
+            throw std::logic_error("Dynamic program name must be resolved before calling parsing "
+                                   "the program's arguments");
 
         parsing_state state(*this);
         this->_parse_args_impl(std::ranges::begin(argv_rng), std::ranges::end(argv_rng), state);
@@ -800,6 +800,10 @@ public:
      */
     template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     std::vector<std::string> parse_known_args(const ArgvRange& argv_rng) {
+        if (not this->_is_name_resolved)
+            throw std::logic_error("Dynamic program name must be resolved before calling parsing "
+                                   "the program's arguments");
+
         parsing_state state(*this, true);
         this->_parse_args_impl(std::ranges::begin(argv_rng), std::ranges::end(argv_rng), state);
         return std::move(state.unknown_args);
@@ -1094,6 +1098,15 @@ private:
 
         this->_program_name = this->_name;
         this->_is_name_resolved = true;
+
+        for (auto& sub : this->_subparsers)
+            sub->_update_program_name(this->_program_name);
+    }
+
+    void _update_program_name(std::string_view parent_name) {
+        this->_program_name = std::format("{} {}", parent_name, this->_name);
+        for (auto& sub : this->_subparsers)
+            sub->_update_program_name(this->_program_name);
     }
 
     void _verify_arg_name_pattern(const std::string_view arg_name) const {
