@@ -66,14 +66,14 @@ TEST_CASE_FIXTURE(
 
 TEST_CASE_FIXTURE(test_argument_parser_cfg, "version() setter should update the version member") {
     sut.version(test_version);
-    auto stored_program_version = sut.version();
-    REQUIRE(stored_program_version);
-    CHECK_EQ(stored_program_version.value(), test_version.str());
+    auto stored_version = sut.version();
+    REQUIRE(stored_version);
+    CHECK_EQ(stored_version.value(), test_version.str());
 
     sut.version(test_str_version);
-    stored_program_version = sut.version();
-    REQUIRE(stored_program_version);
-    CHECK_EQ(stored_program_version.value(), test_str_version);
+    stored_version = sut.version();
+    REQUIRE(stored_version);
+    CHECK_EQ(stored_version.value(), test_str_version);
 }
 
 // --- description ---

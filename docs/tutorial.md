@@ -34,7 +34,9 @@
   - [Group Attributes](#group-attributes)
     - [Validation Rules](#validation-rules)
     - [Naming Modifiers](#naming-modifiers)
+    - [Description](#description)
     - [Visibility](#visibility)
+  - [Inspecting Group Attributes](#inspecting-group-attributes)
   - [Complete Example](#complete-example)
   - [Suppressing Argument Group Checks](#suppressing-argument-group-checks)
 - [Parsing Arguments](#parsing-arguments)
@@ -914,12 +916,12 @@ parser.add_flag(out_opts, "print", "p")
 
 ### Group Attributes
 
-User-defined groups can be configured with special attributes that change how the parser enforces their usage, modifies their arguments' names, or handles their visibility in the help output:
+User-defined groups can be configured with special attributes that change how the parser enforces their usage, modifies their arguments' names, or handles their visibility and descriptions in the help output:
 
 #### Validation Rules
 
-- `required()` – at least one argument from the group must be provided by the user, otherwise parsing will fail.
-- `mutually_exclusive()` – at most one argument from the group can be provided; using more than one at the same time results in an error.
+* `required()` – at least one argument from the group must be provided by the user, otherwise parsing will fail.
+* `mutually_exclusive()` – at most one argument from the group can be provided; using more than one at the same time results in an error.
 
 Both attributes are **off by default**, and they can be combined (i.e., a group can require that exactly one argument is chosen).
 
@@ -951,6 +953,15 @@ net_opts.add_optional_argument("port"); // Registered in the parser as "net-port
 >
 > When using naming modifiers, the argument is registered in the main parser under its fully modified name. To learn how to easily retrieve values using only the base names, see [Retrieving Values from Groups](https://www.google.com/search?q=%2523using-argument-groups&utm_source=gemini).
 
+#### Description
+
+You can attach a text description to an argument group to provide extra context to the user. This description will be printed immediately underneath the group's name and requirements in the generated help text.
+
+```cpp
+auto& auth_opts = parser.add_group("Authentication")
+                        .description("Provide credentials to access the remote server.");
+```
+
 #### Visibility
 
 * `hidden()` – If this option is set, the entire group (including all of its visible arguments) will be hidden from the program's help description.
@@ -961,6 +972,22 @@ parser.add_optional_argument(hidden_opts, "visible").help("A visible arg");
 ```
 
 In the example above, neither the `Hidden Options` group nor the `visible` arg will be printed in the parser's help output.
+
+### Inspecting Group Attributes
+
+If you need to dynamically query a group's configuration at runtime (e.g., when generating a GUI wrapper or a shell auto-completion script), you can use the group's attribute getters:
+
+```cpp
+const std::string& name = group.name();
+const std::string& desc = group.description();
+
+bool is_hidden   = group.is_hidden();
+bool is_required = group.is_required();
+bool is_mutex    = group.is_mutually_exclusive();
+
+const std::string& prefix = group.prefix();
+const std::string& suffix = group.suffix();
+```
 
 ### Complete Example
 
@@ -975,6 +1002,7 @@ int main(int argc, char* argv[]) {
 
     // create the argument group
     auto& out_opts = parser.add_group("Output Options")
+                           .description("Select exactly one destination for the output.")
                            .with_prefix("out-")
                            .required()
                            .mutually_exclusive();
@@ -993,7 +1021,7 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-When invoked with the `--help` flag, the above program produces a help message that clearly shows the group and its rules:
+When invoked with the `--help` flag, the above program produces a help message that clearly shows the group, its description, and its rules:
 
 ```
 Program: myprog
@@ -1004,13 +1032,15 @@ Optional Arguments:
 
 Output Options: (required, mutually exclusive)
 
+  Select exactly one destination for the output.
+
   --out-file, -out-f    : Print output to a given file
   --out-console, -out-c : Print output to the console
 ```
 
 ### Suppressing Argument Group Checks
 
-Similarly to [suppressing argument checks](#4-suppress_arg_checks---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments), an argument can suppress the requirement checks of argument groups:
+Similarly to [suppressing argument checks](#argument-checks-suppression---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments), an argument can suppress the requirement checks of argument groups:
 
 ```c++
 argument.suppress_group_checks();
