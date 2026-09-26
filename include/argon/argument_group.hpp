@@ -49,18 +49,18 @@ public:
     }
 
     /**
-     * @brief Set the help message for the argument group.
-     * @param help_msg The help message to set.
+     * @brief Set the description for the argument group.
+     * @param description The description to set.
      * @return Reference to the argument group instance.
      */
-    argument_group& help(std::string_view help_msg) noexcept {
-        this->_help_msg = help_msg;
+    argument_group& description(std::string_view description) noexcept {
+        this->_description = description;
         return *this;
     }
 
-    /// @return The help message of the argument group.
-    [[nodiscard]] const std::string& help() const noexcept {
-        return this->_help_msg;
+    /// @return The description of the argument group.
+    [[nodiscard]] const std::string& description() const noexcept {
+        return this->_description;
     }
 
     /**
@@ -212,7 +212,7 @@ private:
     std::string _name; ///< Name of the group (used in help output).
     std::string _prefix = ""; ///< Common argument flag prefix.
     std::string _suffix = ""; ///< Common argument flag suffix.
-    std::string _help_msg = ""; ///< The argument's help message.
+    std::string _description = ""; ///< The argument's help message.
 
     bool _hidden : 1 = false; ///< The hidden attribute value (default: false).
     bool _required : 1 = false; ///< The required attribute value (default: false).

@@ -1603,8 +1603,8 @@ private:
             os << " (" << util::join(group_attrs) << ')';
         os << '\n';
 
-        if (not group._help_msg.empty())
-            os << '\n' << std::string(this->_indent_width, ' ') << group._help_msg << '\n';
+        if (not group._description.empty())
+            os << '\n' << std::string(this->_indent_width, ' ') << group._description << '\n';
 
         if (verbose) {
             for (const auto& arg : visible_args)
