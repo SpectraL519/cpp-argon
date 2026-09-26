@@ -38,9 +38,30 @@ namespace argon {
  * @endcode
  * Here `out_opts` is a mutually exclusive group, so using both arguments at the same time would cause an error.
  */
+// TODO: add attribute getters ???
 class argument_group {
 public:
     argument_group() = delete;
+
+    /// @return The name of the argument group.
+    [[nodiscard]] const std::string& name() const noexcept {
+        return this->_name;
+    }
+
+    /**
+     * @brief Set the help message for the argument group.
+     * @param help_msg The help message to set.
+     * @return Reference to the argument group instance.
+     */
+    argument_group& help(std::string_view help_msg) noexcept {
+        this->_help_msg = help_msg;
+        return *this;
+    }
+
+    /// @return The help message of the argument group.
+    [[nodiscard]] const std::string& help() const noexcept {
+        return this->_help_msg;
+    }
 
     /**
      * @brief Set the `hidden` attribute of the group.
@@ -54,6 +75,11 @@ public:
     argument_group& hidden(const bool h = true) noexcept {
         this->_hidden = h;
         return *this;
+    }
+
+    /// @return `true` if the group is hidden from the help output, `false` otherwise.
+    [[nodiscard]] bool is_hidden() const noexcept {
+        return this->_hidden;
     }
 
     /**
@@ -71,6 +97,11 @@ public:
         return *this;
     }
 
+    /// @return `true` if the group is required, `false` otherwise.
+    [[nodiscard]] bool is_required() const noexcept {
+        return this->_required;
+    }
+
     /**
      * @brief Set the `mutually_exclusive` attribute of the group.
      *
@@ -86,6 +117,11 @@ public:
         return *this;
     }
 
+    /// @return `true` if the group is mutually exclusive, `false` otherwise.
+    [[nodiscard]] bool is_mutually_exclusive() const noexcept {
+        return this->_mutually_exclusive;
+    }
+
     /**
      * @brief Set the `prefix` attribute of the group.
      *
@@ -99,6 +135,11 @@ public:
         return *this;
     }
 
+    /// @return The common prefix applied to arguments in this group.
+    [[nodiscard]] const std::string& prefix() const noexcept {
+        return this->_prefix;
+    }
+
     /**
      * @brief Set the `suffix` attribute of the group.
      *
@@ -110,6 +151,11 @@ public:
     argument_group& with_suffix(std::string_view suffix) noexcept {
         this->_suffix = suffix;
         return *this;
+    }
+
+    /// @return The common suffix applied to arguments in this group.
+    [[nodiscard]] const std::string& suffix() const noexcept {
+        return this->_suffix;
     }
 
     // --- argument value and state getters ---
@@ -156,11 +202,17 @@ private:
         return std::format("{}{}{}", this->_prefix, arg_base_name, this->_suffix);
     }
 
+    // --- element references ---
+
     argument_parser* _parser; ///< Pointer to the owning parser.
+    arg_ptr_vec_t _arguments = {}; ///< A list of arguments that belong to this group.
+
+    // --- attributes ---
+
     std::string _name; ///< Name of the group (used in help output).
     std::string _prefix = ""; ///< Common argument flag prefix.
     std::string _suffix = ""; ///< Common argument flag suffix.
-    arg_ptr_vec_t _arguments = {}; ///< A list of arguments that belong to this group.
+    std::string _help_msg = ""; ///< The argument's help message.
 
     bool _hidden : 1 = false; ///< The hidden attribute value (default: false).
     bool _required : 1 = false; ///< The required attribute value (default: false).

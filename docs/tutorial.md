@@ -150,8 +150,8 @@ To use the argument parser in your code you need to use the `argon::argument_par
 
 ```cpp
 argon::argument_parser parser("program");
-parser.program_version("alpha")
-      .program_description("Description of the program")
+parser.version("alpha")
+      .description("Description of the program")
       .verbose();
 ```
 
@@ -168,10 +168,10 @@ parser.program_version("alpha")
 > [!TIP]
 > You can specify the program version using a string (like in the example above) or using the `argon::version` structure:
 > ```cpp
-> parser.program_version({0u, 0u, 0u})
-> parser.program_version({ .major = 1u, .minor = 1u, .patch = 1u });
+> parser.version({0u, 0u, 0u})
+> parser.version({ .major = 1u, .minor = 1u, .patch = 1u });
 > argon::version ver{2u, 2u, 2u};
-> parser.program_version(ver);
+> parser.version(ver);
 > ```
 >
 > **NOTE:** The `argon::version` struct
@@ -309,7 +309,7 @@ By default all arguments are visible, but this can be modified using the `hidden
 
 ```cpp
 argon::argument_parser("hidden-test")
-parser.program_description("A simple test program for argument hiding")
+parser.description("A simple test program for argument hiding")
       .default_arguments(argon::default_argument::o_help);
 
 parser.add_optional_argument("hidden")
@@ -1073,8 +1073,8 @@ int main(int argc, char* argv[]) {
     argon::argument_parser parser("some-program");
 
     // define the parser's attributes and default arguments
-    parser.program_version({0u, 0u, 0u})
-          .program_description("The program does something with command-line arguments")
+    parser.version({0u, 0u, 0u})
+          .description("The program does something with command-line arguments")
           .default_arguments(argon::default_argument::o_help);
 
     // define the program arguments
@@ -1235,7 +1235,7 @@ This behavior can be modified using the `unknown_arguments_policy` method of the
 int main(int argc, char* argv[]) {
     argon::argument_parser parser("unknown-policy-test");
 
-    parser.program_description("A simple test program for unknwon argument handling policies")
+    parser.description("A simple test program for unknwon argument handling policies")
           .default_arguments(argon::default_argument::o_help)
           // set the unknown argument flags handling policy
           .unknown_arguments_policy(argon::unknown_policy::<policy>);
@@ -1617,14 +1617,14 @@ For example:
 ```cpp
 // top-level parser
 argon::argument_parser git("ap-git");
-git.program_version({.major = 2u, .minor = 43u, .patch = 0u})
-   .program_description("A version control system built with CPP-ARGON")
+git.version({.major = 2u, .minor = 43u, .patch = 0u})
+   .description("A version control system built with CPP-ARGON")
    .default_arguments(argon::default_argument::o_help, argon::default_argument::o_version);
 
 // subcommand: status
 auto& status = git.add_subparser("status");
 status.default_arguments(argon::default_argument::o_help)
-      .program_description("Show the working tree status");
+      .description("Show the working tree status");
 status.add_flag("short", "s")
       .help("Give the output in the short-format");
 ```
@@ -1637,19 +1637,19 @@ You can add as many subparsers as you like, each corresponding to a different co
 
 ```cpp
 auto& init = git.add_subparser("init");
-init.program_description("Create an empty Git repository or reinitialize an existing one");
+init.description("Create an empty Git repository or reinitialize an existing one");
 
 auto& add = git.add_subparser("add");
-add.program_description("Add file contents to the index");
+add.description("Add file contents to the index");
 
 auto& commit = git.add_subparser("commit");
-commit.program_description("Record changes to the repository");
+commit.description("Record changes to the repository");
 
 auto& status = git.add_subparser("status");
-status.program_description("Show the working tree status");
+status.description("Show the working tree status");
 
 auto& push = git.add_subparser("push");
-push.program_description("Update remote refs along with associated objects");
+push.description("Update remote refs along with associated objects");
 ```
 
 All defined subparsers will be included in the parent parser's help message:

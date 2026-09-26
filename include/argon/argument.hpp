@@ -101,8 +101,8 @@ public:
         return this->_name;
     }
 
-    /// @return Optional help message for the positional argument.
-    [[nodiscard]] const std::optional<std::string>& help() const noexcept override {
+    /// @return The help message for the argument.
+    [[nodiscard]] const std::string& help() const noexcept override {
         return this->_help_msg;
     }
 
@@ -769,7 +769,8 @@ private:
 
     // attributes
     const argon::argument_name _name; ///< The argument's name.
-    std::optional<std::string> _help_msg; ///< The argument's help message.
+    std::string _help_msg; ///< The argument's help message.
+
     nargs::range _nargs_range; ///< The argument's nargs range attribute value.
     [[no_unique_address]] value_arg_specific_type<std::vector<value_type>>
         _default_values; ///< The argument's default value list.

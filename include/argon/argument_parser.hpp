@@ -154,8 +154,8 @@ void add_default_argument(const default_argument, argument_parser&) noexcept;
  * int main(int argc, char* argv[]) {
  *     // Create the argument parser instance
  *     argon::argument_parser parser("fcopy");
- *     parser.program_version({ .major = 1, .minor = 0, .patch = 0 })
- *           .program_description("A simple file copy utility.")
+ *     parser.version({ .major = 1, .minor = 0, .patch = 0 })
+ *           .description("A simple file copy utility.")
  *           .default_arguments(
  *               argon::default_argument::o_help,
  *               argon::default_argument::o_input,
@@ -216,8 +216,8 @@ public:
      * @param version The version of the program.
      * @return Reference to the argument parser.
      */
-    argument_parser& program_version(const version& version) noexcept {
-        this->_program_version.emplace(version.str());
+    argument_parser& version(const version& version) noexcept {
+        this->_version.emplace(version.str());
         return *this;
     }
 
@@ -226,18 +226,18 @@ public:
      * @param version The version of the program.
      * @return Reference to the argument parser.
      */
-    argument_parser& program_version(std::string_view version) {
+    argument_parser& version(std::string_view version) {
         if (util::contains_whitespaces(version))
             throw invalid_configuration("The program version cannot contain whitespace characters!"
             );
 
-        this->_program_version.emplace(version);
+        this->_version.emplace(version);
         return *this;
     }
 
     /// @return The program version if set, std::nullopt otherwise.
-    [[nodiscard]] const std::optional<std::string>& program_version() const noexcept {
-        return this->_program_version;
+    [[nodiscard]] const std::optional<std::string>& version() const noexcept {
+        return this->_version;
     }
 
     /**
@@ -245,14 +245,14 @@ public:
      * @param description The description of the program.
      * @return Reference to the argument parser.
      */
-    argument_parser& program_description(std::string_view description) noexcept {
-        this->_program_description.emplace(description);
+    argument_parser& description(std::string_view description) noexcept {
+        this->_description = description;
         return *this;
     }
 
-    /// @return The program description if set, std::nullopt otherwise.
-    [[nodiscard]] const std::optional<std::string>& program_description() const noexcept {
-        return this->_program_description;
+    /// @return The program description if set, empty string otherwise.
+    [[nodiscard]] const std::string& description() const noexcept {
+        return this->_description;
     }
 
     /**
@@ -983,14 +983,12 @@ public:
      */
     void print_help(const bool verbose, std::ostream& os = std::cout) const noexcept {
         os << "Program: " << this->_program_name;
-        if (this->_program_version)
-            os << " (" << this->_program_version.value() << ')';
+        if (this->_version)
+            os << " (" << this->_version.value() << ')';
         os << '\n';
 
-        if (this->_program_description)
-            os << '\n'
-               << std::string(this->_indent_width, ' ') << this->_program_description.value()
-               << '\n';
+        if (not this->_description.empty())
+            os << '\n' << std::string(this->_indent_width, ' ') << this->_description << '\n';
 
         this->_print_subparsers(os);
         for (const auto& group : this->_argument_groups)
@@ -1005,7 +1003,7 @@ public:
      * @param os The output stream.
      */
     void print_version(std::ostream& os = std::cout) const noexcept {
-        os << this->_program_name << " : version " << this->_program_version.value_or("unspecified")
+        os << this->_program_name << " : version " << this->_version.value_or("unspecified")
            << std::endl;
     }
 
@@ -1569,7 +1567,7 @@ private:
         builders.reserve(this->_subparsers.size());
 
         for (const auto& subparser : this->_subparsers)
-            builders.emplace_back(subparser->_name, subparser->_program_description);
+            builders.emplace_back(subparser->_name, subparser->_description);
 
         std::size_t max_subparser_name_length = 0ull;
         for (const auto& bld : builders)
@@ -1605,6 +1603,9 @@ private:
             os << " (" << util::join(group_attrs) << ')';
         os << '\n';
 
+        if (not group._help_msg.empty())
+            os << '\n' << std::string(this->_indent_width, ' ') << group._help_msg << '\n';
+
         if (verbose) {
             for (const auto& arg : visible_args)
                 os << '\n' << arg->help_builder(verbose).get(this->_indent_width) << '\n';
@@ -1632,8 +1633,9 @@ private:
     std::string _name = "";
     std::string _program_name =
         ""; // The name of the program in the format "<parent-parser-names>... <program-name>".
-    std::optional<std::string> _program_version = std::nullopt;
-    std::optional<std::string> _program_description = std::nullopt;
+    std::string _description = "";
+    std::optional<std::string> _version = std::nullopt;
+
     unknown_policy _unknown_policy = unknown_policy::fail;
 
     char _flag_char = '-';
