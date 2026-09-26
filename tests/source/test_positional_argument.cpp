@@ -40,19 +40,15 @@ TEST_CASE_FIXTURE(argument_test_fixture, "name() should return the proper argume
     CHECK_EQ(sut.name(), arg_name);
 }
 
-TEST_CASE_FIXTURE(argument_test_fixture, "help() should return nullopt by default") {
+TEST_CASE_FIXTURE(argument_test_fixture, "help() should return an empty string by default") {
     const auto sut = sut_type(arg_name);
-    CHECK_FALSE(sut.help());
+    CHECK(sut.help().empty());
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "help() should return a massage set for the argument") {
     auto sut = sut_type(arg_name);
     sut.help(help_msg);
-
-    const auto stored_help_msg = sut.help();
-
-    REQUIRE(stored_help_msg);
-    CHECK_EQ(stored_help_msg, help_msg);
+    CHECK_EQ(sut.help(), help_msg);
 }
 
 TEST_CASE_FIXTURE(
@@ -65,15 +61,14 @@ TEST_CASE_FIXTURE(
 
     auto bld = get_help_builder(sut, verbose);
     REQUIRE_EQ(bld.name, sut.name().str());
-    CHECK_FALSE(bld.help);
+    CHECK(bld.help.empty());
     CHECK(bld.params.empty());
 
     // with a help msg
     sut.help(help_msg);
     bld = get_help_builder(sut, verbose);
     REQUIRE_EQ(bld.name, sut.name().str());
-    CHECK(bld.help);
-    CHECK_EQ(bld.help.value(), help_msg);
+    CHECK_EQ(bld.help, help_msg);
     CHECK(bld.params.empty());
 }
 
@@ -87,15 +82,14 @@ TEST_CASE_FIXTURE(
 
     auto bld = get_help_builder(sut, verbose);
     REQUIRE_EQ(bld.name, sut.name().str());
-    CHECK_FALSE(bld.help);
+    CHECK(bld.help.empty());
     CHECK(bld.params.empty());
 
     // with a help msg
     sut.help(help_msg);
 
     bld = get_help_builder(sut, verbose);
-    REQUIRE(bld.help);
-    CHECK_EQ(bld.help.value(), help_msg);
+    CHECK_EQ(bld.help, help_msg);
     CHECK(bld.params.empty());
 
     // other parameters

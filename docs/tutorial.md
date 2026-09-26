@@ -34,7 +34,9 @@
   - [Group Attributes](#group-attributes)
     - [Validation Rules](#validation-rules)
     - [Naming Modifiers](#naming-modifiers)
+    - [Description](#description)
     - [Visibility](#visibility)
+  - [Inspecting Group Attributes](#inspecting-group-attributes)
   - [Complete Example](#complete-example)
   - [Suppressing Argument Group Checks](#suppressing-argument-group-checks)
 - [Parsing Arguments](#parsing-arguments)
@@ -150,8 +152,8 @@ To use the argument parser in your code you need to use the `argon::argument_par
 
 ```cpp
 argon::argument_parser parser("program");
-parser.program_version("alpha")
-      .program_description("Description of the program")
+parser.version("alpha")
+      .description("Description of the program")
       .verbose();
 ```
 
@@ -168,10 +170,10 @@ parser.program_version("alpha")
 > [!TIP]
 > You can specify the program version using a string (like in the example above) or using the `argon::version` structure:
 > ```cpp
-> parser.program_version({0u, 0u, 0u})
-> parser.program_version({ .major = 1u, .minor = 1u, .patch = 1u });
+> parser.version({0u, 0u, 0u})
+> parser.version({ .major = 1u, .minor = 1u, .patch = 1u });
 > argon::version ver{2u, 2u, 2u};
-> parser.program_version(ver);
+> parser.version(ver);
 > ```
 >
 > **NOTE:** The `argon::version` struct
@@ -309,7 +311,7 @@ By default all arguments are visible, but this can be modified using the `hidden
 
 ```cpp
 argon::argument_parser("hidden-test")
-parser.program_description("A simple test program for argument hiding")
+parser.description("A simple test program for argument hiding")
       .default_arguments(argon::default_argument::o_help);
 
 parser.add_optional_argument("hidden")
@@ -914,12 +916,12 @@ parser.add_flag(out_opts, "print", "p")
 
 ### Group Attributes
 
-User-defined groups can be configured with special attributes that change how the parser enforces their usage, modifies their arguments' names, or handles their visibility in the help output:
+User-defined groups can be configured with special attributes that change how the parser enforces their usage, modifies their arguments' names, or handles their visibility and descriptions in the help output:
 
 #### Validation Rules
 
-- `required()` – at least one argument from the group must be provided by the user, otherwise parsing will fail.
-- `mutually_exclusive()` – at most one argument from the group can be provided; using more than one at the same time results in an error.
+* `required()` – at least one argument from the group must be provided by the user, otherwise parsing will fail.
+* `mutually_exclusive()` – at most one argument from the group can be provided; using more than one at the same time results in an error.
 
 Both attributes are **off by default**, and they can be combined (i.e., a group can require that exactly one argument is chosen).
 
@@ -951,6 +953,15 @@ net_opts.add_optional_argument("port"); // Registered in the parser as "net-port
 >
 > When using naming modifiers, the argument is registered in the main parser under its fully modified name. To learn how to easily retrieve values using only the base names, see [Retrieving Values from Groups](https://www.google.com/search?q=%2523using-argument-groups&utm_source=gemini).
 
+#### Description
+
+You can attach a text description to an argument group to provide extra context to the user. This description will be printed immediately underneath the group's name and requirements in the generated help text.
+
+```cpp
+auto& auth_opts = parser.add_group("Authentication")
+                        .description("Provide credentials to access the remote server.");
+```
+
 #### Visibility
 
 * `hidden()` – If this option is set, the entire group (including all of its visible arguments) will be hidden from the program's help description.
@@ -961,6 +972,22 @@ parser.add_optional_argument(hidden_opts, "visible").help("A visible arg");
 ```
 
 In the example above, neither the `Hidden Options` group nor the `visible` arg will be printed in the parser's help output.
+
+### Inspecting Group Attributes
+
+If you need to dynamically query a group's configuration at runtime (e.g., when generating a GUI wrapper or a shell auto-completion script), you can use the group's attribute getters:
+
+```cpp
+const std::string& name = group.name();
+const std::string& desc = group.description();
+
+bool is_hidden   = group.is_hidden();
+bool is_required = group.is_required();
+bool is_mutex    = group.is_mutually_exclusive();
+
+const std::string& prefix = group.prefix();
+const std::string& suffix = group.suffix();
+```
 
 ### Complete Example
 
@@ -975,6 +1002,7 @@ int main(int argc, char* argv[]) {
 
     // create the argument group
     auto& out_opts = parser.add_group("Output Options")
+                           .description("Select exactly one destination for the output.")
                            .with_prefix("out-")
                            .required()
                            .mutually_exclusive();
@@ -993,7 +1021,7 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-When invoked with the `--help` flag, the above program produces a help message that clearly shows the group and its rules:
+When invoked with the `--help` flag, the above program produces a help message that clearly shows the group, its description, and its rules:
 
 ```
 Program: myprog
@@ -1004,13 +1032,15 @@ Optional Arguments:
 
 Output Options: (required, mutually exclusive)
 
+  Select exactly one destination for the output.
+
   --out-file, -out-f    : Print output to a given file
   --out-console, -out-c : Print output to the console
 ```
 
 ### Suppressing Argument Group Checks
 
-Similarly to [suppressing argument checks](#4-suppress_arg_checks---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments), an argument can suppress the requirement checks of argument groups:
+Similarly to [suppressing argument checks](#argument-checks-suppression---using-a-suppressing-argument-results-in-suppressing-requirement-checks-for-other-arguments), an argument can suppress the requirement checks of argument groups:
 
 ```c++
 argument.suppress_group_checks();
@@ -1073,8 +1103,8 @@ int main(int argc, char* argv[]) {
     argon::argument_parser parser("some-program");
 
     // define the parser's attributes and default arguments
-    parser.program_version({0u, 0u, 0u})
-          .program_description("The program does something with command-line arguments")
+    parser.version({0u, 0u, 0u})
+          .description("The program does something with command-line arguments")
           .default_arguments(argon::default_argument::o_help);
 
     // define the program arguments
@@ -1235,7 +1265,7 @@ This behavior can be modified using the `unknown_arguments_policy` method of the
 int main(int argc, char* argv[]) {
     argon::argument_parser parser("unknown-policy-test");
 
-    parser.program_description("A simple test program for unknwon argument handling policies")
+    parser.description("A simple test program for unknwon argument handling policies")
           .default_arguments(argon::default_argument::o_help)
           // set the unknown argument flags handling policy
           .unknown_arguments_policy(argon::unknown_policy::<policy>);
@@ -1617,14 +1647,14 @@ For example:
 ```cpp
 // top-level parser
 argon::argument_parser git("ap-git");
-git.program_version({.major = 2u, .minor = 43u, .patch = 0u})
-   .program_description("A version control system built with CPP-ARGON")
+git.version({.major = 2u, .minor = 43u, .patch = 0u})
+   .description("A version control system built with CPP-ARGON")
    .default_arguments(argon::default_argument::o_help, argon::default_argument::o_version);
 
 // subcommand: status
 auto& status = git.add_subparser("status");
 status.default_arguments(argon::default_argument::o_help)
-      .program_description("Show the working tree status");
+      .description("Show the working tree status");
 status.add_flag("short", "s")
       .help("Give the output in the short-format");
 ```
@@ -1637,19 +1667,19 @@ You can add as many subparsers as you like, each corresponding to a different co
 
 ```cpp
 auto& init = git.add_subparser("init");
-init.program_description("Create an empty Git repository or reinitialize an existing one");
+init.description("Create an empty Git repository or reinitialize an existing one");
 
 auto& add = git.add_subparser("add");
-add.program_description("Add file contents to the index");
+add.description("Add file contents to the index");
 
 auto& commit = git.add_subparser("commit");
-commit.program_description("Record changes to the repository");
+commit.description("Record changes to the repository");
 
 auto& status = git.add_subparser("status");
-status.program_description("Show the working tree status");
+status.description("Show the working tree status");
 
 auto& push = git.add_subparser("push");
-push.program_description("Update remote refs along with associated objects");
+push.description("Update remote refs along with associated objects");
 ```
 
 All defined subparsers will be included in the parent parser's help message:

@@ -77,6 +77,7 @@
     - [Creating New Groups](/docs/tutorial.md#creating-new-groups)
     - [Adding Arguments to Groups](/docs/tutorial.md#adding-arguments-to-groups)
     - [Group Attributes](/docs/tutorial.md#group-attributes)
+    - [Inspecting Group Attributes](/docs/tutorial.md#inspecting-group-attributes)
     - [Complete Example](/docs/tutorial.md#complete-example)
     - [Suppressing Argument Group Checks](/docs/tutorial.md#suppressing-argument-group-checks)
   - [Parsing Arguments](/docs/tutorial.md#parsing-arguments)

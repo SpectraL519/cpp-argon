@@ -12,6 +12,7 @@ namespace {
 
 const std::string arg_name = "test-arg";
 const std::string help_msg = "test-arg help message";
+const std::string empty_msg = "";
 
 constexpr uint8_t indent_width = 2;
 constexpr std::size_t align_to = 15ull;
@@ -19,21 +20,21 @@ constexpr std::size_t align_to = 15ull;
 } // namespace
 
 TEST_CASE("help_builder should construct with name and optional help correctly") {
-    sut_type no_help(arg_name, std::nullopt);
+    sut_type no_help(arg_name, empty_msg);
     CHECK_EQ(no_help.name, arg_name);
-    CHECK_FALSE(no_help.help.has_value());
+    CHECK(no_help.help.empty());
 
     sut_type with_help(arg_name, help_msg);
     CHECK_EQ(with_help.name, arg_name);
-    CHECK(with_help.help.has_value());
-    CHECK_EQ(with_help.help.value(), help_msg);
+    CHECK_FALSE(with_help.help.empty());
+    CHECK_EQ(with_help.help, help_msg);
 }
 
 TEST_CASE("add_param should add string parameters correctly") {
     const std::string param_name = "param";
     const std::string param_value = "value";
 
-    sut_type sut(arg_name, std::nullopt);
+    sut_type sut(arg_name, empty_msg);
     sut.add_param(param_name, param_value);
 
     REQUIRE_EQ(sut.params.size(), 1ull);
@@ -51,7 +52,7 @@ TEST_CASE("add_param<T> should add writable parameters correctly") {
     const std::string double_param = "double-param";
     const double double_value = 3.14;
 
-    sut_type sut(arg_name, std::nullopt);
+    sut_type sut(arg_name, empty_msg);
 
     sut.add_param(bool_param, bool_value);
     sut.add_param(int_param, int_value);
@@ -71,7 +72,7 @@ TEST_CASE("add_range_param should properly add a joined range parameter") {
     const std::vector<int> values = {1, 2, 3};
     const std::string_view delimiter = "; ";
 
-    sut_type sut("range_test", std::nullopt);
+    sut_type sut("range_test", empty_msg);
     sut.add_range_param(param_name, values, delimiter);
 
     REQUIRE(sut.params.size() == 1);
@@ -80,7 +81,7 @@ TEST_CASE("add_range_param should properly add a joined range parameter") {
 }
 
 TEST_CASE("get_basic should return only the argument name if no help is provided") {
-    sut_type sut(arg_name, std::nullopt);
+    sut_type sut(arg_name, empty_msg);
 
     std::string basic = sut.get_basic(indent_width);
     CHECK_EQ(basic, std::string(indent_width, ' ') + arg_name);

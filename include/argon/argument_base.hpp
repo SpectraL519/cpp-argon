@@ -38,7 +38,7 @@ public:
     virtual const argument_name& name() const noexcept = 0;
 
     /// @return Returns the argument's help message.
-    virtual const std::optional<std::string>& help() const noexcept = 0;
+    virtual const std::string& help() const noexcept = 0;
 
     /// @return `true` if the argument is hidden from help output, `false` otherwise.
     virtual bool is_hidden() const noexcept = 0;

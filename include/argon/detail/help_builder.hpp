@@ -33,10 +33,9 @@ class help_builder {
 public:
     /**
      * @param name The string representation of the argument's name.
-     * @param help An optional help message string.
+     * @param help A help message string.
      */
-    help_builder(const std::string& name, const std::optional<std::string>& help = std::nullopt)
-    : name(name), help(help) {}
+    help_builder(const std::string& name, const std::string& help = "") : name(name), help(help) {}
 
     /**
      * @brief Adds a parameter descriptor with the given string value.
@@ -93,8 +92,8 @@ public:
             oss << std::setw(static_cast<int>(align_to.value())) << std::left;
         oss << this->name;
 
-        if (this->help.has_value())
-            oss << " : " << this->help.value();
+        if (not this->help.empty())
+            oss << " : " << this->help;
 
         return oss.str();
     }
@@ -135,7 +134,7 @@ public:
     }
 
     std::string name;
-    std::optional<std::string> help;
+    std::string help;
     std::vector<parameter_descriptor> params;
 
 private:

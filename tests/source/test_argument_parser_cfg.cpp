@@ -47,56 +47,52 @@ TEST_CASE_FIXTURE(
     CHECK_EQ(subparser.program_name(), std::format("{} {}", sut.name(), subparser_name));
 }
 
-// --- program_version ---
+// --- version ---
 
-TEST_CASE_FIXTURE(
-    test_argument_parser_cfg, "program_version() getter should return nullopt by default"
-) {
-    CHECK_FALSE(sut.program_version());
+TEST_CASE_FIXTURE(test_argument_parser_cfg, "version() getter should return nullopt by default") {
+    CHECK_FALSE(sut.version());
 }
 
 TEST_CASE_FIXTURE(
     test_argument_parser_cfg,
-    "program_version() setter should throw if the version string contains whitespaces"
+    "version() setter should throw if the version string contains whitespaces"
 ) {
     CHECK_THROWS_WITH_AS(
-        sut.program_version("invalid version"),
+        sut.version("invalid version"),
         "The program version cannot contain whitespace characters!",
         invalid_configuration
     );
 }
 
-TEST_CASE_FIXTURE(
-    test_argument_parser_cfg, "program_version() setter should update the version member"
-) {
-    sut.program_version(test_version);
-    auto stored_program_version = sut.program_version();
-    REQUIRE(stored_program_version);
-    CHECK_EQ(stored_program_version.value(), test_version.str());
+TEST_CASE_FIXTURE(test_argument_parser_cfg, "version() setter should update the version member") {
+    sut.version(test_version);
+    auto stored_version = sut.version();
+    REQUIRE(stored_version);
+    CHECK_EQ(stored_version.value(), test_version.str());
 
-    sut.program_version(test_str_version);
-    stored_program_version = sut.program_version();
-    REQUIRE(stored_program_version);
-    CHECK_EQ(stored_program_version.value(), test_str_version);
+    sut.version(test_str_version);
+    stored_version = sut.version();
+    REQUIRE(stored_version);
+    CHECK_EQ(stored_version.value(), test_str_version);
 }
 
-// --- program_description ---
+// --- description ---
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_cfg, "program_description() getter should return nullopt by default"
+    test_argument_parser_cfg, "description() getter should return an empty string by default"
 ) {
-    CHECK_FALSE(sut.program_description());
+    CHECK(sut.description().empty());
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_cfg, "program_description() setter should update the description member"
+    test_argument_parser_cfg, "description() setter should update the description member"
 ) {
-    sut.program_description(test_description);
+    sut.description(test_description);
 
-    const auto stored_program_description = sut.program_description();
+    const auto stored_description = sut.description();
 
-    REQUIRE(stored_program_description);
-    CHECK_EQ(stored_program_description.value(), test_description);
+    REQUIRE_FALSE(stored_description.empty());
+    CHECK_EQ(stored_description, test_description);
 }
 
 // --- is_verbose ---

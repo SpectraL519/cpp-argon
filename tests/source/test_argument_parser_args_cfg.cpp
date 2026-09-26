@@ -473,6 +473,57 @@ TEST_CASE_FIXTURE(
     CHECK_NOTHROW(discard(const_sut.group(group_name)));
 }
 
+TEST_CASE_FIXTURE(
+    test_argument_parser_args_cfg,
+    "argument_group attribute getters should return correct default values"
+) {
+    const std::string group_name = "Test Group";
+    const auto& group = sut.add_group(group_name);
+
+    CHECK_EQ(group.name(), group_name);
+    CHECK(group.description().empty());
+    CHECK_FALSE(group.is_hidden());
+    CHECK_FALSE(group.is_required());
+    CHECK_FALSE(group.is_mutually_exclusive());
+    CHECK(group.prefix().empty());
+    CHECK(group.suffix().empty());
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_args_cfg,
+    "argument_group setters should correctly update the group attributes"
+) {
+    const std::string group_name = "Test Group";
+    auto& group = sut.add_group(group_name);
+
+    const std::string description = "This is a test group description.";
+    const std::string prefix = "pre-";
+    const std::string suffix = "-suf";
+
+    // Set all attributes
+    group.description(description)
+        .hidden()
+        .required()
+        .mutually_exclusive()
+        .with_prefix(prefix)
+        .with_suffix(suffix);
+
+    // Verify getters reflect the updated state
+    CHECK_EQ(group.description(), description);
+    CHECK(group.is_hidden());
+    CHECK(group.is_required());
+    CHECK(group.is_mutually_exclusive());
+    CHECK_EQ(group.prefix(), prefix);
+    CHECK_EQ(group.suffix(), suffix);
+
+    // Verify boolean setters can explicitly toggle flags off
+    group.hidden(false).required(false).mutually_exclusive(false);
+
+    CHECK_FALSE(group.is_hidden());
+    CHECK_FALSE(group.is_required());
+    CHECK_FALSE(group.is_mutually_exclusive());
+}
+
 // subparser getters
 
 TEST_CASE_FIXTURE(
