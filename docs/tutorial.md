@@ -1633,7 +1633,7 @@ For example:
 ```cpp
 // top-level parser
 argon::argument_parser git("ap-git");
-git.version("v2.43.0")
+git.version("v0.1.0")
    .description("A version control system built with CPP-ARGON")
    .default_arguments(argon::default_argument::o_help, argon::default_argument::o_version);
 
@@ -1672,7 +1672,7 @@ All defined subparsers will be included in the parent parser's help message:
 
 ```txt
 > ap-git --help
-Program: ap-git v2.43.0
+Program: ap-git v0.1.0
 
   A version control system built with CPP-ARGON
 
