@@ -1,6 +1,7 @@
 #include "doctest.h"
 
 #include <argon/detail/help_builder.hpp>
+#include <argon/types.hpp>
 
 #include <cstdint>
 #include <format>
@@ -16,7 +17,7 @@ const std::string arg_name = "test-arg";
 const std::string help_msg = "test-arg help message";
 const std::string empty_msg = "";
 
-constexpr uint8_t indent_width = 2;
+constexpr argon::format_config default_fmt{.indent_width = 2u, .max_line_width = 0ull};
 constexpr std::size_t align_to = 15ull;
 
 } // namespace
@@ -85,46 +86,50 @@ TEST_CASE("add_range_param should properly add a joined range parameter") {
 TEST_CASE("build_base should return only the argument name if no help is provided") {
     sut_type sut(arg_name, empty_msg);
 
-    std::string basic = sut.build_base(indent_width);
-    CHECK_EQ(basic, std::string(indent_width, ' ') + arg_name);
+    std::string basic = sut.build_base(default_fmt);
+    CHECK_EQ(basic, std::string(default_fmt.indent_width, ' ') + arg_name);
 
     std::ostringstream expected_aligned;
     expected_aligned
-        << std::string(indent_width, ' ') << std::setw(align_to) << std::left << arg_name;
-    CHECK_EQ(sut.build_base(indent_width, align_to), expected_aligned.str());
+        << std::string(default_fmt.indent_width, ' ') << std::setw(align_to) << std::left
+        << arg_name;
+    CHECK_EQ(sut.build_base(default_fmt, align_to), expected_aligned.str());
 }
 
 TEST_CASE("build_base should include help message if provided") {
     sut_type sut(arg_name, help_msg);
 
     // Unaligned output (no align_to)
-    std::string basic = sut.build_base(indent_width);
-    std::string expected_basic = std::string(indent_width, ' ') + arg_name + " : " + help_msg;
+    std::string basic = sut.build_base(default_fmt);
+    std::string expected_basic =
+        std::string(default_fmt.indent_width, ' ') + arg_name + " : " + help_msg;
     CHECK_EQ(basic, expected_basic);
 
     // Aligned output (with align_to)
     std::ostringstream expected_aligned;
     expected_aligned
-        << std::string(indent_width, ' ') << std::setw(align_to) << std::left << arg_name << " : "
-        << help_msg;
+        << std::string(default_fmt.indent_width, ' ') << std::setw(align_to) << std::left
+        << arg_name << " : " << help_msg;
 
-    CHECK_EQ(sut.build_base(indent_width, align_to), expected_aligned.str());
+    CHECK_EQ(sut.build_base(default_fmt, align_to), expected_aligned.str());
 }
 
 TEST_CASE("build should return compact string if within max_line_width") {
     const std::string param_name = "param";
     const std::string param_value = "value";
 
-    constexpr std::size_t max_line_width = std::numeric_limits<std::size_t>::max();
+    constexpr argon::format_config wide_fmt{
+        .indent_width = 2u, .max_line_width = std::numeric_limits<std::size_t>::max()
+    };
 
     sut_type sut(arg_name, help_msg);
     sut.add_param(param_name, param_value);
 
     CHECK_EQ(
-        sut.build(indent_width, std::nullopt, max_line_width),
+        sut.build(wide_fmt, std::nullopt),
         std::format(
             "{}{} : {} ({}: {})",
-            std::string(indent_width, ' '),
+            std::string(wide_fmt.indent_width, ' '),
             arg_name,
             help_msg,
             param_name,
@@ -134,7 +139,11 @@ TEST_CASE("build should return compact string if within max_line_width") {
 }
 
 TEST_CASE("build should fall back to verbose multiline output if string is too wide") {
-    constexpr std::size_t max_line_width = 0; // force multi-line
+    constexpr argon::format_config narrow_fmt{
+        .indent_width = 2u,
+        .max_line_width = 0ull // force multi-line
+    };
+
     const std::string param1_name = "flag";
     const std::string param1_value = "on";
     const std::string param2_name = "mode";
@@ -146,19 +155,21 @@ TEST_CASE("build should fall back to verbose multiline output if string is too w
 
     std::size_t max_param_len = std::max(param1_name.length(), param2_name.length());
     std::ostringstream expected;
-    expected << std::string(indent_width, ' ') << arg_name << " : " << help_msg;
+    expected << std::string(narrow_fmt.indent_width, ' ') << arg_name << " : " << help_msg;
 
     expected
         << "\n"
-        << std::string(indent_width * 2, ' ') << "- " << std::setw(static_cast<int>(max_param_len))
-        << std::left << param1_name << " = " << param1_value;
+        << std::string(narrow_fmt.indent_width * 2, ' ') << "- "
+        << std::setw(static_cast<int>(max_param_len)) << std::left << param1_name << " = "
+        << param1_value;
 
     expected
         << "\n"
-        << std::string(indent_width * 2, ' ') << "- " << std::setw(static_cast<int>(max_param_len))
-        << std::left << param2_name << " = " << param2_value;
+        << std::string(narrow_fmt.indent_width * 2, ' ') << "- "
+        << std::setw(static_cast<int>(max_param_len)) << std::left << param2_name << " = "
+        << param2_value;
 
-    CHECK_EQ(sut.build(indent_width, std::nullopt, max_line_width), expected.str());
+    CHECK_EQ(sut.build(narrow_fmt, std::nullopt), expected.str());
 }
 
 TEST_SUITE_END(); // test_help_builder
