@@ -3,6 +3,8 @@
 #include <argon/detail/help_builder.hpp>
 
 #include <cstdint>
+#include <format>
+#include <limits>
 
 TEST_SUITE_BEGIN("test_help_builder");
 
@@ -80,23 +82,23 @@ TEST_CASE("add_range_param should properly add a joined range parameter") {
     CHECK_EQ(sut.params[0].value, "1; 2; 3");
 }
 
-TEST_CASE("get_basic should return only the argument name if no help is provided") {
+TEST_CASE("build_base should return only the argument name if no help is provided") {
     sut_type sut(arg_name, empty_msg);
 
-    std::string basic = sut.get_basic(indent_width);
+    std::string basic = sut.build_base(indent_width);
     CHECK_EQ(basic, std::string(indent_width, ' ') + arg_name);
 
     std::ostringstream expected_aligned;
     expected_aligned
         << std::string(indent_width, ' ') << std::setw(align_to) << std::left << arg_name;
-    CHECK_EQ(sut.get_basic(indent_width, align_to), expected_aligned.str());
+    CHECK_EQ(sut.build_base(indent_width, align_to), expected_aligned.str());
 }
 
-TEST_CASE("get_basic should include help message if provided") {
+TEST_CASE("build_base should include help message if provided") {
     sut_type sut(arg_name, help_msg);
 
     // Unaligned output (no align_to)
-    std::string basic = sut.get_basic(indent_width);
+    std::string basic = sut.build_base(indent_width);
     std::string expected_basic = std::string(indent_width, ' ') + arg_name + " : " + help_msg;
     CHECK_EQ(basic, expected_basic);
 
@@ -106,10 +108,10 @@ TEST_CASE("get_basic should include help message if provided") {
         << std::string(indent_width, ' ') << std::setw(align_to) << std::left << arg_name << " : "
         << help_msg;
 
-    CHECK_EQ(sut.get_basic(indent_width, align_to), expected_aligned.str());
+    CHECK_EQ(sut.build_base(indent_width, align_to), expected_aligned.str());
 }
 
-TEST_CASE("get should return single-line string if within max_line_width") {
+TEST_CASE("build should return compact string if within max_line_width") {
     const std::string param_name = "param";
     const std::string param_value = "value";
 
@@ -119,7 +121,7 @@ TEST_CASE("get should return single-line string if within max_line_width") {
     sut.add_param(param_name, param_value);
 
     CHECK_EQ(
-        sut.get(indent_width, max_line_width),
+        sut.build(indent_width, std::nullopt, max_line_width),
         std::format(
             "{}{} : {} ({}: {})",
             std::string(indent_width, ' '),
@@ -131,7 +133,7 @@ TEST_CASE("get should return single-line string if within max_line_width") {
     );
 }
 
-TEST_CASE("get should fall back to multiline output if string is too wide") {
+TEST_CASE("build should fall back to verbose multiline output if string is too wide") {
     constexpr std::size_t max_line_width = 0; // force multi-line
     const std::string param1_name = "flag";
     const std::string param1_value = "on";
@@ -156,7 +158,7 @@ TEST_CASE("get should fall back to multiline output if string is too wide") {
         << std::string(indent_width * 2, ' ') << "- " << std::setw(static_cast<int>(max_param_len))
         << std::left << param2_name << " = " << param2_value;
 
-    CHECK_EQ(sut.get(indent_width, max_line_width), expected.str());
+    CHECK_EQ(sut.build(indent_width, std::nullopt, max_line_width), expected.str());
 }
 
 TEST_SUITE_END(); // test_help_builder

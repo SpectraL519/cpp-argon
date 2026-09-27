@@ -13,6 +13,7 @@
 #include "argon/traits.hpp"
 #include "argon/util/string.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <format>
 #include <iomanip>
@@ -78,22 +79,38 @@ public:
 
     /**
      * @param indent_width The indentation width.
-     * @param align_to Optional minimum width for the argument name; if provided, the name will be left-aligned and padded with spaces to this width.
-     * @return A basic argument description in the format "<indent><arg-name> : <help-msg>"
-     * @note The help message will only be visible in the output if it's not `std::nullopt`
+     * @param align_to Optional minimum width for the argument name.
+     * @param max_line_width Optional maximum line width for text align_textping.
+     * @return A basic argument description string in the format "<indent><arg-name> : <help-msg>"
      */
-    [[nodiscard]] std::string get_basic(
-        const uint8_t indent_width, const std::optional<std::size_t> align_to = std::nullopt
+    [[nodiscard]] std::string build_base(
+        const uint8_t indent_width,
+        const std::optional<std::size_t> align_to = std::nullopt,
+        const std::optional<std::size_t> max_line_width = std::nullopt
     ) const {
         std::ostringstream oss;
+        const std::size_t name_width = align_to.value_or(this->name.length());
+        const std::size_t prefix_len = indent_width + name_width + 3; // + len(" : ")
 
-        oss << std::string(indent_width, ' ');
-        if (align_to.has_value())
-            oss << std::setw(static_cast<int>(align_to.value())) << std::left;
-        oss << this->name;
+        oss << std::string(indent_width, ' ') << std::left
+            << std::setw(static_cast<int>(name_width)) << this->name;
 
-        if (not this->help.empty())
-            oss << " : " << this->help;
+        if (this->help.empty())
+            return oss.str();
+
+        oss << " : ";
+
+        std::size_t text_width = 0;
+        if (max_line_width.has_value() && max_line_width.value() > prefix_len)
+            text_width = max_line_width.value() - prefix_len;
+
+        const auto lines = util::wrap_text(this->help, text_width);
+        if (not lines.empty()) {
+            oss << lines.front();
+            const std::string padding(prefix_len, ' ');
+            for (std::size_t i = 1; i < lines.size(); ++i)
+                oss << '\n' << padding << lines[i];
+        }
 
         return oss.str();
     }
@@ -103,34 +120,34 @@ public:
      * to fit within a specified maximum line width. The output includes the argument name,
      * help message (if present), and any added parameters.
      *
-     * If no parameters are present, or the generated one-line representation fits within
-     * the `max_line_width`, a single-line format is used:
-     *   "<indent><arg-name> : <help-msg> (<param1>: <value1>, ...)"
-     *
-     * Otherwise, a multi-line format is returned, listing each parameter on its own line
-     * with additional indentation.
-     *
      * @param indent_width The number of spaces to insert before the argument name.
+     * @param align_to Optional minimum width for the argument name.
      * @param max_line_width Optional maximum number of characters allowed for the one-line representation.
-     *                       If the one-line output exceeds this, a multi-line format is used instead.
      * @return A formatted string describing the argument and its parameters.
-     * @note The help message is only included if it is not `std::nullopt`.
      */
-    [[nodiscard]] std::string get(
-        const uint8_t indent_width, std::optional<std::size_t> max_line_width = std::nullopt
+    [[nodiscard]] std::string build(
+        const uint8_t indent_width,
+        const std::optional<std::size_t> align_to = std::nullopt,
+        const std::optional<std::size_t> max_line_width = std::nullopt
     ) const {
-        std::ostringstream oss;
-
         if (this->params.empty())
-            return this->_get_single_line(indent_width);
+            return this->_build_compact(indent_width, align_to, max_line_width);
 
         if (max_line_width.has_value()) {
-            std::string single_line_str = this->_get_single_line(indent_width);
-            if (single_line_str.size() <= max_line_width.value())
+            std::string single_line_str =
+                this->_build_compact(indent_width, align_to, max_line_width);
+
+            std::size_t max_actual_len = 0;
+            std::istringstream iss(single_line_str);
+            std::string line;
+            while (std::getline(iss, line))
+                max_actual_len = std::max(max_actual_len, line.length());
+
+            if (max_actual_len <= max_line_width.value())
                 return single_line_str;
         }
 
-        return this->_get_multi_line(indent_width);
+        return this->_build_verbose(indent_width, align_to, max_line_width);
     }
 
     std::string name;
@@ -138,38 +155,31 @@ public:
     std::vector<parameter_descriptor> params;
 
 private:
-    /**
-     * @brief Generates a single-line string representation of the argument and its parameters.
-     * @param indent_width Number of spaces before the argument name.
-     * @return A single-line formatted description string.
-     */
-    // clang-format off
-    [[nodiscard]] std::string _get_single_line(const uint8_t indent_width) const {
+    [[nodiscard]] std::string _build_compact(
+        const uint8_t indent_width,
+        const std::optional<std::size_t> align_to,
+        const std::optional<std::size_t> max_line_width
+    ) const {
         std::ostringstream oss;
+        oss << this->build_base(indent_width, align_to, max_line_width);
 
-        oss << this->get_basic(indent_width);
         if (not this->params.empty()) {
-            oss << " ("
-                << util::join(this->params | std::views::transform(
-                    [](const auto& param) { return std::format("{}: {}", param.name, param.value); }
-                ))
+            oss << " (" << util::join(this->params | std::views::transform([](const auto& param) {
+                                          return std::format("{}: {}", param.name, param.value);
+                                      }))
                 << ")";
         }
 
         return oss.str();
     }
 
-    // clang-format on
-
-    /**
-     * @brief Generates a multi-line string representation of the argument and its parameters, formatting each parameter on its own line with aligned names.
-     * @param indent_width Number of spaces before the argument name and additional indentation for parameters.
-     * @return A multi-line formatted description string.
-     */
-    [[nodiscard]] std::string _get_multi_line(const uint8_t indent_width) const {
+    [[nodiscard]] std::string _build_verbose(
+        const uint8_t indent_width,
+        const std::optional<std::size_t> align_to,
+        const std::optional<std::size_t> max_line_width
+    ) const {
         std::ostringstream oss;
-
-        oss << this->get_basic(indent_width);
+        oss << this->build_base(indent_width, align_to, max_line_width);
 
         std::size_t max_param_name_len = 0ull;
         for (const auto& param : this->params)
