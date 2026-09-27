@@ -311,18 +311,18 @@ public:
     }
 
     /**
-     * @brief Set the maximum line width for the formatted help output.
-     * @param width The max line width value (0 disables automatic align_textping).
+     * @brief Set the formatting configuration for the help output.
+     * @param cfg The formatting configuration object.
      * @return Reference to the argument parser.
      */
-    argument_parser& max_help_width(const std::size_t width) noexcept {
-        this->_max_help_width = width;
+    argument_parser& formatting(const format_config& cfg) noexcept {
+        this->_format_cfg = cfg;
         return *this;
     }
 
-    /// @return The configured maximum line width for the help message.
-    [[nodiscard]] std::size_t max_help_width() const noexcept {
-        return this->_max_help_width;
+    /// @return The configured help formatting options.
+    [[nodiscard]] const format_config& formatting() const noexcept {
+        return this->_format_cfg;
     }
 
     /**
@@ -997,7 +997,11 @@ public:
 
         if (not this->_description.empty()) {
             os << '\n'
-               << util::align_text(this->_description, this->_indent_width, this->_max_help_width)
+               << util::align_text(
+                      this->_description,
+                      this->_format_cfg.indent_width,
+                      this->_format_cfg.max_line_width
+                  )
                << '\n';
         }
 
@@ -1588,10 +1592,7 @@ private:
             max_subparser_name_length = std::max(max_subparser_name_length, bld.name.length());
 
         for (const auto& bld : builders)
-            os << '\n'
-               << bld.build_base(
-                      this->_indent_width, max_subparser_name_length, this->_max_help_width
-                  );
+            os << '\n' << bld.build_base(this->_format_cfg, max_subparser_name_length);
 
         os << '\n';
     }
@@ -1622,17 +1623,18 @@ private:
 
         if (not group._description.empty()) {
             os << '\n'
-               << util::align_text(group._description, this->_indent_width, this->_max_help_width)
+               << util::align_text(
+                      group._description,
+                      this->_format_cfg.indent_width,
+                      this->_format_cfg.max_line_width
+                  )
                << '\n';
         }
 
         if (verbose) {
             for (const auto& arg : visible_args)
                 os << '\n'
-                   << arg->help_builder(verbose).build(
-                          this->_indent_width, std::nullopt, this->_max_help_width
-                      )
-                   << '\n';
+                   << arg->help_builder(verbose).build(this->_format_cfg, std::nullopt) << '\n';
         }
         else {
             std::vector<detail::help_builder> builders;
@@ -1646,10 +1648,7 @@ private:
                 max_arg_name_length = std::max(max_arg_name_length, bld.name.length());
 
             for (const auto& bld : builders)
-                os << '\n'
-                   << bld.build_base(
-                          this->_indent_width, max_arg_name_length, this->_max_help_width
-                      );
+                os << '\n' << bld.build_base(this->_format_cfg, max_arg_name_length);
 
             os << '\n';
         }
@@ -1667,7 +1666,7 @@ private:
     char _flag_char = '-';
     std::string _primary_flag_prefix = "--";
 
-    std::size_t _max_help_width = 120ull;
+    format_config _format_cfg{};
 
     // --- parsing cfg & state ---
 
@@ -1693,7 +1692,6 @@ private:
     static constexpr char _assign_char = '=';
     static constexpr std::uint8_t _primary_flag_prefix_length = 2u;
     static constexpr std::uint8_t _secondary_flag_prefix_length = 1u;
-    static constexpr std::uint8_t _indent_width = 2u;
 };
 
 // --- argument_group method implementations ---

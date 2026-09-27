@@ -23,7 +23,7 @@
 
 namespace argon::detail {
 
-/// @brief A structure used to represent an argument's parameter description.
+/// @brief A structure used to represent an element's parameter description.
 struct parameter_descriptor {
     std::string name;
     std::string value;
@@ -33,7 +33,7 @@ struct parameter_descriptor {
 class help_builder {
 public:
     /**
-     * @param name The string representation of the argument's name.
+     * @param name The string representation of the element's name.
      * @param help A help message string.
      */
     help_builder(const std::string& name, const std::string& help = "") : name(name), help(help) {}
@@ -78,21 +78,18 @@ public:
     }
 
     /**
-     * @param indent_width The indentation width.
-     * @param align_to Optional minimum width for the argument name.
-     * @param max_line_width Optional maximum line width for text align_textping.
-     * @return A basic argument description string in the format "<indent><arg-name> : <help-msg>"
+     * @param fmt The formatting configuration.
+     * @param align_to Optional minimum width for the element name.
+     * @return A basic element description string in the format "<indent><arg-name> : <help-msg>"
      */
     [[nodiscard]] std::string build_base(
-        const uint8_t indent_width,
-        const std::optional<std::size_t> align_to = std::nullopt,
-        const std::optional<std::size_t> max_line_width = std::nullopt
+        const format_config& fmt, const std::optional<std::size_t> align_to = std::nullopt
     ) const {
         std::ostringstream oss;
         const std::size_t name_width = align_to.value_or(this->name.length());
-        const std::size_t prefix_len = indent_width + name_width + 3; // + len(" : ")
+        const std::size_t prefix_len = fmt.indent_width + name_width + 3; // + len(" : ")
 
-        oss << std::string(indent_width, ' ') << std::left
+        oss << std::string(fmt.indent_width, ' ') << std::left
             << std::setw(static_cast<int>(name_width)) << this->name;
 
         if (this->help.empty())
@@ -101,8 +98,8 @@ public:
         oss << " : ";
 
         std::size_t text_width = 0;
-        if (max_line_width.has_value() && max_line_width.value() > prefix_len)
-            text_width = max_line_width.value() - prefix_len;
+        if (fmt.max_line_width > prefix_len)
+            text_width = fmt.max_line_width - prefix_len;
 
         const auto lines = util::wrap_text(this->help, text_width);
         if (not lines.empty()) {
@@ -116,26 +113,22 @@ public:
     }
 
     /**
-     * Generates a full string representation of the argument descriptor, optionally formatted
-     * to fit within a specified maximum line width. The output includes the argument name,
+     * Generates a full string representation of the element descriptor, optionally formatted
+     * to fit within a specified maximum line width. The output includes the element name,
      * help message (if present), and any added parameters.
      *
-     * @param indent_width The number of spaces to insert before the argument name.
-     * @param align_to Optional minimum width for the argument name.
-     * @param max_line_width Optional maximum number of characters allowed for the one-line representation.
-     * @return A formatted string describing the argument and its parameters.
+     * @param fmt The formatting configuration.
+     * @param align_to Optional minimum width for the element name.
+     * @return A formatted string describing the element and its parameters.
      */
     [[nodiscard]] std::string build(
-        const uint8_t indent_width,
-        const std::optional<std::size_t> align_to = std::nullopt,
-        const std::optional<std::size_t> max_line_width = std::nullopt
+        const format_config& fmt, const std::optional<std::size_t> align_to = std::nullopt
     ) const {
         if (this->params.empty())
-            return this->_build_compact(indent_width, align_to, max_line_width);
+            return this->_build_compact(fmt, align_to);
 
-        if (max_line_width.has_value()) {
-            std::string single_line_str =
-                this->_build_compact(indent_width, align_to, max_line_width);
+        if (fmt.max_line_width > 0) {
+            std::string single_line_str = this->_build_compact(fmt, align_to);
 
             std::size_t max_actual_len = 0;
             std::istringstream iss(single_line_str);
@@ -143,11 +136,11 @@ public:
             while (std::getline(iss, line))
                 max_actual_len = std::max(max_actual_len, line.length());
 
-            if (max_actual_len <= max_line_width.value())
+            if (max_actual_len <= fmt.max_line_width)
                 return single_line_str;
         }
 
-        return this->_build_verbose(indent_width, align_to, max_line_width);
+        return this->_build_verbose(fmt, align_to);
     }
 
     std::string name;
@@ -156,12 +149,10 @@ public:
 
 private:
     [[nodiscard]] std::string _build_compact(
-        const uint8_t indent_width,
-        const std::optional<std::size_t> align_to,
-        const std::optional<std::size_t> max_line_width
+        const format_config& fmt, const std::optional<std::size_t> align_to
     ) const {
         std::ostringstream oss;
-        oss << this->build_base(indent_width, align_to, max_line_width);
+        oss << this->build_base(fmt, align_to);
 
         if (not this->params.empty()) {
             oss << " (" << util::join(this->params | std::views::transform([](const auto& param) {
@@ -174,12 +165,10 @@ private:
     }
 
     [[nodiscard]] std::string _build_verbose(
-        const uint8_t indent_width,
-        const std::optional<std::size_t> align_to,
-        const std::optional<std::size_t> max_line_width
+        const format_config& fmt, const std::optional<std::size_t> align_to
     ) const {
         std::ostringstream oss;
-        oss << this->build_base(indent_width, align_to, max_line_width);
+        oss << this->build_base(fmt, align_to);
 
         std::size_t max_param_name_len = 0ull;
         for (const auto& param : this->params)
@@ -187,7 +176,7 @@ private:
 
         for (const auto& param : this->params) {
             oss << '\n'
-                << std::string(indent_width * 2, ' ') << "- "
+                << std::string(fmt.indent_width * 2, ' ') << "- "
                 << std::setw(static_cast<int>(max_param_name_len)) << std::left << param.name
                 << " = " << param.value;
         }
