@@ -43,12 +43,14 @@ template <traits::c_writable T>
  * @param range The input range to join.
  * @param delimiter The separator string to insert between elements.
  * @return A single string with all elements joined by the delimiter.
+ * @note This function applies the `std::boolalpha` to the string stream used within it.
  * @ingroup util
  */
 template <std::ranges::range R>
 requires(traits::c_writable<std::ranges::range_value_t<R>>)
 [[nodiscard]] std::string join(R&& range, const std::string_view delimiter = ", ") {
     std::ostringstream oss;
+    oss << std::boolalpha;
 
     auto it = std::ranges::begin(range);
     const auto end = std::ranges::end(range);
