@@ -28,22 +28,28 @@ TEST_CASE("argument_parser() should throw if the name contains whitespaces") {
 }
 
 TEST_CASE_FIXTURE(
-    test_argument_parser_cfg, "argument_parser() should set the name and program name members"
+    test_argument_parser_cfg, "argument_parser() should set the name and full name members"
 ) {
     CHECK_EQ(sut.name(), program_name);
-    CHECK_EQ(sut.program_name(), program_name);
+    CHECK_EQ(sut.full_name(), program_name);
 }
 
 TEST_CASE_FIXTURE(
     test_argument_parser_cfg,
-    "subparser's program name should be a concatenation of the parent parser's name and its own "
-    "name"
+    "subparser's full name should be a concatenation of the parent parser's name and its own name"
 ) {
-    constexpr std::string_view subparser_name = "subprogram";
+    constexpr std::string_view subparser_1_name = "subprogram-1";
+    constexpr std::string_view subparser_2_name = "subprogram-2";
 
-    auto& subparser = sut.add_subparser(subparser_name);
-    CHECK_EQ(subparser.name(), subparser_name);
-    CHECK_EQ(subparser.program_name(), std::format("{} {}", sut.name(), subparser_name));
+    auto& subparser_1 = sut.add_subparser(subparser_1_name);
+    CHECK_EQ(subparser_1.name(), subparser_1_name);
+    CHECK_EQ(subparser_1.full_name(), std::format("{} {}", sut.name(), subparser_1_name));
+
+    auto& subparser_2 = subparser_1.add_subparser(subparser_2_name);
+    CHECK_EQ(subparser_2.name(), subparser_2_name);
+    CHECK_EQ(
+        subparser_2.full_name(), std::format("{} {}", subparser_1.full_name(), subparser_2_name)
+    );
 }
 
 // --- version ---

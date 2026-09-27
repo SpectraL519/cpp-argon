@@ -198,17 +198,18 @@ public:
     }
 
     /**
-     * @brief Returns the parser's full program name.
+     * @brief Returns the parser's full name.
      *
      * - For top-level parsers, this is the same as the parser's name.
-     * - For subparsers, the name is prefixed with its parent parser names.
+     * - For subparsers, the name is prefixed with its parent parser names:
      *
-     * Top-level parser: `git`
-     * Subparser: `git submodule`
-     * Nested subparser : `git submodule init`
+     * Example:
+     * - Top-level parser: `git`
+     * - Subparser: `git submodule`
+     * - Nested subparser : `git submodule init`
      */
-    [[nodiscard]] std::string_view program_name() const noexcept {
-        return this->_program_name;
+    [[nodiscard]] std::string_view full_name() const noexcept {
+        return this->_full_name;
     }
 
     /**
@@ -627,11 +628,11 @@ public:
             throw std::logic_error(std::format(
                 "A subparser with the given name ({}) already exists in parser '{}'",
                 (*subparser_it)->_name,
-                this->_program_name
+                this->_full_name
             ));
 
         return *this->_subparsers.emplace_back(
-            std::unique_ptr<argument_parser>(new argument_parser(name, this->_program_name, false))
+            std::unique_ptr<argument_parser>(new argument_parser(name, this->_full_name, false))
         );
     }
 
@@ -974,7 +975,7 @@ public:
      * @param os The output stream.
      */
     void print_help(const bool verbose, std::ostream& os = std::cout) const noexcept {
-        os << "Program: " << this->_program_name;
+        os << "Program: " << this->_full_name;
         if (not this->_version.empty())
             os << ' ' << this->_version;
         os << '\n';
@@ -995,7 +996,7 @@ public:
      * @param os The output stream.
      */
     void print_version(std::ostream& os = std::cout) const noexcept {
-        os << this->_program_name;
+        os << this->_full_name;
         if (this->_version.empty())
             os << " (version unspecified)" << std::endl;
         else
@@ -1061,7 +1062,7 @@ private:
         const std::string_view name, const std::string_view parent_name, const bool dynamic
     )
     : _name(name),
-      _program_name(
+      _full_name(
           dynamic
               ? ""
               : std::format("{}{}{}", parent_name, std::string(not parent_name.empty(), ' '), name)
@@ -1089,17 +1090,17 @@ private:
         if (this->_name.empty())
             this->_name = "unknown";
 
-        this->_program_name = this->_name;
+        this->_full_name = this->_name;
         this->_is_name_resolved = true;
 
         for (auto& sub : this->_subparsers)
-            sub->_update_program_name(this->_program_name);
+            sub->_update_program_name(this->_full_name);
     }
 
     void _update_program_name(std::string_view parent_name) {
-        this->_program_name = std::format("{} {}", parent_name, this->_name);
+        this->_full_name = std::format("{} {}", parent_name, this->_name);
         for (auto& sub : this->_subparsers)
-            sub->_update_program_name(this->_program_name);
+            sub->_update_program_name(this->_full_name);
     }
 
     void _verify_arg_name_pattern(const std::string_view arg_name) const {
@@ -1626,8 +1627,7 @@ private:
     // --- attributes ---
 
     std::string _name = "";
-    std::string _program_name =
-        ""; // The name of the program in the format "<parent-parser-names>... <program-name>".
+    std::string _full_name = ""; // Format: "<parent-parser-names>... <program-name>".
     std::string _description = "";
     std::string _version = "";
 

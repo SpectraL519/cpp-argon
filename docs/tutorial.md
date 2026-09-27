@@ -1632,7 +1632,7 @@ For example:
 
 ```cpp
 // top-level parser
-argon::argument_parser git("ap-git");
+argon::argument_parser git("argon-git");
 git.version("v0.1.0")
    .description("A version control system built with CPP-ARGON")
    .default_arguments(argon::default_argument::o_help, argon::default_argument::o_version);
@@ -1671,8 +1671,8 @@ push.description("Update remote refs along with associated objects");
 All defined subparsers will be included in the parent parser's help message:
 
 ```txt
-> ap-git --help
-Program: ap-git v0.1.0
+> argon-git --help
+Program: argon-git v0.1.0
 
   A version control system built with CPP-ARGON
 
@@ -1701,12 +1701,12 @@ When parsing command-line arguments, the parent parser will attempt to match the
 For example:
 
 ```cpp
-argon::argument_parser git("ap-git");
+argon::argument_parser git("argon-git");
 auto& submodule = git.add_subparser("submodule");
 auto& submodule_init = submodule.add_subparser("init");
 ```
 
-Running `ap-git submodule init <args>` will result in `<args>` being parsed by the `submodule_init` parser.
+Running `argon-git submodule init <args>` will result in `<args>` being parsed by the `submodule_init` parser.
 
 ### Tracking Parser State
 
@@ -1730,7 +1730,7 @@ Each parser tracks its state during parsing. The methods described below let you
 
 ```cpp
 // define the parser hierarchy
-argon::argument_parser git("ap-git");
+argon::argument_parser git("argon-git");
 auto& submodule = git.add_subparser("submodule");
 auto& submodule_init = submodule.add_subparser("init");
 
@@ -1750,17 +1750,17 @@ std::cout << "submodule_init : invoked=" << submodule_init.invoked()
           << ", finalized=" << submodule_init.finalized() << '\n';
 
 auto& active = git.resolved_parser();
-std::cout << "\nResolved parser : " << active.name() << " (" << active.program_name() << ")\n";
+std::cout << "\nResolved parser : " << active.name() << " (" << active.full_name() << ")\n";
 ```
 
-If you run: `./ap-git submodule init`, you will get the following state:
+If you run: `./argon-git submodule init`, you will get the following state:
 
 ```txt
 git            : invoked=true, finalized=false
 submodule      : invoked=true, finalized=false
 submodule_init : invoked=true, finalized=true
 
-Resolved parser : init (ap-git submodule init)
+Resolved parser : init (argon-git submodule init)
 ```
 
 <br/>
