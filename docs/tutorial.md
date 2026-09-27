@@ -167,20 +167,6 @@ parser.version("alpha")
 >   * [Argument Groups](#argument-groups) - organize related optional arguments into sections and optionally enforce usage rules.
 >   * [Subparsers](#subparsers) - create hierarchical CLI subcommand structures.
 
-> [!TIP]
-> You can specify the program version using a string (like in the example above) or using the `argon::version` structure:
-> ```cpp
-> parser.version({0u, 0u, 0u})
-> parser.version({ .major = 1u, .minor = 1u, .patch = 1u });
-> argon::version ver{2u, 2u, 2u};
-> parser.version(ver);
-> ```
->
-> **NOTE:** The `argon::version` struct
-> * contains the three members - `major`, `minor`, `patch` - all of which are of type `std::uint32_t`,
-> * defines a `std::string str() const` method which returns a `v{major}.{minor}.{path}` version string,
-> * defines the `std::ostream& operator<<` for stream insertion.
-
 ### Dynamic Program Name
 
 If you prefer not to hardcode the program name, you can instruct the parser to dynamically deduce it from the command-line input (specifically `argv[0]`) by initializing it with the `argon::dynamic_name` tag:
@@ -427,7 +413,7 @@ parser.add_optional_argument("version", "v").suppress_arg_checks();
 
 parser.parse_args(argc, argv);
 
-if (parser.count("version")) {
+if (parser.is_used("version")) {
     std::cout << PROJECT_VERSION << std::endl;
     std::exit(EXIT_SUCCESS);
 }
@@ -832,7 +818,7 @@ parser.default_arguments(<args>);
             parser.print_version();
             std::exit(EXIT_SUCCESS);
         })
-        .help("Display program version info");
+        .help("Display program's version info");
   ```
 
 - `o_input` and `o_multi_input`:
@@ -1103,7 +1089,7 @@ int main(int argc, char* argv[]) {
     argon::argument_parser parser("some-program");
 
     // define the parser's attributes and default arguments
-    parser.version({0u, 0u, 0u})
+    parser.version("v0.1.0")
           .description("The program does something with command-line arguments")
           .default_arguments(argon::default_argument::o_help);
 
@@ -1647,7 +1633,7 @@ For example:
 ```cpp
 // top-level parser
 argon::argument_parser git("ap-git");
-git.version({.major = 2u, .minor = 43u, .patch = 0u})
+git.version("v0.1.0")
    .description("A version control system built with CPP-ARGON")
    .default_arguments(argon::default_argument::o_help, argon::default_argument::o_version);
 
@@ -1686,7 +1672,7 @@ All defined subparsers will be included in the parent parser's help message:
 
 ```txt
 > ap-git --help
-Program: ap-git (v2.43.0)
+Program: ap-git v0.1.0
 
   A version control system built with CPP-ARGON
 
