@@ -10,8 +10,7 @@ TEST_SUITE_BEGIN("test_argument_parser_cfg");
 
 struct test_argument_parser_cfg : public argument_parser_test_fixture {
     const std::string test_description = "test program description";
-    const argon::version test_version{1u, 2u, 3u};
-    const std::string test_str_version = "alpha";
+    const std::string test_version = "v1.2.3";
 };
 
 TEST_CASE("argument_parser() should throw if the name is empty") {
@@ -49,31 +48,29 @@ TEST_CASE_FIXTURE(
 
 // --- version ---
 
-TEST_CASE_FIXTURE(test_argument_parser_cfg, "version() getter should return nullopt by default") {
-    CHECK_FALSE(sut.version());
+TEST_CASE_FIXTURE(test_argument_parser_cfg, "version() setter should update the version member") {
+    CHECK(sut.version().empty()); // default value
+
+    sut.version(test_version);
+    CHECK_EQ(sut.version(), test_version);
 }
 
 TEST_CASE_FIXTURE(
     test_argument_parser_cfg,
-    "version() setter should throw if the version string contains whitespaces"
+    "version() setter should throw if the version string contains control characters"
 ) {
-    CHECK_THROWS_WITH_AS(
-        sut.version("invalid version"),
-        "The program version cannot contain whitespace characters!",
-        invalid_configuration
-    );
+    const std::string expected_msg =
+        "The program version cannot contain control characters (line breaks, tabs, etc.)!";
+
+    CHECK_THROWS_WITH_AS(sut.version("1.0\nAlpha"), expected_msg.c_str(), invalid_configuration);
+    CHECK_THROWS_WITH_AS(sut.version("1.0\tAlpha"), expected_msg.c_str(), invalid_configuration);
 }
 
-TEST_CASE_FIXTURE(test_argument_parser_cfg, "version() setter should update the version member") {
-    sut.version(test_version);
-    auto stored_version = sut.version();
-    REQUIRE(stored_version);
-    CHECK_EQ(stored_version.value(), test_version.str());
+TEST_CASE_FIXTURE(test_argument_parser_cfg, "version() setter should allow standard spaces") {
+    const std::string version_with_spaces = "v0.1.0 alpha";
 
-    sut.version(test_str_version);
-    stored_version = sut.version();
-    REQUIRE(stored_version);
-    CHECK_EQ(stored_version.value(), test_str_version);
+    REQUIRE_NOTHROW(sut.version(version_with_spaces));
+    CHECK_EQ(sut.version(), version_with_spaces);
 }
 
 // --- description ---
@@ -88,11 +85,7 @@ TEST_CASE_FIXTURE(
     test_argument_parser_cfg, "description() setter should update the description member"
 ) {
     sut.description(test_description);
-
-    const auto stored_description = sut.description();
-
-    REQUIRE_FALSE(stored_description.empty());
-    CHECK_EQ(stored_description, test_description);
+    CHECK_EQ(sut.description(), test_description);
 }
 
 // --- is_verbose ---

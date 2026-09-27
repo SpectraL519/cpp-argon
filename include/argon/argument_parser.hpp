@@ -75,7 +75,7 @@ enum class default_argument : std::uint8_t {
      *               arg_parser.print_version();
      *               std::exit(EXIT_SUCCESS);
      *           })
-     *           .help("Dsiplay program version info");
+     *           .help("Dsiplay program's version info");
      * @endcode
      */
     o_version,
@@ -154,7 +154,7 @@ void add_default_argument(const default_argument, argument_parser&) noexcept;
  * int main(int argc, char* argv[]) {
  *     // Create the argument parser instance
  *     argon::argument_parser parser("fcopy");
- *     parser.version({ .major = 1, .minor = 0, .patch = 0 })
+ *     parser.version("v0.1.0")
  *           .description("A simple file copy utility.")
  *           .default_arguments(
  *               argon::default_argument::o_help,
@@ -215,28 +215,20 @@ public:
      * @brief Set the program version.
      * @param version The version of the program.
      * @return Reference to the argument parser.
-     */
-    argument_parser& version(const version& version) noexcept {
-        this->_version.emplace(version.str());
-        return *this;
-    }
-
-    /**
-     * @brief Set the program version.
-     * @param version The version of the program.
-     * @return Reference to the argument parser.
+     * @throws argon::invalid_configuration if the given version string contains whitespaces.
      */
     argument_parser& version(std::string_view version) {
-        if (util::contains_whitespaces(version))
-            throw invalid_configuration("The program version cannot contain whitespace characters!"
-            );
+        for (const char c : version)
+            if (std::iscntrl(static_cast<unsigned char>(c)))
+                throw invalid_configuration("The program version cannot contain control characters "
+                                            "(line breaks, tabs, etc.)!");
 
-        this->_version.emplace(version);
+        this->_version = version;
         return *this;
     }
 
-    /// @return The program version if set, std::nullopt otherwise.
-    [[nodiscard]] const std::optional<std::string>& version() const noexcept {
+    /// @return The program version if set, empty string otherwise.
+    [[nodiscard]] const std::string& version() const noexcept {
         return this->_version;
     }
 
@@ -983,8 +975,8 @@ public:
      */
     void print_help(const bool verbose, std::ostream& os = std::cout) const noexcept {
         os << "Program: " << this->_program_name;
-        if (this->_version)
-            os << " (" << this->_version.value() << ')';
+        if (not this->_version.empty())
+            os << ' ' << this->_version;
         os << '\n';
 
         if (not this->_description.empty())
@@ -998,13 +990,16 @@ public:
     /**
      * @brief Prints the argument parser's version info to an output stream.
      *
-     * If no version was spcified for the parser, `unspecified` will be printed.
+     * If no version was specified for the parser, `(version unspecified)` will be printed.
      *
      * @param os The output stream.
      */
     void print_version(std::ostream& os = std::cout) const noexcept {
-        os << this->_program_name << " : version " << this->_version.value_or("unspecified")
-           << std::endl;
+        os << this->_program_name;
+        if (this->_version.empty())
+            os << " (version unspecified)" << std::endl;
+        else
+            os << ' ' << this->_version << std::endl;
     }
 
     /**
@@ -1634,7 +1629,7 @@ private:
     std::string _program_name =
         ""; // The name of the program in the format "<parent-parser-names>... <program-name>".
     std::string _description = "";
-    std::optional<std::string> _version = std::nullopt;
+    std::string _version = "";
 
     unknown_policy _unknown_policy = unknown_policy::fail;
 
@@ -1727,7 +1722,7 @@ inline void add_default_argument(
                 arg_parser.print_version();
                 std::exit(EXIT_SUCCESS);
             })
-            .help("Dsiplay program version info");
+            .help("Dsiplay program's version info");
         break;
 
     case default_argument::o_input:
