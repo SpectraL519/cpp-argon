@@ -1633,8 +1633,7 @@ private:
 
         if (verbose) {
             for (const auto& arg : visible_args)
-                os << '\n'
-                   << arg->help_builder(verbose).build(this->_format_cfg, std::nullopt) << '\n';
+                os << '\n' << arg->help_builder(verbose).build(this->_format_cfg) << '\n';
         }
         else {
             std::vector<detail::help_builder> builders;

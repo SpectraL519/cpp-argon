@@ -126,7 +126,7 @@ TEST_CASE("build should return compact string if within max_line_width") {
     sut.add_param(param_name, param_value);
 
     CHECK_EQ(
-        sut.build(wide_fmt, std::nullopt),
+        sut.build(wide_fmt),
         std::format(
             "{}{} : {} ({}: {})",
             std::string(wide_fmt.indent_width, ' '),
@@ -169,7 +169,7 @@ TEST_CASE("build should fall back to verbose multiline output if string is too w
         << std::setw(static_cast<int>(max_param_len)) << std::left << param2_name << " = "
         << param2_value;
 
-    CHECK_EQ(sut.build(narrow_fmt, std::nullopt), expected.str());
+    CHECK_EQ(sut.build(narrow_fmt), expected.str());
 }
 
 TEST_SUITE_END(); // test_help_builder

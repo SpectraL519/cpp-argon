@@ -2,10 +2,8 @@
 // This file is part of the CPP-ARGON project (https://github.com/SpectraL519/cpp-argon).
 // Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 
-/**
- * @file argon/util/string.hpp
- * @brief Provides common string utility functions.
- */
+/// @file argon/util/string.hpp
+/// @brief Provides common string utility functions.
 
 #pragma once
 
@@ -19,12 +17,10 @@
 
 namespace argon::util {
 
-/**
- * @brief Converts a value to `std::string`.
- * @tparam T The value type (must satisfy the @ref argon::traits::c_writable concept).
- * @param value The value to convert.
- * @ingroup util
- */
+/// @brief Converts a value to `std::string`.
+/// @tparam T The value type (must satisfy the @ref argon::traits::c_writable concept).
+/// @param value The value to convert.
+/// @ingroup util
 template <traits::c_writable T>
 [[nodiscard]] std::string as_string(T&& value) noexcept {
     std::ostringstream oss;
@@ -37,15 +33,13 @@ template <traits::c_writable T>
     return std::ranges::any_of(str, [](unsigned char c) { return std::isspace(c); });
 }
 
-/**
- * @brief Joins elements of a range into a single string with a delimiter.
- * @tparam R The type of the value range. The value type of R must satisfy the @ref c_writable concept.
- * @param range The input range to join.
- * @param delimiter The separator string to insert between elements.
- * @return A single string with all elements joined by the delimiter.
- * @note This function applies the `std::boolalpha` to the string stream used within it.
- * @ingroup util
- */
+/// @brief Joins elements of a range into a single string with a delimiter.
+/// @tparam R The type of the value range. The value type of R must satisfy the @ref c_writable concept.
+/// @param range The input range to join.
+/// @param delimiter The separator string to insert between elements.
+/// @return A single string with all elements joined by the delimiter.
+/// @note This function applies the `std::boolalpha` to the string stream used within it.
+/// @ingroup util
 template <std::ranges::range R>
 requires(traits::c_writable<std::ranges::range_value_t<R>>)
 [[nodiscard]] std::string join(R&& range, const std::string_view delimiter = ", ") {
@@ -64,7 +58,16 @@ requires(traits::c_writable<std::ranges::range_value_t<R>>)
     return oss.str();
 }
 
-// TODO: add doc
+/// @brief Wraps a block of text into multiple lines based on a maximum line width.
+///
+/// This function processes the text line by line, preserving any existing manual
+/// line breaks (`\n`). If a line exceeds the specified `max_width`, it is wrapped
+/// at word boundaries. If `max_width` is 0, automatic text wrapping is disabled.
+///
+/// @param text The input text to be wrapped.
+/// @param max_width The maximum number of characters allowed per line (0 disables wrapping).
+/// @return A vector of strings, where each element represents a single line of the wrapped text.
+/// @ingroup util
 [[nodiscard]] inline std::vector<std::string> wrap_text(
     const std::string_view text, const std::size_t max_width
 ) {
@@ -105,13 +108,11 @@ requires(traits::c_writable<std::ranges::range_value_t<R>>)
     return lines;
 }
 
-/**
- * @brief Formats a block of text, wrapping it to the specified max width and preserving the indent.
- * @param text The text to format.
- * @param indent_width The number of spaces to prepend to each line.
- * @param max_line_width The maximum total width of a line (including indent). 0 disables wrapping.
- * @return The formatted string.
- */
+/// @brief Formats a block of text, wrapping it to the specified max width and preserving the indent.
+/// @param text The text to format.
+/// @param indent_width The number of spaces to prepend to each line.
+/// @param max_line_width The maximum total width of a line (including indent). 0 disables wrapping.
+/// @return The formatted string.
 [[nodiscard]] inline std::string align_text(
     const std::string_view text,
     const std::uint8_t indent_width,

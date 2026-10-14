@@ -79,14 +79,13 @@ public:
 
     /**
      * @param fmt The formatting configuration.
-     * @param align_to Optional minimum width for the element name.
+     * @param align_to Optional minimum width for the element name (0 means no extra alignment).
      * @return A basic element description string in the format "<indent><arg-name> : <help-msg>"
      */
-    [[nodiscard]] std::string build_base(
-        const format_config& fmt, const std::optional<std::size_t> align_to = std::nullopt
-    ) const {
+    [[nodiscard]] std::string build_base(const format_config& fmt, const std::size_t align_to = 0)
+        const {
         std::ostringstream oss;
-        const std::size_t name_width = align_to.value_or(this->name.length());
+        const std::size_t name_width = std::max(align_to, this->name.length());
         const std::size_t prefix_len = fmt.indent_width + name_width + 3; // + len(" : ")
 
         oss << std::string(fmt.indent_width, ' ') << std::left
@@ -118,12 +117,10 @@ public:
      * help message (if present), and any added parameters.
      *
      * @param fmt The formatting configuration.
-     * @param align_to Optional minimum width for the element name.
+     * @param align_to Optional minimum width for the element name (0 means no extra alignment).
      * @return A formatted string describing the element and its parameters.
      */
-    [[nodiscard]] std::string build(
-        const format_config& fmt, const std::optional<std::size_t> align_to = std::nullopt
-    ) const {
+    [[nodiscard]] std::string build(const format_config& fmt, const std::size_t align_to = 0) const {
         if (this->params.empty())
             return this->_build_compact(fmt, align_to);
 
@@ -148,9 +145,8 @@ public:
     std::vector<parameter_descriptor> params;
 
 private:
-    [[nodiscard]] std::string _build_compact(
-        const format_config& fmt, const std::optional<std::size_t> align_to
-    ) const {
+    [[nodiscard]] std::string _build_compact(const format_config& fmt, const std::size_t align_to)
+        const {
         std::ostringstream oss;
         oss << this->build_base(fmt, align_to);
 
@@ -164,9 +160,8 @@ private:
         return oss.str();
     }
 
-    [[nodiscard]] std::string _build_verbose(
-        const format_config& fmt, const std::optional<std::size_t> align_to
-    ) const {
+    [[nodiscard]] std::string _build_verbose(const format_config& fmt, const std::size_t align_to)
+        const {
         std::ostringstream oss;
         oss << this->build_base(fmt, align_to);
 
