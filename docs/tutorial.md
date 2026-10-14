@@ -289,6 +289,24 @@ parser.add_positional_argument<std::size_t>("number", "n")
       .help("a positive integer value");
 ```
 
+> [!TIP]
+>
+> **Multi-line Help Messages**
+>
+> The help string fully supports manual line breaks (`\n`). The parser's formatting engine will automatically detect these line breaks and align all subsequent lines to the correct indentation offset. This is perfect for appending structural notes or warnings to your argument descriptions.
+> ```cpp
+> parser.add_optional_argument("legacy-feature")
+>       .help("Enables the legacy processing mode.\n\nWARNING: This feature is deprecated and will be removed in v6.0.");
+>
+> ```
+> The help message for the `legacy-feature` argument would look like this:
+> ```
+> --legacy-feature : Enables the legacy processing mode.
+>
+>                    WARNING: This feature is deprecated
+>                    and will be removed in v6.0.
+> ```
+
 <br />
 
 #### Hidden - If this option is set for an argument, then it will not be included in the program description.
