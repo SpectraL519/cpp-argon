@@ -5,7 +5,12 @@
   - [Bazel Build System](#bazel-build-system)
   - [Downloading the Library](#downloading-the-library)
 - [The Parser Class](#the-parser-class)
-  - [Dynamic Program Name](#dynamic-program-name)
+  - [Program Name](#program-name)
+  - [Version and Description](#version-and-description)
+  - [Help Message Formatting](#help-message-formatting)
+  - [Flag Character](#flag-character)
+  - [Verbosity](#verbosity)
+  - [Unknown Arguments Policy](#unknown-arguments-policy)
 - [Adding Arguments](#adding-arguments)
   - [Syntax](#syntax)
   - [Names](#names)
@@ -148,26 +153,27 @@ If you do not use CMake, you can download the desired [library release](https://
 
 ## The Parser Class
 
-To use the argument parser in your code you need to use the `argon::argument_parser` class.
+To use the argument parser in your code, you need to instantiate the `argon::argument_parser` class. This class acts as the central hub for defining your command-line interface, configuring its behavior, and parsing the input.
 
 ```cpp
-argon::argument_parser parser("program");
-parser.version("alpha")
+argon::argument_parser parser("myprog");
+parser.version("v0.1.0")
       .description("Description of the program")
+      .formatting({.indent_width = 4u, .max_line_width = 80ull})
       .verbose();
 ```
 
-> [!IMPORTANT]
-> * When creating an argument parser instance, you must provide either a strict program name string or the [`argon::dynamic_name` tag](#dynamic-program-name) to the constructor. If a strict program name is provided, it cannot be empty and must not contain whitespace characters.
-> * Additional parameters you can specify for a parser instance include:
->   * The program's version and description - used in the parser's configuration output (`std::cout << parser`).
->   * Verbosity mode - `false` by default; if set to `true` the parser's configuration output will include more detailed info about arguments' parameters in addition to their names and help messages.
->   * [Arguments](#arguments) - specify the values/options accepted by the program.
->   * [The unknown argument flags handling policy](#4-unknown-argument-flag-handling).
->   * [Argument Groups](#argument-groups) - organize related optional arguments into sections and optionally enforce usage rules.
->   * [Subparsers](#subparsers) - create hierarchical CLI subcommand structures.
+The parser can be fully configured using a fluent API. The following subsections detail all available configuration attributes.
 
-### Dynamic Program Name
+### Program Name
+
+When creating an argument parser instance, you must provide a program name to the constructor. This name is used in the generated help message.
+
+> [!IMPORTANT]
+>
+> If you provide a strict string (e.g., `"myprog"`), it cannot be empty and **must not contain whitespace characters**.
+
+**Dynamic Program Name**
 
 If you prefer not to hardcode the program name, you can instruct the parser to dynamically deduce it from the command-line input (specifically `argv[0]`) by initializing it with the `argon::dynamic_name` tag:
 
@@ -178,10 +184,78 @@ argon::argument_parser parser(argon::dynamic_name);
 parser.try_parse_args(argc, argv);
 ```
 
-When the parser processes `argc` and `argv`, it extracts the executable's base name, strips any preceding directory paths (e.g., `/usr/bin/my_app` or `C:\path\to\my_app.exe` cleanly becomes `my_app` / `my_app.exe`), and automatically propagates this resolved name down to all of its [subparsers](#subparsers).
+When the parser processes `argc` and `argv`, it extracts the executable's base name and cleanly strips any preceding directory paths (e.g., `/usr/bin/my_app` or `C:\path\to\my_app.exe` becomes `my_app`). This resolved name is automatically propagated down to all of its [subparsers](#subparsers).
 
 > [!WARNING]
+>
 > If you configure a parser with `argon::dynamic_name`, you **must** use the `argc, argv` parsing overloads (like `parse_args(argc, argv)`). Attempting to use the range-based parsing functions (e.g., passing a `std::span` or `std::vector`) before the parser has resolved its name will result in a `std::logic_error`.
+
+### Version and Description
+
+You can provide a version and a description for your program. These are displayed at the very top of the parser's configuration output (e.g., when the user passes the `--help` flag).
+
+```cpp
+parser.version("v1.0.0")
+      .description("A high-performance file processing utility.");
+```
+
+> [!WARNING]
+> The version string cannot contain control characters (such as line breaks or tabs). Attempting to use them will throw an `argon::invalid_configuration` exception.
+
+### Help Message Formatting
+
+You can customize the layout of the parser's automatically generated help message by passing an `argon::format_config` object to the `formatting()` method. This allows you to control the indentation of argument descriptions and enable automatic text wrapping for long help messages.
+
+```cpp
+parser.formatting({
+    .indent_width = 4u,       // Set section indentation to 4 spaces (default: 2)
+    .max_line_width = 80ull   // Wrap help text at 80 characters (default: 120)
+});
+
+```
+
+> [!NOTE]
+>
+> Setting `max_line_width` to `0` disables automatic text wrapping entirely. Manual line breaks (`\n`) in your help strings are always respected and properly aligned regardless of the `max_line_width` setting.
+
+### Flag Character
+
+By default, the parser uses the POSIX-standard hyphen (`-`) as the flag prefix character (e.g., `-h`, `--help`). You can change this to support different CLI styles, such as Windows-style slashes (`/`), by setting a custom flag character.
+
+```cpp
+argon::argument_parser parser("program");
+
+// Change the flag character to a forward slash
+parser.flag_char('/');
+
+// force the usage of a single flag character by making the `help` name secondary
+parser.add_optional_argument("help", argon::n_secondary)
+      .help("Display the help message");
+
+parser.try_parse_args(argc, argv);
+
+/* Example execution:
+> ./program /help
+```
+
+> [!WARNING]
+>
+> * The flag character must be a printable ASCII character and cannot be the same as the assignment character (`=`).
+> * You **must** set the flag character before adding any arguments to the parser. Attempting to change it after arguments have been added will result in an `argon::invalid_configuration` exception.
+
+### Verbosity
+
+The verbosity mode is `false` by default. If enabled using `.verbose()`, the parser's help output will include highly detailed information about each argument's configuration parameters (such as its `nargs` bounds, valid choices, default values, and implicit values) natively appended to the standard name and help message.
+
+```cpp
+parser.verbose(true);
+```
+
+### Unknown Arguments Policy
+
+By default, the parser throws an exception if it encounters a command-line argument that it does not recognize. You can alter this behavior (e.g., to ignore them, warn the user, or treat them as positional values) using the `unknown_arguments_policy()` method.
+
+For detailed information on the available policies and their behaviors, see the [Unknown Argument Flag Handling](#4-unknown-argument-flag-handling) section.
 
 <br/>
 <br/>
@@ -288,6 +362,24 @@ Parameters which can be specified for both positional and optional arguments inc
 parser.add_positional_argument<std::size_t>("number", "n")
       .help("a positive integer value");
 ```
+
+> [!TIP]
+>
+> **Multi-line Help Messages**
+>
+> The help string fully supports manual line breaks (`\n`). The parser's formatting engine will automatically detect these line breaks and align all subsequent lines to the correct indentation offset. This is perfect for appending structural notes or warnings to your argument descriptions.
+> ```cpp
+> parser.add_optional_argument("legacy-feature")
+>       .help("Enables the legacy processing mode.\n\nWARNING: This feature is deprecated and will be removed in v6.0.");
+>
+> ```
+> The help message for the `legacy-feature` argument would look like this:
+> ```
+> --legacy-feature : Enables the legacy processing mode.
+>
+>                    WARNING: This feature is deprecated
+>                    and will be removed in v6.0.
+> ```
 
 <br />
 
@@ -1632,7 +1724,7 @@ For example:
 
 ```cpp
 // top-level parser
-argon::argument_parser git("ap-git");
+argon::argument_parser git("argon-git");
 git.version("v0.1.0")
    .description("A version control system built with CPP-ARGON")
    .default_arguments(argon::default_argument::o_help, argon::default_argument::o_version);
@@ -1671,8 +1763,8 @@ push.description("Update remote refs along with associated objects");
 All defined subparsers will be included in the parent parser's help message:
 
 ```txt
-> ap-git --help
-Program: ap-git v0.1.0
+> argon-git --help
+Program: argon-git v0.1.0
 
   A version control system built with CPP-ARGON
 
@@ -1701,12 +1793,12 @@ When parsing command-line arguments, the parent parser will attempt to match the
 For example:
 
 ```cpp
-argon::argument_parser git("ap-git");
+argon::argument_parser git("argon-git");
 auto& submodule = git.add_subparser("submodule");
 auto& submodule_init = submodule.add_subparser("init");
 ```
 
-Running `ap-git submodule init <args>` will result in `<args>` being parsed by the `submodule_init` parser.
+Running `argon-git submodule init <args>` will result in `<args>` being parsed by the `submodule_init` parser.
 
 ### Tracking Parser State
 
@@ -1730,7 +1822,7 @@ Each parser tracks its state during parsing. The methods described below let you
 
 ```cpp
 // define the parser hierarchy
-argon::argument_parser git("ap-git");
+argon::argument_parser git("argon-git");
 auto& submodule = git.add_subparser("submodule");
 auto& submodule_init = submodule.add_subparser("init");
 
@@ -1750,17 +1842,17 @@ std::cout << "submodule_init : invoked=" << submodule_init.invoked()
           << ", finalized=" << submodule_init.finalized() << '\n';
 
 auto& active = git.resolved_parser();
-std::cout << "\nResolved parser : " << active.name() << " (" << active.program_name() << ")\n";
+std::cout << "\nResolved parser : " << active.name() << " (" << active.full_name() << ")\n";
 ```
 
-If you run: `./ap-git submodule init`, you will get the following state:
+If you run: `./argon-git submodule init`, you will get the following state:
 
 ```txt
 git            : invoked=true, finalized=false
 submodule      : invoked=true, finalized=false
 submodule_init : invoked=true, finalized=true
 
-Resolved parser : init (ap-git submodule init)
+Resolved parser : init (argon-git submodule init)
 ```
 
 <br/>

@@ -198,17 +198,18 @@ public:
     }
 
     /**
-     * @brief Returns the parser's full program name.
+     * @brief Returns the parser's full name.
      *
      * - For top-level parsers, this is the same as the parser's name.
-     * - For subparsers, the name is prefixed with its parent parser names.
+     * - For subparsers, the name is prefixed with its parent parser names:
      *
-     * Top-level parser: `git`
-     * Subparser: `git submodule`
-     * Nested subparser : `git submodule init`
+     * Example:
+     * - Top-level parser: `git`
+     * - Subparser: `git submodule`
+     * - Nested subparser : `git submodule init`
      */
-    [[nodiscard]] std::string_view program_name() const noexcept {
-        return this->_program_name;
+    [[nodiscard]] std::string_view full_name() const noexcept {
+        return this->_full_name;
     }
 
     /**
@@ -307,6 +308,21 @@ public:
     /// @return The configured flag character.
     [[nodiscard]] char flag_char() const noexcept {
         return this->_flag_char;
+    }
+
+    /**
+     * @brief Set the formatting configuration for the help output.
+     * @param cfg The formatting configuration object.
+     * @return Reference to the argument parser.
+     */
+    argument_parser& formatting(const format_config& cfg) noexcept {
+        this->_format_cfg = cfg;
+        return *this;
+    }
+
+    /// @return The configured help formatting options.
+    [[nodiscard]] const format_config& formatting() const noexcept {
+        return this->_format_cfg;
     }
 
     /**
@@ -627,11 +643,11 @@ public:
             throw std::logic_error(std::format(
                 "A subparser with the given name ({}) already exists in parser '{}'",
                 (*subparser_it)->_name,
-                this->_program_name
+                this->_full_name
             ));
 
         return *this->_subparsers.emplace_back(
-            std::unique_ptr<argument_parser>(new argument_parser(name, this->_program_name, false))
+            std::unique_ptr<argument_parser>(new argument_parser(name, this->_full_name, false))
         );
     }
 
@@ -974,13 +990,20 @@ public:
      * @param os The output stream.
      */
     void print_help(const bool verbose, std::ostream& os = std::cout) const noexcept {
-        os << "Program: " << this->_program_name;
+        os << "Program: " << this->_full_name;
         if (not this->_version.empty())
             os << ' ' << this->_version;
         os << '\n';
 
-        if (not this->_description.empty())
-            os << '\n' << std::string(this->_indent_width, ' ') << this->_description << '\n';
+        if (not this->_description.empty()) {
+            os << '\n'
+               << util::align_text(
+                      this->_description,
+                      this->_format_cfg.indent_width,
+                      this->_format_cfg.max_line_width
+                  )
+               << '\n';
+        }
 
         this->_print_subparsers(os);
         for (const auto& group : this->_argument_groups)
@@ -995,7 +1018,7 @@ public:
      * @param os The output stream.
      */
     void print_version(std::ostream& os = std::cout) const noexcept {
-        os << this->_program_name;
+        os << this->_full_name;
         if (this->_version.empty())
             os << " (version unspecified)" << std::endl;
         else
@@ -1061,7 +1084,7 @@ private:
         const std::string_view name, const std::string_view parent_name, const bool dynamic
     )
     : _name(name),
-      _program_name(
+      _full_name(
           dynamic
               ? ""
               : std::format("{}{}{}", parent_name, std::string(not parent_name.empty(), ' '), name)
@@ -1089,17 +1112,17 @@ private:
         if (this->_name.empty())
             this->_name = "unknown";
 
-        this->_program_name = this->_name;
+        this->_full_name = this->_name;
         this->_is_name_resolved = true;
 
         for (auto& sub : this->_subparsers)
-            sub->_update_program_name(this->_program_name);
+            sub->_update_program_name(this->_full_name);
     }
 
     void _update_program_name(std::string_view parent_name) {
-        this->_program_name = std::format("{} {}", parent_name, this->_name);
+        this->_full_name = std::format("{} {}", parent_name, this->_name);
         for (auto& sub : this->_subparsers)
-            sub->_update_program_name(this->_program_name);
+            sub->_update_program_name(this->_full_name);
     }
 
     void _verify_arg_name_pattern(const std::string_view arg_name) const {
@@ -1569,7 +1592,7 @@ private:
             max_subparser_name_length = std::max(max_subparser_name_length, bld.name.length());
 
         for (const auto& bld : builders)
-            os << '\n' << bld.get_basic(this->_indent_width, max_subparser_name_length);
+            os << '\n' << bld.build_base(this->_format_cfg, max_subparser_name_length);
 
         os << '\n';
     }
@@ -1598,12 +1621,19 @@ private:
             os << " (" << util::join(group_attrs) << ')';
         os << '\n';
 
-        if (not group._description.empty())
-            os << '\n' << std::string(this->_indent_width, ' ') << group._description << '\n';
+        if (not group._description.empty()) {
+            os << '\n'
+               << util::align_text(
+                      group._description,
+                      this->_format_cfg.indent_width,
+                      this->_format_cfg.max_line_width
+                  )
+               << '\n';
+        }
 
         if (verbose) {
             for (const auto& arg : visible_args)
-                os << '\n' << arg->help_builder(verbose).get(this->_indent_width) << '\n';
+                os << '\n' << arg->help_builder(verbose).build(this->_format_cfg) << '\n';
         }
         else {
             std::vector<detail::help_builder> builders;
@@ -1617,7 +1647,7 @@ private:
                 max_arg_name_length = std::max(max_arg_name_length, bld.name.length());
 
             for (const auto& bld : builders)
-                os << '\n' << bld.get_basic(this->_indent_width, max_arg_name_length);
+                os << '\n' << bld.build_base(this->_format_cfg, max_arg_name_length);
 
             os << '\n';
         }
@@ -1626,8 +1656,7 @@ private:
     // --- attributes ---
 
     std::string _name = "";
-    std::string _program_name =
-        ""; // The name of the program in the format "<parent-parser-names>... <program-name>".
+    std::string _full_name = ""; // Format: "<parent-parser-names>... <program-name>".
     std::string _description = "";
     std::string _version = "";
 
@@ -1635,6 +1664,8 @@ private:
 
     char _flag_char = '-';
     std::string _primary_flag_prefix = "--";
+
+    format_config _format_cfg{};
 
     // --- parsing cfg & state ---
 
@@ -1660,7 +1691,6 @@ private:
     static constexpr char _assign_char = '=';
     static constexpr std::uint8_t _primary_flag_prefix_length = 2u;
     static constexpr std::uint8_t _secondary_flag_prefix_length = 1u;
-    static constexpr std::uint8_t _indent_width = 2u;
 };
 
 // --- argument_group method implementations ---

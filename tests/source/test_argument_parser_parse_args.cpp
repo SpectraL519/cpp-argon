@@ -1946,7 +1946,7 @@ TEST_CASE_FIXTURE(
     REQUIRE_NOTHROW(dynamic_parser.parse_args(argc, argv));
 
     CHECK_EQ(dynamic_parser.name(), "my_app");
-    CHECK_EQ(dynamic_parser.program_name(), "my_app");
+    CHECK_EQ(dynamic_parser.full_name(), "my_app");
 
     free_argv(argc, argv);
 }
@@ -1966,7 +1966,7 @@ TEST_CASE_FIXTURE(
     REQUIRE_NOTHROW(dynamic_parser.parse_args(argc, argv));
 
     CHECK_EQ(dynamic_parser.name(), "my_app.exe");
-    CHECK_EQ(dynamic_parser.program_name(), "my_app.exe");
+    CHECK_EQ(dynamic_parser.full_name(), "my_app.exe");
 
     free_argv(argc, argv);
 }
@@ -1985,23 +1985,23 @@ TEST_CASE_FIXTURE(
     auto argv = to_char_2d_array(argv_vec);
 
     // Initial state check - subparser program names should be incomplete because the parent isn't resolved yet
-    CHECK_EQ(sub_cmd.program_name(), "commit");
-    CHECK_EQ(nested_cmd.program_name(), "commit now");
+    CHECK_EQ(sub_cmd.full_name(), "commit");
+    CHECK_EQ(nested_cmd.full_name(), "commit now");
 
     // Parse will trigger the resolution and propagation
     REQUIRE_NOTHROW(dynamic_parser.parse_args(argc, argv));
 
     // Verify root parser
     CHECK_EQ(dynamic_parser.name(), "git");
-    CHECK_EQ(dynamic_parser.program_name(), "git");
+    CHECK_EQ(dynamic_parser.full_name(), "git");
 
     // Verify first-level subparser
     CHECK_EQ(sub_cmd.name(), "commit");
-    CHECK_EQ(sub_cmd.program_name(), "git commit");
+    CHECK_EQ(sub_cmd.full_name(), "git commit");
 
     // Verify nested subparser
     CHECK_EQ(nested_cmd.name(), "now");
-    CHECK_EQ(nested_cmd.program_name(), "git commit now");
+    CHECK_EQ(nested_cmd.full_name(), "git commit now");
 
     free_argv(argc, argv);
 }

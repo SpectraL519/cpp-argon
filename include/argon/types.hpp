@@ -27,4 +27,11 @@ struct dynamic_name_t {
 /// @brief Tag value that enables dynamic deduction of the program name.
 inline constexpr dynamic_name_t dynamic_name{};
 
+/// @brief Configuration options for formatting the parser's help output.
+struct format_config {
+    std::uint8_t indent_width = 2u; ///< The number of spaces to prepend to sections.
+    std::size_t max_line_width =
+        120ull; ///< The maximum line width for text wrapping (0 disables wrapping).
+};
+
 } // namespace argon
