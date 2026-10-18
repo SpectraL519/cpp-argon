@@ -134,6 +134,19 @@ public:
     // attribute setters
 
     /**
+     * @brief Set the negative prefix for the argument.
+     * @param prefix The negative prefix string (e.g., "no-", "disable-").
+     * @return Reference to the argument instance.
+     * @note The method is enabled only for optional arguments.
+     */
+    argument& negative(std::string_view prefix)
+    requires(type == argument_type::optional)
+    {
+        this->_name.negative_prefix(prefix);
+        return *this;
+    }
+
+    /**
      * @brief Set the help message for the argument.
      * @param help_msg The help message to set.
      * @return Reference to the argument instance.
@@ -768,7 +781,7 @@ private:
     }
 
     // attributes
-    const argon::argument_name _name; ///< The argument's name.
+    argument_name _name; ///< The argument's name.
     std::string _help_msg; ///< The argument's help message.
 
     nargs::range _nargs_range; ///< The argument's nargs range attribute value.
