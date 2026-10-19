@@ -83,6 +83,10 @@ protected:
     /// @return `true` if the argument accepts further values, `false` otherwise.
     virtual bool mark_used() = 0;
 
+    /// @brief Mark the argument's negative flag as used.
+    /// @return `true` if the argument accepts further values, `false` otherwise.
+    virtual bool mark_negative_used() = 0;
+
     /// @brief Set the value for the argument.
     /// @param value The string representation of the value.
     /// @return `true` if the argument accepts further values, `false` otherwise.

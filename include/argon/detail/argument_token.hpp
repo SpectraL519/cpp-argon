@@ -25,7 +25,8 @@ struct argument_token {
         t_value, ///< Represents a value argument.
         t_flag_primary, ///< Represents a primary (--) flag argument.
         t_flag_secondary, ///< Represents a secondary (-) flag argument.
-        t_flag_compound ///< Represents a compound flag argument (secondary flag matching multiple arguments).
+        t_flag_compound, ///< Represents a compound flag argument (secondary flag matching multiple arguments).
+        t_flag_negative ///< Represents a primary flag argument matching a negative prefix.
     };
     using enum token_type;
 
@@ -45,14 +46,14 @@ struct argument_token {
      * @note - t_flag_primary
      * @note - t_flag_secondary
      * @note - t_flag_compound
+     * @note - t_flag_negative
      */
     [[nodiscard]] bool is_flag_token() const noexcept {
         switch (this->type) {
         case t_flag_primary:
-            [[fallthrough]];
         case t_flag_secondary:
-            [[fallthrough]];
         case t_flag_compound:
+        case t_flag_negative:
             return true;
         default:
             return false;

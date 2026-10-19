@@ -60,4 +60,10 @@ struct on_flag {
     using type = std::function<void()>;
 };
 
+/// @brief Tag type used to reset an argument's parsed values.
+struct reset_parsed_t {};
+
+/// @brief Tag type used to clear an argument's parsed, default, and implicit values.
+struct reset_all_t {};
+
 } // namespace argon::action_type

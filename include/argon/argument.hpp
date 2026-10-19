@@ -134,19 +134,6 @@ public:
     // attribute setters
 
     /**
-     * @brief Set the negative prefix for the argument.
-     * @param prefix The negative prefix string (e.g., "no-", "disable-").
-     * @return Reference to the argument instance.
-     * @note The method is enabled only for optional arguments.
-     */
-    argument& negative(std::string_view prefix)
-    requires(type == argument_type::optional)
-    {
-        this->_name.negative_prefix(prefix);
-        return *this;
-    }
-
-    /**
      * @brief Set the help message for the argument.
      * @param help_msg The help message to set.
      * @return Reference to the argument instance.
@@ -298,6 +285,60 @@ public:
     {
         this->_flag_actions.emplace_back(std::forward<flag_action_type>(action));
         return *this;
+    }
+
+    /**
+     * @brief Set the negative prefix and action for the argument.
+     * @param prefix The negative prefix string (e.g., "no-").
+     * @param action A predefined tag (like `action::reset_all`) or a generic invocable callable.
+     * @return Reference to the argument instance.
+     * @note The method is enabled only for optional arguments.
+     */
+    template <traits::c_negative_action F>
+    argument& negative(std::string_view prefix, F&& action)
+    requires(type == argument_type::optional)
+    {
+        this->_name.with_negative_prefix(prefix);
+
+        using action_t = std::remove_cvref_t<F>;
+        if constexpr (traits::c_negative_action_specifier<action_t>) {
+            if constexpr (std::same_as<action_t, action_type::reset_parsed_t>) {
+                this->_negative_action = [this]() { this->_values.clear(); };
+            }
+            else if constexpr (std::same_as<action_t, action_type::reset_all_t>) {
+                this->_negative_action = [this]() {
+                    this->_values.clear();
+                    if constexpr (not traits::c_is_none<value_type>) {
+                        this->_default_values.clear();
+                        this->_implicit_values.clear();
+                    }
+                };
+            }
+        }
+        else {
+            this->_negative_action = std::forward<F>(action);
+        }
+
+        return *this;
+    }
+
+    /**
+     * @brief Set the negative prefix. Defaults to storing `false` for booleans, and clearing all values (the @ref reset_all action) for others.
+     * @param prefix The negative prefix string.
+     * @return Reference to the argument instance.
+     * @note The method is enabled only for optional arguments.
+     */
+    argument& negative(std::string_view prefix)
+    requires(type == argument_type::optional)
+    {
+        if constexpr (std::same_as<value_type, bool>) {
+            this->_name.with_negative_prefix(prefix);
+            this->_negative_action = [this]() { this->_values.emplace_back(false); };
+            return *this;
+        }
+        else {
+            return this->negative(prefix, action::reset_all);
+        }
     }
 
     /**
@@ -517,6 +558,9 @@ private:
     /// @brief The argument's flag action type alias.
     using flag_action_type = typename action_type::on_flag::type;
 
+    /// @brief The argument's negative action type alias.
+    using negative_action_type = std::function<void()>;
+
     /// @brief The argument's value-argument-specific type alias.
     /// @tparam _T The actual type used if the argument's `value_type` is not `none_type`.
     template <typename _T>
@@ -582,6 +626,19 @@ private:
         }
 
         return this->_accepts_further_values();
+    }
+
+    /// @brief Mark the optional argument's negative flag as used.
+    /// @return `true` if the argument accepts further values, `false` otherwise.
+    bool mark_negative_used() override {
+        if constexpr (type == argument_type::optional) {
+            ++this->_count;
+            if (this->_negative_action)
+                this->_negative_action();
+        }
+
+        // Negative flags are terminal and do not consume subsequent command-line values
+        return false;
     }
 
     /**
@@ -795,6 +852,8 @@ private:
         _flag_actions; ///< The optional argument's flag actions collection.
     [[no_unique_address]] value_arg_specific_type<std::vector<value_action_type>>
         _value_actions; ///< The argument's value actions collection.
+    [[no_unique_address]] optional_specific_type<negative_action_type>
+        _negative_action; ///< The action executed when the negative flag is used.
 
     bool _required : 1; ///< The argument's `required` attribute value.
     bool _suppress_arg_checks : 1 =

@@ -1391,19 +1391,36 @@ private:
         return false;
     }
 
-    [[nodiscard]] arg_ptr_vec_iter_t _find_opt_arg(const detail::argument_token& flag_tok
-    ) noexcept {
+    [[nodiscard]] arg_ptr_vec_iter_t _find_opt_arg(detail::argument_token& flag_tok) noexcept {
         if (not flag_tok.is_flag_token())
             return this->_optional_args.end();
 
         const auto actual_tok_value = this->_strip_flag_prefix(flag_tok);
-        const auto match_type =
-            flag_tok.type == detail::argument_token::t_flag_primary
-                ? argument_name::m_primary
-                : argument_name::m_secondary;
 
+        if (flag_tok.type == detail::argument_token::t_flag_primary) {
+            auto it = std::ranges::find_if(
+                this->_optional_args,
+                this->_name_match_predicate(actual_tok_value, argument_name::m_primary)
+            );
+            if (it != this->_optional_args.end())
+                return it;
+
+            it = std::ranges::find_if(
+                this->_optional_args,
+                this->_name_match_predicate(actual_tok_value, argument_name::m_negative)
+            );
+            if (it != this->_optional_args.end()) {
+                flag_tok.type = detail::argument_token::t_flag_negative;
+                return it;
+            }
+
+            return this->_optional_args.end();
+        }
+
+        // Secondary and compound flags cannot have a negative prefix
         return std::ranges::find_if(
-            this->_optional_args, this->_name_match_predicate(actual_tok_value, match_type)
+            this->_optional_args,
+            this->_name_match_predicate(actual_tok_value, argument_name::m_secondary)
         );
     }
 
@@ -1445,7 +1462,12 @@ private:
         }
 
         for (const auto& arg : tok.args) {
-            if (arg->mark_used())
+            const bool accepts_values =
+                (tok.type == detail::argument_token::t_flag_negative)
+                    ? arg->mark_negative_used()
+                    : arg->mark_used();
+
+            if (accepts_values)
                 state.curr_arg = arg;
             else
                 state.curr_arg.reset();

@@ -41,4 +41,14 @@ concept c_flag_action_specifier = argon::traits::c_one_of<AS, action_type::on_fl
 template <typename AS>
 concept c_action_specifier = c_value_action_specifier<AS> or std::same_as<AS, action_type::on_flag>;
 
+/// @brief Concept validating if a type is a predefined negative action tag.
+template <typename T>
+concept c_negative_action_specifier =
+    c_one_of<T, action_type::reset_parsed_t, action_type::reset_all_t>;
+
+/// @brief Concept validating if a type is a valid negative action (a specifier tag or an invocable callable).
+template <typename F>
+concept c_negative_action =
+    c_negative_action_specifier<std::remove_cvref_t<F>> or std::invocable<F>;
+
 } // namespace argon::traits

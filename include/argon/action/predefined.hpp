@@ -19,6 +19,12 @@ std::ostream& operator<<(std::ostream& os, const argument_parser&) noexcept;
 
 namespace action {
 
+/// @brief A predefined negative flag action tag that clears only the parsed values.
+inline constexpr action_type::reset_parsed_t reset_parsed{};
+
+/// @brief A predefined negative flag action tag that clears all parsed, default, and implicit values.
+inline constexpr action_type::reset_all_t reset_all{};
+
 /**
  * @brief Returns an *on-flag* action which prints the argument parser's help message.
  * @param parser Argument parser instance the help message of which will be printed.
