@@ -13,6 +13,7 @@
 
 #include <functional>
 
+// ??? rename to argon::action ???
 namespace argon::action_type {
 
 /**
@@ -22,7 +23,7 @@ namespace argon::action_type {
  * performs some logic on it without modifying it.
  */
 struct observe {
-    template <argon::traits::c_argument_value_type T>
+    template <traits::c_argument_value_type T>
     using type = std::function<void(const T&)>;
 };
 
@@ -33,7 +34,7 @@ struct observe {
  * returns a new value with which the argument will be initialized.
  */
 struct transform {
-    template <argon::traits::c_argument_value_type T>
+    template <traits::c_argument_value_type T>
     using type = std::function<T(const T&)>;
 };
 
@@ -44,7 +45,7 @@ struct transform {
  * already initialized argument.
  */
 struct modify {
-    template <argon::traits::c_argument_value_type T>
+    template <traits::c_argument_value_type T>
     using type = std::function<void(T&)>;
 };
 
@@ -65,5 +66,12 @@ struct reset_parsed_t {};
 
 /// @brief Tag type used to clear an argument's parsed, default, and implicit values.
 struct reset_all_t {};
+
+/// @brief A type used to store/insert values for an argument by an argument action.
+/// @todo Allow multiple values.
+template <traits::c_argument_value_type V>
+struct store_t {
+    V value;
+};
 
 } // namespace argon::action_type

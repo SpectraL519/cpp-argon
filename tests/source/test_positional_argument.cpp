@@ -466,7 +466,7 @@ TEST_CASE_FIXTURE(argument_test_fixture, "set_value(any) should perform the spec
             }
         };
 
-        sut.action<argon::action_type::observe>(is_power_of_two);
+        sut.actions<argon::action_type::observe>(is_power_of_two);
 
         CHECK_THROWS_AS(set_value(sut, 3), std::runtime_error);
 
@@ -477,7 +477,7 @@ TEST_CASE_FIXTURE(argument_test_fixture, "set_value(any) should perform the spec
 
     SUBCASE("transform action") {
         const auto double_action = [](const sut_value_type& value) { return 2 * value; };
-        sut.action<argon::action_type::transform>(double_action);
+        sut.actions<argon::action_type::transform>(double_action);
 
         set_value(sut, valid_value);
 
@@ -486,7 +486,7 @@ TEST_CASE_FIXTURE(argument_test_fixture, "set_value(any) should perform the spec
 
     SUBCASE("modify action") {
         const auto double_action = [](sut_value_type& value) { value *= 2; };
-        sut.action<argon::action_type::modify>(double_action);
+        sut.actions<argon::action_type::modify>(double_action);
 
         auto test_value = valid_value;
 

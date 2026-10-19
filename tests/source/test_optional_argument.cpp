@@ -306,7 +306,7 @@ TEST_CASE_FIXTURE(argument_test_fixture, "argument flag usage should trigger the
     auto sut = sut_type(arg_name_primary);
 
     const auto throw_action = []() { throw std::runtime_error("no reason"); };
-    sut.action<argon::action_type::on_flag>(throw_action);
+    sut.actions<argon::action_type::on_flag>(throw_action);
 
     CHECK_THROWS_AS(mark_used(sut), std::runtime_error);
 }
@@ -608,7 +608,7 @@ TEST_CASE_FIXTURE(
             }
         };
 
-        sut.action<argon::action_type::observe>(is_power_of_two);
+        sut.actions<argon::action_type::observe>(is_power_of_two);
 
         CHECK_THROWS_AS(set_value(sut, 3), std::runtime_error);
 
@@ -619,7 +619,7 @@ TEST_CASE_FIXTURE(
 
     SUBCASE("transform action") {
         const auto double_action = [](const sut_value_type& value) { return 2 * value; };
-        sut.action<argon::action_type::transform>(double_action);
+        sut.actions<argon::action_type::transform>(double_action);
 
         set_value(sut, arbitrary_value);
 
@@ -628,7 +628,7 @@ TEST_CASE_FIXTURE(
 
     SUBCASE("modify action") {
         const auto double_action = [](sut_value_type& value) { value *= 2; };
-        sut.action<argon::action_type::modify>(double_action);
+        sut.actions<argon::action_type::modify>(double_action);
 
         auto test_value = arbitrary_value;
 
