@@ -25,12 +25,38 @@ inline constexpr action::reset_parsed_t reset_parsed{};
 /// @brief A predefined negative flag action tag that clears all parsed, default, and implicit values.
 inline constexpr action::reset_all_t reset_all{};
 
-/// @brief A factory function returning a negative action tag that injects a specific value.
-/// @param val The value to store when the negative flag is used.
-/// @todo Make variadic
-template <traits::c_argument_value_type V>
-inline action::store_t<std::remove_cvref_t<V>> store(V&& val) noexcept {
-    return {std::forward<V>(val)};
+/// @brief A factory function returning a negative action tag that injects specific values.
+/// @param val The primary value to store.
+/// @param vals Additional variadic values to store.
+template <typename V, typename... Vs>
+requires traits::c_argument_value_type<std::remove_cvref_t<V>>
+inline action::store_t<std::remove_cvref_t<V>> store(V&& val, Vs&&... vals) noexcept {
+    using value_type = std::remove_cvref_t<V>;
+    return {
+        std::vector<value_type>{
+                                static_cast<value_type>(std::forward<V>(val)),
+                                static_cast<value_type>(std::forward<Vs>(vals))...
+        }
+    };
+}
+
+/// @brief A factory function returning a negative action tag that injects a range of values.
+/// @param range A range of values to store.
+template <std::ranges::range R>
+requires(not traits::c_argument_value_type<std::remove_cvref_t<R>>)
+    and traits::c_argument_value_type<std::remove_cvref_t<std::ranges::range_value_t<R>>>
+inline action::store_t<std::remove_cvref_t<std::ranges::range_value_t<R>>> store(R&& range
+) noexcept {
+    using value_type = std::remove_cvref_t<std::ranges::range_value_t<R>>;
+    std::vector<value_type> vals;
+
+    if constexpr (std::ranges::sized_range<R>)
+        vals.reserve(std::ranges::size(range));
+
+    for (auto&& v : range)
+        vals.emplace_back(std::forward<decltype(v)>(v));
+
+    return {std::move(vals)};
 }
 
 /// @brief Returns an *on-flag* action which prints the argument parser's help message.

@@ -474,7 +474,7 @@ TEST_CASE_FIXTURE(
 
     CAPTURE(argv_vec);
 
-    const auto argc = static_cast<int>(argv_vec.size());
+    const int argc = static_cast<int>(argv_vec.size());
     auto argv = to_char_2d_array(argv_vec);
 
     sut.parse_args(argc, argv);
@@ -2002,6 +2002,55 @@ TEST_CASE_FIXTURE(
     // Verify nested subparser
     CHECK_EQ(nested_cmd.name(), "now");
     CHECK_EQ(nested_cmd.full_name(), "git commit now");
+
+    free_argv(argc, argv);
+}
+
+// negative flags and overriding
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "parse_args should clear values when a negative flag is encountered"
+) {
+    sut.add_optional_argument<int>("opt", "o").negative("no-");
+
+    std::vector<std::string> argv_vec{"program", "-o", "10", "--no-opt"};
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(sut.parse_args(argc, argv));
+
+    // Because the default negative action for non-boolean types is reset_all
+    // it clears parsed, default, and implicit values, rendering has_value() false.
+    CHECK_FALSE(sut.has_value("opt"));
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "parse_args should respect 'last one wins' rule for negative and positive flags"
+) {
+    sut.add_flag("flag", "f").negative("no-");
+    sut.add_optional_argument<int>("opt", "o").negative("no-");
+
+    // Flag: false -> true -> false -> true
+    // Opt: 10 -> clear -> 20
+    std::vector<std::string> argv_vec{
+        "program", "--no-flag", "-f", "--no-flag", "--flag", "--opt", "10", "--no-opt", "-o", "20"
+    };
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    REQUIRE_NOTHROW(sut.parse_args(argc, argv));
+
+    CHECK(sut.has_value("flag"));
+    CHECK_EQ(sut.value<bool>("flag"), true);
+
+    CHECK(sut.has_value("opt"));
+    CHECK_EQ(sut.value<int>("opt"), 20);
 
     free_argv(argc, argv);
 }

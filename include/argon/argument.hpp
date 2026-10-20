@@ -304,7 +304,7 @@ public:
     argument& negative(std::string_view prefix, Actions&&... state_actions)
     requires(type == argument_type::optional)
     {
-        this->_name.with_negative_prefix(prefix);
+        this->_name.negative_prefix(prefix);
 
         if constexpr (sizeof...(Actions) == 0) {
             if constexpr (std::same_as<value_type, bool>) {
@@ -852,9 +852,11 @@ private:
                 };
             }
             else if constexpr (traits::c_instantiation_of<action_t, action::store_t>) {
-                return [this, val = action.value]() {
+                return [this, vals = action.values]() {
                     if constexpr (not traits::c_is_none<value_type>) {
-                        this->_values.emplace_back(val);
+                        for (const auto& v : vals) {
+                            this->_values.emplace_back(v);
+                        }
                     }
                 };
             }

@@ -75,6 +75,21 @@ TEST_CASE("has_secondary() should return true only if the secondary name is set"
     CHECK(arg_name_full_1.has_secondary());
 }
 
+TEST_CASE("negative_prefix() should throw if argument has no primary name") {
+    argument_name arg_sec_only{"", "s"};
+    CHECK_THROWS_AS(arg_sec_only.negative_prefix("no-"), std::logic_error);
+}
+
+TEST_CASE("has_negative() and negative_prefix() should correctly reflect the name state") {
+    argument_name arg{"prim", "s"};
+    CHECK_FALSE(arg.has_negative());
+    CHECK(arg.negative_prefix().empty());
+
+    arg.negative_prefix("no-");
+    CHECK(arg.has_negative());
+    CHECK_EQ(arg.negative_prefix(), "no-");
+}
+
 TEST_CASE("match(string_view, any) should return true if the given string matches at least one name"
 ) {
     // argument_name with primary name only
@@ -86,6 +101,11 @@ TEST_CASE("match(string_view, any) should return true if the given string matche
     // argument_name with both names
     CHECK(arg_name_full_1.match(primary_1));
     CHECK(arg_name_full_1.match(secondary_1));
+
+    // argument_name with negative prefix
+    argument_name neg_arg{"prim"};
+    neg_arg.negative_prefix("no-");
+    CHECK(neg_arg.match("no-prim"));
 }
 
 TEST_CASE("match(string_view, any) should return false if the given string dosn't match any name") {
@@ -132,6 +152,16 @@ TEST_CASE("match(string_view, secondary) should return true only if the given st
     CHECK(arg_name_full_1.match(secondary_1, argument_name::m_secondary));
 }
 
+TEST_CASE("match(string_view, negative) should return true only if the string matches the negative "
+          "name") {
+    argument_name arg{"prim", "s"};
+    arg.negative_prefix("no-");
+
+    CHECK(arg.match("no-prim", argument_name::m_negative));
+    CHECK_FALSE(arg.match("prim", argument_name::m_negative));
+    CHECK_FALSE(arg.match("no-s", argument_name::m_negative));
+}
+
 TEST_CASE("match(argument_name) should return true if either the primary or the secondary name of "
           "the passed argument_name matches at least one name") {
     // argument_name with primary name only
@@ -172,6 +202,13 @@ TEST_CASE("operator<< should push correct data to the output stream") {
     SUBCASE("argument_name with both names") {
         ss << arg_name_full_1;
         expected_ss << primary_1 << ", " << secondary_1;
+    }
+
+    SUBCASE("argument_name with negative prefix") {
+        argument_name arg{"prim", "s", '-'};
+        arg.negative_prefix("no-");
+        ss << arg;
+        expected_ss << "--[no-]prim, -s";
     }
 
     CAPTURE(ss);

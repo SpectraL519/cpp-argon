@@ -495,6 +495,23 @@ TEST_CASE_FIXTURE(argument_test_fixture, "set_value(any) should perform the spec
         double_action(test_value);
         CHECK_EQ(sut.value(), test_value);
     }
+
+    SUBCASE("multiple mixed actions execute sequentially") {
+        sut_value_type capture = 0;
+        sut.actions<argon::action::observe>([&](const sut_value_type& v) { capture += v; }
+        ).actions<argon::action::transform>([](const sut_value_type& v) {
+             return v + 1;
+         }).actions<argon::action::modify>([](sut_value_type& v) { v *= 2; });
+
+        // Initial value = 5
+        // 1. observe: capture += 5  (capture becomes 5)
+        // 2. transform: 5 + 1 = 6   (value becomes 6)
+        // 3. modify: 6 * 2 = 12     (value becomes 12)
+        set_value(sut, 5);
+
+        CHECK_EQ(capture, 5);
+        CHECK_EQ(sut.value(), 12);
+    }
 }
 
 TEST_CASE_FIXTURE(

@@ -98,7 +98,7 @@ public:
     /// @param prefix The negative prefix string.
     /// @return Reference to the argument name instance.
     /// @throws std::logic_error if the argument does not have a primary name.
-    argument_name& with_negative_prefix(std::string_view prefix) {
+    argument_name& negative_prefix(std::string_view prefix) {
         if (not this->has_primary())
             throw std::logic_error("Cannot add a negative prefix to an argument without a primary "
                                    "name!");

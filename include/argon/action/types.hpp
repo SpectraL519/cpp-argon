@@ -13,6 +13,18 @@
 
 namespace argon::action {
 
+/// @brief Tag type used to reset an argument's parsed values.
+struct reset_parsed_t {};
+
+/// @brief Tag type used to clear an argument's parsed, default, and implicit values.
+struct reset_all_t {};
+
+/// @brief A type used to store/insert values for an argument by an argument action.
+template <traits::c_argument_value_type V>
+struct store_t {
+    std::vector<V> values;
+};
+
 /// @brief An observing *value* action specifier.
 ///
 /// Represents an argument action which observes the parsed value and
@@ -48,19 +60,6 @@ struct modify {
 /// @note An on-flag action is executed immediately after parsing the argument's flag and before parsing the following values.
 struct on_flag {
     using type = std::function<void()>;
-};
-
-/// @brief Tag type used to reset an argument's parsed values.
-struct reset_parsed_t {};
-
-/// @brief Tag type used to clear an argument's parsed, default, and implicit values.
-struct reset_all_t {};
-
-/// @brief A type used to store/insert values for an argument by an argument action.
-/// @todo Allow multiple values.
-template <traits::c_argument_value_type V>
-struct store_t {
-    V value;
 };
 
 } // namespace argon::action
