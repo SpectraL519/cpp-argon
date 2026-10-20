@@ -20,10 +20,10 @@ std::ostream& operator<<(std::ostream& os, const argument_parser&) noexcept;
 namespace action {
 
 /// @brief A predefined negative flag action tag that clears only the parsed values.
-inline constexpr action_type::reset_parsed_t reset_parsed{};
+inline constexpr action::reset_parsed_t reset_parsed{};
 
 /// @brief A predefined negative flag action tag that clears all parsed, default, and implicit values.
-inline constexpr action_type::reset_all_t reset_all{};
+inline constexpr action::reset_all_t reset_all{};
 
 /**
  * @brief A factory function returning a negative action tag that injects a specific value.
@@ -31,7 +31,7 @@ inline constexpr action_type::reset_all_t reset_all{};
  * @todo Make variadic
  */
 template <traits::c_argument_value_type V>
-inline action_type::store_t<std::remove_cvref_t<V>> store(V&& val) noexcept {
+inline action::store_t<std::remove_cvref_t<V>> store(V&& val) noexcept {
     return {std::forward<V>(val)};
 }
 
@@ -41,7 +41,7 @@ inline action_type::store_t<std::remove_cvref_t<V>> store(V&& val) noexcept {
  * @param exit_code The exit code with which `std::exit` will be called (if not `std::nullopt`).
  * @param os The output stream to which the help message will be printed.
  */
-inline typename argon::action_type::on_flag::type print_help(
+inline typename argon::action::on_flag::type print_help(
     const argument_parser& parser,
     const std::optional<int> exit_code = std::nullopt,
     std::ostream& os = std::cout
@@ -54,7 +54,7 @@ inline typename argon::action_type::on_flag::type print_help(
 }
 
 /// @brief Returns an *observe* action which checks whether lower_bound file with the given name exists.
-inline util::callable_type<action_type::observe, std::string> check_file_exists() noexcept {
+inline util::callable_type<action::observe, std::string> check_file_exists() noexcept {
     return [](const std::string& file_path) {
         if (not std::filesystem::exists(file_path))
             throw std::filesystem::filesystem_error(
@@ -71,7 +71,7 @@ inline util::callable_type<action_type::observe, std::string> check_file_exists(
  * @param lower_bound The exclusive lower bound to validate against.
  */
 template <argon::traits::c_arithmetic T>
-util::callable_type<action_type::observe, T> gt(const T lower_bound) noexcept {
+util::callable_type<action::observe, T> gt(const T lower_bound) noexcept {
     return [lower_bound](const T& value) {
         if (not (value > lower_bound))
             throw std::out_of_range(
@@ -86,7 +86,7 @@ util::callable_type<action_type::observe, T> gt(const T lower_bound) noexcept {
  * @param lower_bound The inclusive lower bound to validate against.
  */
 template <argon::traits::c_arithmetic T>
-util::callable_type<action_type::observe, T> geq(const T lower_bound) noexcept {
+util::callable_type<action::observe, T> geq(const T lower_bound) noexcept {
     return [lower_bound](const T& value) {
         if (! (value >= lower_bound))
             throw std::out_of_range(
@@ -101,7 +101,7 @@ util::callable_type<action_type::observe, T> geq(const T lower_bound) noexcept {
  * @param lower_bound The exclusive upper bound to validate against.
  */
 template <argon::traits::c_arithmetic T>
-util::callable_type<action_type::observe, T> lt(const T upper_bound) noexcept {
+util::callable_type<action::observe, T> lt(const T upper_bound) noexcept {
     return [upper_bound](const T& value) {
         if (! (value < upper_bound))
             throw std::out_of_range(
@@ -116,7 +116,7 @@ util::callable_type<action_type::observe, T> lt(const T upper_bound) noexcept {
  * @param lower_bound The inclusive upper bound to validate against.
  */
 template <argon::traits::c_arithmetic T>
-util::callable_type<action_type::observe, T> leq(const T upper_bound) noexcept {
+util::callable_type<action::observe, T> leq(const T upper_bound) noexcept {
     return [upper_bound](const T& value) {
         if (! (value <= upper_bound))
             throw std::out_of_range(
@@ -138,7 +138,7 @@ util::callable_type<action_type::observe, T> leq(const T upper_bound) noexcept {
  * @todo Add explicit inclusive/exclusive constants (perhaps in argon::traits)
  */
 template <traits::c_arithmetic T, bool LeftInclusive = true, bool RightInclusive = true>
-util::callable_type<argon::action_type::observe, T> within(
+util::callable_type<argon::action::observe, T> within(
     const T lower_bound, const T upper_bound
 ) noexcept {
     return [lower_bound, upper_bound](const T& value) {

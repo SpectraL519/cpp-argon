@@ -39,7 +39,7 @@ enum class default_argument : std::uint8_t {
      * Equivalent to:
      * @code{.cpp}
      * parser.add_positional_argument("input")
-     *       .actiions<argon::action_type::observe>(argon::action::check_file_exists())
+     *       .actiions<argon::action::observe>(argon::action::check_file_exists())
      *       .help("Input file path");
      * @endcode
      */
@@ -60,7 +60,7 @@ enum class default_argument : std::uint8_t {
      * Equivalent to:
      * @code{.cpp}
      * parser.add_optional_argument<argon::none_type>("help")
-     *       .actiions<argon::action_type::on_flag>(argon::action::print_help(parser, EXIT_SUCCESS))
+     *       .actiions<argon::action::on_flag>(argon::action::print_help(parser, EXIT_SUCCESS))
      *       .help("Display the help message");
      * @endcode
      */
@@ -71,7 +71,7 @@ enum class default_argument : std::uint8_t {
      * Equivalent to:
      * @code{.cpp}
      * arg_parser.add_optional_argument<none_type>("version", "v")
-     *           .actiions<action_type::on_flag>([&arg_parser]() {
+     *           .actiions<action::on_flag>([&arg_parser]() {
      *               arg_parser.print_version();
      *               std::exit(EXIT_SUCCESS);
      *           })
@@ -86,7 +86,7 @@ enum class default_argument : std::uint8_t {
      * @code{.cpp}
      * parser.add_positional_argument("input", "i")
      *       .nargs(1ull)
-     *       .actiions<argon::action_type::observe>(argon::action::check_file_exists())
+     *       .actiions<argon::action::observe>(argon::action::check_file_exists())
      *       .help("Input file path");
      * @endcode
      */
@@ -109,7 +109,7 @@ enum class default_argument : std::uint8_t {
      * @code{.cpp}
      * parser.add_positional_argument("input", "i")
      *       .nargs(argon::nargs::at_least(1ull))
-     *       .actiions<argon::action_type::observe>(argon::action::check_file_exists())
+     *       .actiions<argon::action::observe>(argon::action::check_file_exists())
      *       .help("Input file path");
      * @endcode
      */
@@ -517,7 +517,7 @@ public:
         return this->add_optional_argument<bool>(base_name, name_discr)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
-            .template actions<action_type::on_flag>(
+            .template actions<action::on_flag>(
                 action::reset_parsed, action::store(StoreImplicitly)
             );
     }
@@ -538,7 +538,7 @@ public:
         return this->add_optional_argument<bool>(base_primary_name, base_secondary_name)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
-            .template actions<action_type::on_flag>(
+            .template actions<action::on_flag>(
                 action::reset_parsed, action::store(StoreImplicitly)
             );
     }
@@ -562,7 +562,7 @@ public:
         return this->add_optional_argument<bool>(group, base_name, name_discr)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
-            .template actions<action_type::on_flag>(
+            .template actions<action::on_flag>(
                 action::reset_parsed, action::store(StoreImplicitly)
             );
     }
@@ -586,7 +586,7 @@ public:
         return this->add_optional_argument<bool>(group, base_primary_name, base_secondary_name)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
-            .template actions<action_type::on_flag>(
+            .template actions<action::on_flag>(
                 action::reset_parsed, action::store(StoreImplicitly)
             );
     }
@@ -1766,7 +1766,7 @@ inline void add_default_argument(
     switch (arg_discriminator) {
     case default_argument::p_input:
         arg_parser.add_positional_argument("input")
-            .actions<action_type::observe>(action::check_file_exists())
+            .actions<action::observe>(action::check_file_exists())
             .help("Input file path");
         break;
 
@@ -1776,13 +1776,13 @@ inline void add_default_argument(
 
     case default_argument::o_help:
         arg_parser.add_optional_argument<none_type>("help", "h")
-            .actions<action_type::on_flag>(action::print_help(arg_parser, EXIT_SUCCESS))
+            .actions<action::on_flag>(action::print_help(arg_parser, EXIT_SUCCESS))
             .help("Display the help message");
         break;
 
     case default_argument::o_version:
         arg_parser.add_optional_argument<none_type>("version", "v")
-            .actions<action_type::on_flag>([&arg_parser]() {
+            .actions<action::on_flag>([&arg_parser]() {
                 arg_parser.print_version();
                 std::exit(EXIT_SUCCESS);
             })
@@ -1792,7 +1792,7 @@ inline void add_default_argument(
     case default_argument::o_input:
         arg_parser.add_optional_argument("input", "i")
             .nargs(1ull)
-            .actions<action_type::observe>(action::check_file_exists())
+            .actions<action::observe>(action::check_file_exists())
             .help("Input file path");
         break;
 
@@ -1803,7 +1803,7 @@ inline void add_default_argument(
     case default_argument::o_multi_input:
         arg_parser.add_optional_argument("input", "i")
             .nargs(argon::nargs::at_least(1ull))
-            .actions<action_type::observe>(action::check_file_exists())
+            .actions<action::observe>(action::check_file_exists())
             .help("Input files paths");
         break;
 

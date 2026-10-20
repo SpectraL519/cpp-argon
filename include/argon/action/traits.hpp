@@ -23,7 +23,7 @@ namespace argon::traits {
  */
 template <typename AS>
 concept c_value_action_specifier =
-    argon::traits::c_one_of<AS, action_type::observe, action_type::transform, action_type::modify>;
+    argon::traits::c_one_of<AS, action::observe, action::transform, action::modify>;
 
 /**
  * @brief The concept is satisfied when `AS` is a valid *on-flag* action action specifier.
@@ -31,7 +31,7 @@ concept c_value_action_specifier =
  * @ingroup traits
  */
 template <typename AS>
-concept c_flag_action_specifier = argon::traits::c_one_of<AS, action_type::on_flag>;
+concept c_flag_action_specifier = argon::traits::c_one_of<AS, action::on_flag>;
 
 /**
  * @brief The concept is satisfied when `AS` is a valid action action specifier.
@@ -39,15 +39,15 @@ concept c_flag_action_specifier = argon::traits::c_one_of<AS, action_type::on_fl
  * @ingroup traits
  */
 template <typename AS>
-concept c_action_specifier = c_value_action_specifier<AS> or std::same_as<AS, action_type::on_flag>;
+concept c_action_specifier = c_value_action_specifier<AS> or std::same_as<AS, action::on_flag>;
 
 /**
  * @brief Concept validating if a type is a predefined state action tag.
  */
 template <typename T>
 concept c_state_action_specifier =
-    c_one_of<T, action_type::reset_parsed_t, action_type::reset_all_t>
-    or c_instantiation_of<T, action_type::store_t>;
+    c_one_of<T, action::reset_parsed_t, action::reset_all_t>
+    or c_instantiation_of<T, action::store_t>;
 
 /**
  * @brief Concept validating if a type is a valid state action (a specifier tag or an invocable callable).

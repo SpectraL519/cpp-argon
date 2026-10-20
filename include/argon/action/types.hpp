@@ -13,8 +13,7 @@
 
 #include <functional>
 
-// ??? rename to argon::action ???
-namespace argon::action_type {
+namespace argon::action {
 
 /**
  * @brief An observing *value* action specifier.
@@ -74,4 +73,4 @@ struct store_t {
     V value;
 };
 
-} // namespace argon::action_type
+} // namespace argon::action

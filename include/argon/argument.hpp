@@ -261,7 +261,7 @@ public:
      * @return Reference to the argument instance.
      * @note The method is enabled only if:
      * @note - `value_type` is not `none_type`.
-     * @note - `AS` is a valid value action specifier: `action_type::observe`, `action_type::transform`, `action_type::modify`.
+     * @note - `AS` is a valid value action specifier: `action::observe`, `action::transform`, `action::modify`.
      */
     template <argon::traits::c_value_action_specifier AS, typename... Fs>
     argument& actions(Fs&&... value_actions) noexcept
@@ -281,7 +281,7 @@ public:
      * @tparam F The type of the action function.
      * @param action The action callable.
      * @return Reference to the argument instance.
-     * @note The method is enabled only for optional arguments and if `AS` is `action_type::on_flag`.
+     * @note The method is enabled only for optional arguments and if `AS` is `action::on_flag`.
      */
     template <argon::traits::c_flag_action_specifier AS, traits::c_state_action... Fs>
     argument& actions(Fs&&... state_actions)
@@ -546,7 +546,7 @@ private:
     using value_action_type = action::util::value_action_variant_type<T>;
 
     /// @brief The argument's flag action type alias.
-    using flag_action_type = typename action_type::on_flag::type;
+    using flag_action_type = typename action::on_flag::type;
 
     /// @brief The argument's state action type alias.
     using state_action_type = std::function<void()>;
@@ -837,13 +837,13 @@ private:
         using action_t = std::remove_cvref_t<F>;
 
         if constexpr (traits::c_state_action_specifier<action_t>) {
-            if constexpr (std::same_as<action_t, action_type::reset_parsed_t>) {
+            if constexpr (std::same_as<action_t, action::reset_parsed_t>) {
                 return [this]() {
                     this->_values.clear();
                     this->_parsed_nvalues = 0ull;
                 };
             }
-            else if constexpr (std::same_as<action_t, action_type::reset_all_t>) {
+            else if constexpr (std::same_as<action_t, action::reset_all_t>) {
                 return [this]() {
                     this->_values.clear();
                     this->_parsed_nvalues = 0ull;
@@ -853,7 +853,7 @@ private:
                     }
                 };
             }
-            else if constexpr (traits::c_instantiation_of<action_t, action_type::store_t>) {
+            else if constexpr (traits::c_instantiation_of<action_t, action::store_t>) {
                 return [this, val = action.value]() {
                     if constexpr (not traits::c_is_none<value_type>) {
                         this->_values.emplace_back(val);
@@ -871,13 +871,13 @@ private:
         using action_t = std::remove_cvref_t<F>;
 
         if constexpr (traits::c_state_action_specifier<action_t>) {
-            if constexpr (std::same_as<action_t, action_type::reset_parsed_t>) {
+            if constexpr (std::same_as<action_t, action::reset_parsed_t>) {
                 this->_negative_actions.emplace_back([this]() {
                     this->_values.clear();
                     this->_parsed_nvalues = 0ull;
                 });
             }
-            else if constexpr (std::same_as<action_t, action_type::reset_all_t>) {
+            else if constexpr (std::same_as<action_t, action::reset_all_t>) {
                 this->_negative_actions.emplace_back([this]() {
                     this->_values.clear();
                     this->_parsed_nvalues = 0ull;
@@ -887,7 +887,7 @@ private:
                     }
                 });
             }
-            else if constexpr (traits::c_instantiation_of<action_t, action_type::store_t>) {
+            else if constexpr (traits::c_instantiation_of<action_t, action::store_t>) {
                 this->_negative_actions.emplace_back([this, val = action.value]() {
                     this->_values.emplace_back(val);
                 });
