@@ -28,8 +28,9 @@
     - [Value Actions - Functions that are called after parsing an argument's value.](#value-actions---functions-that-are-called-after-parsing-an-arguments-value)
     - [Default Values - A list of values which will be used if no values for an argument have been parsed](#default-values---a-list-of-values-which-will-be-used-if-no-values-for-an-argument-have-been-parsed)
   - [Parameters Specific for Optional Arguments](#parameters-specific-for-optional-arguments)
-    - [On-flag Actions - Functions that are called immediately after parsing an argument's flag.](#on-flag-actions---functions-that-are-called-immediately-after-parsing-an-arguments-flag)
-    - [Implicit Values - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.](#implicit-values---a-list-of-values-which-will-be-set-for-an-argument-if-only-its-flag-but-no-values-are-parsed-from-the-command-line)
+    - [Implicit Values](#implicit-values)
+    - [On-flag Actions](#on-flag-actions)
+    - [Negative Flags](#negative-flags)
 - [Predefined Parameter Values](#predefined-parameter-values)
   - [Actions](#actions)
 - [Default Arguments](#default-arguments)
@@ -633,7 +634,7 @@ Actions are represented as functions, which take the argument's value as an argu
   }
 
   parser.add_optional_argument<std::string>("user", "u")
-        .action<argon::action_type::observe>(is_valid_user_tag);
+        .actions<argon::action::observe>(is_valid_user_tag);
   ```
 
 - `transform` actions | `value_type(const value_type&)` - applied to the parsed value. The returned value will be used to initialize the argument's value.
@@ -646,7 +647,7 @@ Actions are represented as functions, which take the argument's value as an argu
   }
 
   parser.add_optional_argument<std::string>("key", "k")
-        .action<argon::action_type::transform>(to_lower);
+        .actions<argon::action::transform>(to_lower);
   ```
 
 - `modify` actions | `void(value_type&)` - applied to the initialized value of an argument.
@@ -657,12 +658,19 @@ Actions are represented as functions, which take the argument's value as an argu
   }
 
   parser.add_optional_argument<std::string>("name", "n")
-        .action<argon::action_type::modify>(capitalize);
+        .actions<argon::action::modify>(capitalize);
   ```
 
 > [!TIP]
 >
-> A single argument can have multiple value actions. Instead of writing complex logic in one action, consider composing several simple, focused actions for better readability and reusability.
+> A single argument can have multiple value actions. Instead of writing complex logic in one action, consider composing several simple, focused actions for better readability and reusability. You can pass multiple actions into a single `.actions<type>(...)` call, e.g.:
+> ```cpp
+> parser.add_optional_argument("email")
+>       .actions<argon::action::observe>(
+>         validate_email_format,
+>         validate_active_user
+>       )
+> ```
 
 <br />
 
@@ -729,27 +737,9 @@ Command                                 Result
 
 Apart from the common parameters listed above, for optional arguments you can also specify the following parameters:
 
-#### On-flag Actions - Functions that are called immediately after parsing an argument's flag.
+#### Implicit Values
 
-```cpp
-void print_debug_info() noexcept {
-#ifdef NDEBUG
-    std::cout << "Running in release mode.\n";
-#else
-    std::cout << "Running in debug mode.\n";
-#endif
-    std::exit(EXIT_SUCCESS);
-};
-
-parser.add_optional_argument("debug-info")
-      .action<argon::action_type::on_flag>(print_debug_info);
-```
-
-Here the `print_debug_info` function will be called right after parsing the `--debug-info` flag and the program will exit, even if there are more arguments after this flag.
-
-<br />
-
-#### Implicit Values - A list of values which will be set for an argument if only its flag but no values are parsed from the command-line.
+A set of values which will be set for an argument if only its flag but no values are parsed from the command-line.
 
 ```cpp
 // example
@@ -784,6 +774,59 @@ Command                       Result
 > The `implicit_values` parameter is extremely useful when combined with default value (e.g. in case of boolean flags - see [Adding Arguments](#adding-arguments)).
 
 <br/>
+
+#### On-flag Actions
+
+Functions that are called immediately after parsing an argument's flag.
+
+```cpp
+void print_debug_info() noexcept {
+#ifdef NDEBUG
+    std::cout << "Running in release mode.\n";
+#else
+    std::cout << "Running in debug mode.\n";
+#endif
+    std::exit(EXIT_SUCCESS);
+};
+
+parser.add_optional_argument("debug-info")
+      .actions<argon::action::on_flag>(print_debug_info);
+```
+
+Here the `print_debug_info` function will be called right after parsing the `--debug-info` flag and the program will exit, even if there are more arguments after this flag.
+
+<br />
+
+#### Negative Flags
+
+You can define a negative prefix (e.g., `"no-"`, `"disable-"`) for optional arguments, which allows users to explicitly disable features or reset an argument's values.
+
+```cpp
+parser.add_optional_argument("color", "c")
+      .default_values("blue") // if no value is specified, "blue" will be used
+      .negative("no-"); // Registers an additional `--no-color` flag
+```
+
+By default, when the negative flag is used:
+
+- For `bool` flags: It stores `false` (overriding default/true values).
+- For other types: It clears all parsed, default, and implicit values (executing the `argon::action::reset_all` behavior).
+
+You can customize the negative flag's behavior by passing variadic state action tags or custom callables:
+
+```cpp
+parser.add_optional_argument<int>("numbers")
+      .negative("clear-", argon::action::reset_parsed); // Only clears the user's parsed values, keeping defaults
+
+parser.add_optional_argument<std::string>("mode")
+      .negative("no-", argon::action::reset_parsed, argon::action::store("none")); // Clears values and injects "none"
+```
+
+> [!WARNING]
+>
+> Be careful with the actions specified for negative flags. While you can pass arbitrary state action callable (i.e. `void()`), the expected behavior of such flags is **negation** and/or **state resetting**.
+
+<br/>
 <br/>
 <br/>
 
@@ -796,7 +839,7 @@ Command                       Result
   Prints the parser's help message to the output stream and optionally exits with the given code.
 
   ```cpp
-  typename argon::action_type::on_flag::type print_help(
+  typename argon::action::on_flag::type print_help(
       const argon::argument_parser& parser,
       const std::optional<int> exit_code = std::nullopt,
       std::ostream& os = std::cout
@@ -808,52 +851,52 @@ Command                       Result
   Throws if the provided file path does not exist.
 
   ```cpp
-  argon::action::util::callable_type<argon::action_type::observe, std::string> check_file_exists() noexcept;
+  argon::action::util::callable_type<argon::action::observe, std::string> check_file_exists() noexcept;
   ```
 
-- `gt` | observe (value type: [arithmetic](https://en.cppreference.com/w/cpp/types/is_arithmetic))
+- `gt` | observe (value type: [arithmetic](https://www.google.com/search?q=https%3A%2F%2Fen.cppreference.com%2Fw%2Fcpp%2Ftypes%2Fis_arithmetic))
 
   Validates that the value is strictly greater than `lower_bound`.
 
   ```cpp
   template <argon::traits::c_arithmetic T>
-  argon::action::util::callable_type<argon::action_type::observe, T> gt(const T lower_bound) noexcept;
+  argon::action::util::callable_type<argon::action::observe, T> gt(const T lower_bound) noexcept;
   ```
 
-- `geq` | observe (value type: [arithmetic](https://en.cppreference.com/w/cpp/types/is_arithmetic))
+- `geq` | observe (value type: [arithmetic](https://www.google.com/search?q=https%3A%2F%2Fen.cppreference.com%2Fw%2Fcpp%2Ftypes%2Fis_arithmetic))
 
   Validates that the value is greater than or equal to `lower_bound`.
 
   ```cpp
   template <argon::traits::c_arithmetic T>
-  argon::action::util::callable_type<argon::action_type::observe, T> geq(const T lower_bound) noexcept;
+  argon::action::util::callable_type<argon::action::observe, T> geq(const T lower_bound) noexcept;
   ```
 
-- `lt` | observe (value type: [arithmetic](https://en.cppreference.com/w/cpp/types/is_arithmetic))
+- `lt` | observe (value type: [arithmetic](https://www.google.com/search?q=https%3A%2F%2Fen.cppreference.com%2Fw%2Fcpp%2Ftypes%2Fis_arithmetic))
 
   Validates that the value is strictly less than `upper_bound`.
 
   ```cpp
   template <argon::traits::c_arithmetic T>
-  argon::action::util::callable_type<argon::action_type::observe, T> lt(const T upper_bound) noexcept;
+  argon::action::util::callable_type<argon::action::observe, T> lt(const T upper_bound) noexcept;
   ```
 
-- `leq` | observe (value type: [arithmetic](https://en.cppreference.com/w/cpp/types/is_arithmetic))
+- `leq` | observe (value type: [arithmetic](https://www.google.com/search?q=https%3A%2F%2Fen.cppreference.com%2Fw%2Fcpp%2Ftypes%2Fis_arithmetic))
 
   Validates that the value is less than or equal to `upper_bound`.
 
   ```cpp
   template <argon::traits::c_arithmetic T>
-  argon::action::util::callable_type<argon::action_type::observe, T> leq(const T upper_bound) noexcept;
+  argon::action::util::callable_type<argon::action::observe, T> leq(const T upper_bound) noexcept;
   ```
 
-- `within` | observe (value type: [arithmetic](https://en.cppreference.com/w/cpp/types/is_arithmetic))
+- `within` | observe (value type: [arithmetic](https://www.google.com/search?q=https%3A%2F%2Fen.cppreference.com%2Fw%2Fcpp%2Ftypes%2Fis_arithmetic))
 
   Checks if the value is within the given interval. Bound inclusivity is customizable using template parameters.
 
   ```cpp
   template <argon::traits::c_arithmetic T, bool LeftInclusive = true, bool RightInclusive = true>
-  argon::action::util::callable_type<argon::action_type::observe, T> within(
+  argon::action::util::callable_type<argon::action::observe, T> within(
       const T lower_bound, const T upper_bound
   ) noexcept;
   ```
@@ -881,7 +924,7 @@ parser.default_arguments(<args>);
   ```cpp
   // equivalent to:
   parser.add_positional_argument<std::string>("input")
-        .action<argon::action_type::modify>(argon::action::check_file_exists())
+        .actions<argon::action::observe>(argon::action::check_file_exists())
         .help("Input file path");
   ```
 
@@ -897,7 +940,7 @@ parser.default_arguments(<args>);
   ```cpp
   // equivalent to:
   parser.add_optional_argument<argon::none_type>("help", "h")
-        .action<action_type::on_flag>(argon::action::print_help(parser, EXIT_SUCCESS))
+        .actions<argon::action::on_flag>(argon::action::print_help(parser, EXIT_SUCCESS))
         .help("Display the help message");
   ```
 
@@ -905,8 +948,8 @@ parser.default_arguments(<args>);
 
   ```cpp
   // equivalent to:
-  parser.add_optional_argument<none_type>("version", "v")
-        .action<action_type::on_flag>([&parser]() {
+  parser.add_optional_argument<argon::none_type>("version", "v")
+        .actions<argon::action::on_flag>([&parser]() {
             parser.print_version();
             std::exit(EXIT_SUCCESS);
         })
@@ -920,14 +963,14 @@ parser.default_arguments(<args>);
   parser.add_optional_argument("input", "i")
         .required()
         .nargs(1)
-        .action<argon::action_type::observe>(argon::action::check_file_exists())
+        .actions<argon::action::observe>(argon::action::check_file_exists())
         .help("Input file path");
 
   // multi_input - equivalent to:
   parser.add_optional_argument("input", "i")
         .required()
         .nargs(argon::nargs::at_least(1))
-        .action<argon::action_type::observe>(argon::action::check_file_exists())
+        .actions<argon::action::observe>(argon::action::check_file_exists())
         .help("Input files paths");
   ```
 
