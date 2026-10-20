@@ -2,10 +2,8 @@
 // This file is part of the CPP-ARGON project (https://github.com/SpectraL519/cpp-argon).
 // Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 
-/**
- * @file argon/action/traits.hpp
- * @brief Defines action-related traits and concepts.
- */
+/// @file argon/action/traits.hpp
+/// @brief Defines action-related traits and concepts.
 
 #pragma once
 
@@ -16,29 +14,33 @@
 
 namespace argon::traits {
 
-/**
- * @brief The concept is satisfied when `AS` is a valid *value* action action specifier.
- * @tparam AS The action specifier type.
- * @ingroup traits
- */
+/// @brief The concept is satisfied when `AS` is a valid *value* action action specifier.
+/// @tparam AS The action specifier type.
+/// @ingroup traits
 template <typename AS>
 concept c_value_action_specifier =
-    argon::traits::c_one_of<AS, action_type::observe, action_type::transform, action_type::modify>;
+    argon::traits::c_one_of<AS, action::observe, action::transform, action::modify>;
 
-/**
- * @brief The concept is satisfied when `AS` is a valid *on-flag* action action specifier.
- * @tparam AS The action specifier type.
- * @ingroup traits
- */
+/// @brief The concept is satisfied when `AS` is a valid *on-flag* action action specifier.
+/// @tparam AS The action specifier type.
+/// @ingroup traits
 template <typename AS>
-concept c_flag_action_specifier = argon::traits::c_one_of<AS, action_type::on_flag>;
+concept c_flag_action_specifier = argon::traits::c_one_of<AS, action::on_flag>;
 
-/**
- * @brief The concept is satisfied when `AS` is a valid action action specifier.
- * @tparam AS The action specifier type.
- * @ingroup traits
- */
+/// @brief The concept is satisfied when `AS` is a valid action action specifier.
+/// @tparam AS The action specifier type.
+/// @ingroup traits
 template <typename AS>
-concept c_action_specifier = c_value_action_specifier<AS> or std::same_as<AS, action_type::on_flag>;
+concept c_action_specifier = c_value_action_specifier<AS> or std::same_as<AS, action::on_flag>;
+
+/// @brief Concept validating if a type is a predefined state action tag.
+template <typename T>
+concept c_state_action_specifier =
+    c_one_of<T, action::discard_parsed_t, action::discard_all_t>
+    or c_instantiation_of<T, action::store_t>;
+
+/// @brief Concept validating if a type is a valid state action (a specifier tag or an invocable callable).
+template <typename F>
+concept c_state_action = c_state_action_specifier<std::remove_cvref_t<F>> or std::invocable<F>;
 
 } // namespace argon::traits

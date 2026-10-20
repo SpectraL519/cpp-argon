@@ -20,9 +20,10 @@ class argument_name {
 public:
     /// @brief Specifies the type of argument name match.
     enum class match_type : std::uint8_t {
-        m_any, ///< Matches either the primary or the secondary name.
+        m_any, ///< Matches either the primary, secondary, or negative name.
         m_primary, ///< Matches only the primary name.
-        m_secondary ///< Matches only the secondary name.
+        m_secondary, ///< Matches only the secondary name.
+        m_negative ///< Matches only the negative primary name.
     };
     using enum match_type;
 
@@ -34,12 +35,10 @@ public:
     argument_name& operator=(const argument_name&) = default;
     argument_name& operator=(argument_name&&) = default;
 
-    /**
-     * @brief Primary and secondary name constructor.
-     * @param primary The primary name of the argument.
-     * @param secondary The secondary (short) name of the argument.
-     * @param flag_char The flag character (used for optional argument names).
-     */
+    /// @brief Primary and secondary name constructor.
+    /// @param primary The primary name of the argument.
+    /// @param secondary The secondary (short) name of the argument.
+    /// @param flag_char The flag character (used for optional argument names).
     explicit argument_name(
         std::string primary, std::string secondary = "", char flag_char = flag_char_sentinel
     )
@@ -52,13 +51,12 @@ public:
     /// @brief Class destructor.
     ~argument_name() = default;
 
-    /**
-     * @brief Equality comparison operator.
-     * @param other The argument_name instance to compare with.
-     * @return Equality of argument names.
-     */
+    /// @brief Equality comparison operator.
+    /// @param other The argument_name instance to compare with.
+    /// @return Equality of argument names.
     bool operator==(const argument_name& other) const noexcept {
-        return this->_primary == other._primary and this->_secondary == other._secondary;
+        return this->_primary == other._primary and this->_secondary == other._secondary
+           and this->_negative_prefix == other._negative_prefix;
     }
 
     /// @brief Checks if the argument name instance has a primary name.
@@ -71,6 +69,11 @@ public:
         return not this->_secondary.empty();
     }
 
+    /// @brief Checks if the argument name instance has a negative prefix.
+    [[nodiscard]] bool has_negative() const noexcept {
+        return not this->_negative_prefix.empty();
+    }
+
     /// @return The primary name of the argument.
     [[nodiscard]] const std::string& primary() const noexcept {
         return this->_primary;
@@ -81,70 +84,93 @@ public:
         return this->_secondary;
     }
 
+    /// @return The negative prefix of the argument.
+    [[nodiscard]] const std::string& negative_prefix() const noexcept {
+        return this->_negative_prefix;
+    }
+
     /// @return The flag character (used for optional argument names).
     [[nodiscard]] char flag_char() const noexcept {
         return this->_flag_char;
     }
 
-    /**
-     * @brief Matches the given string to the argument_name instance.
-     * @param arg_name The name string to match.
-     * @param m_type The match type used to find the argument.
-     * @return `true` if the given name matches the primary/secondary name (depending on the match type).
-     */
+    /// @brief Sets the negative prefix for the argument name.
+    /// @param prefix The negative prefix string.
+    /// @return Reference to the argument name instance.
+    /// @throws std::logic_error if the argument does not have a primary name.
+    argument_name& negative_prefix(std::string_view prefix) {
+        if (not this->has_primary())
+            throw std::logic_error("Cannot add a negative prefix to an argument without a primary "
+                                   "name!");
+        this->_negative_prefix = prefix;
+        return *this;
+    }
+
+    /// @brief Matches the given string to the argument_name instance.
+    /// @param arg_name The name string to match.
+    /// @param m_type The match type used to find the argument.
+    /// @return `true` if the given name matches the primary/secondary/negative name (depending on the match type).
     [[nodiscard]] bool match(std::string_view arg_name, const match_type m_type = m_any)
         const noexcept {
         switch (m_type) {
         case m_any:
             return (this->has_primary() and this->_primary == arg_name)
+                or (this->has_primary() and this->has_negative()
+                    and (this->_negative_prefix + this->_primary) == arg_name)
                 or (this->has_secondary() and this->_secondary == arg_name);
         case m_primary:
             return this->has_primary() and this->_primary == arg_name;
         case m_secondary:
             return this->has_secondary() and this->_secondary == arg_name;
+        case m_negative:
+            return this->has_primary() and this->has_negative()
+               and (this->_negative_prefix + this->_primary) == arg_name;
         }
 
         return false;
     }
 
-    /**
-     * @brief Matches the given argument name to the argument_name instance.
-     * @param arg_name The argument_name instance to match.
-     * @return True if arg_name's primary or secondary value matches the argument_name instance.
-     */
+    /// @brief Matches the given argument name to the argument_name instance.
+    /// @param arg_name The argument_name instance to match.
+    /// @return True if arg_name's primary, secondary, or negative value matches the argument_name instance.
     [[nodiscard]] bool match(const argument_name& arg_name) const noexcept {
         if (arg_name.has_primary() and this->match(arg_name._primary))
             return true;
 
-        if (arg_name.has_secondary())
-            return this->match(arg_name._secondary);
+        if (arg_name.has_secondary() and this->match(arg_name._secondary))
+            return true;
+
+        if (arg_name.has_negative() and this->match(arg_name._negative_prefix + arg_name._primary))
+            return true;
 
         return false;
     }
 
-    /**
-     * @brief Get a string representation of the argument_name.
-     */
+    /// @brief Get a string representation of the argument_name.
     [[nodiscard]] std::string str() const noexcept {
         const std::string fc(
             static_cast<std::size_t>(this->_flag_char != flag_char_sentinel), this->_flag_char
         );
 
         std::string primary_str =
-            this->has_primary() ? std::format("{}{}{}", fc, fc, this->_primary) : "";
-        std::string separator = this->has_primary() and this->has_secondary() ? ", " : "";
+            this->has_primary()
+                ? (this->has_negative()
+                       ? std::format("{}{}[{}]{}", fc, fc, this->_negative_prefix, this->_primary)
+                       : std::format("{}{}{}", fc, fc, this->_primary))
+                : "";
+
+        std::string separator = (this->has_primary() and this->has_secondary()) ? ", " : "";
+
         std::string secondary_str =
             this->has_secondary() ? std::format("{}{}", fc, this->_secondary) : "";
 
         return std::format("{}{}{}", primary_str, separator, secondary_str);
     }
 
-    /**
-     * @brief Stream insertion operator for argument names.
-     * @param os The output stream.
-     * @param arg_name The argument name to be inserted into the stream.
-     * @return The modified output stream.
-     */
+    /// @brief Stream insertion operator for argument names.
+    /// @param os The output stream.
+    /// @param arg_name The argument name to be inserted into the stream.
+    /// @return The modified output stream.
     friend std::ostream& operator<<(std::ostream& os, const argument_name& arg_name) noexcept {
         os << arg_name.str();
         return os;
@@ -156,14 +182,12 @@ public:
 private:
     std::string _primary; ///< The primary name of the argument.
     std::string _secondary; ///< The optional (short) name of the argument.
+    std::string _negative_prefix; ///< The optional negative prefix for the primary name.
     char _flag_char; ///< The flag character (used for optional argument names).
 };
 
-/**
- * @brief Argument name member discriminator.
- *
- * This discriminator type is used in the argument initializing methods of the `argument_parser` class.
- */
+/// @brief Argument name member discriminator.
+/// This discriminator type is used in the argument initializing methods of the `argument_parser` class.
 enum class argument_name_discriminator : bool {
     n_primary, ///< Represents the primary name (used with a long flag prefix --).
     n_secondary ///< Represents the secondary name (used with a short flag prefix --).

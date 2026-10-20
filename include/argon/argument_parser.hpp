@@ -39,7 +39,7 @@ enum class default_argument : std::uint8_t {
      * Equivalent to:
      * @code{.cpp}
      * parser.add_positional_argument("input")
-     *       .action<argon::action_type::observe>(argon::action::check_file_exists())
+     *       .actions<argon::action::observe>(argon::action::check_file_exists())
      *       .help("Input file path");
      * @endcode
      */
@@ -60,7 +60,7 @@ enum class default_argument : std::uint8_t {
      * Equivalent to:
      * @code{.cpp}
      * parser.add_optional_argument<argon::none_type>("help")
-     *       .action<argon::action_type::on_flag>(argon::action::print_help(parser, EXIT_SUCCESS))
+     *       .actions<argon::action::on_flag>(argon::action::print_help(parser, EXIT_SUCCESS))
      *       .help("Display the help message");
      * @endcode
      */
@@ -71,11 +71,11 @@ enum class default_argument : std::uint8_t {
      * Equivalent to:
      * @code{.cpp}
      * arg_parser.add_optional_argument<none_type>("version", "v")
-     *           .action<action_type::on_flag>([&arg_parser]() {
+     *           .actions<action::on_flag>([&arg_parser]() {
      *               arg_parser.print_version();
      *               std::exit(EXIT_SUCCESS);
      *           })
-     *           .help("Dsiplay program's version info");
+     *           .help("Display program's version info");
      * @endcode
      */
     o_version,
@@ -86,7 +86,7 @@ enum class default_argument : std::uint8_t {
      * @code{.cpp}
      * parser.add_positional_argument("input", "i")
      *       .nargs(1ull)
-     *       .action<argon::action_type::observe>(argon::action::check_file_exists())
+     *       .actions<argon::action::observe>(argon::action::check_file_exists())
      *       .help("Input file path");
      * @endcode
      */
@@ -109,7 +109,7 @@ enum class default_argument : std::uint8_t {
      * @code{.cpp}
      * parser.add_positional_argument("input", "i")
      *       .nargs(argon::nargs::at_least(1ull))
-     *       .action<argon::action_type::observe>(argon::action::check_file_exists())
+     *       .actions<argon::action::observe>(argon::action::check_file_exists())
      *       .help("Input file path");
      * @endcode
      */
@@ -515,8 +515,8 @@ public:
     ) {
         return this->add_optional_argument<bool>(base_name, name_discr)
             .default_values(not StoreImplicitly)
-            .implicit_values(StoreImplicitly)
-            .nargs(0ull);
+            .nargs(0ull)
+            .actions<action::on_flag>(action::discard_parsed, action::store(StoreImplicitly));
     }
 
     /**
@@ -533,8 +533,8 @@ public:
     ) {
         return this->add_optional_argument<bool>(base_primary_name, base_secondary_name)
             .default_values(not StoreImplicitly)
-            .implicit_values(StoreImplicitly)
-            .nargs(0ull);
+            .nargs(0ull)
+            .actions<action::on_flag>(action::discard_parsed, action::store(StoreImplicitly));
     }
 
     /**
@@ -554,8 +554,8 @@ public:
     ) {
         return this->add_optional_argument<bool>(group, base_name, name_discr)
             .default_values(not StoreImplicitly)
-            .implicit_values(StoreImplicitly)
-            .nargs(0ull);
+            .nargs(0ull)
+            .actions<action::on_flag>(action::discard_parsed, action::store(StoreImplicitly));
     }
 
     /**
@@ -575,8 +575,8 @@ public:
     ) {
         return this->add_optional_argument<bool>(group, base_primary_name, base_secondary_name)
             .default_values(not StoreImplicitly)
-            .implicit_values(StoreImplicitly)
-            .nargs(0ull);
+            .nargs(0ull)
+            .actions<action::on_flag>(action::discard_parsed, action::store(StoreImplicitly));
     }
 
     /**
@@ -1391,19 +1391,39 @@ private:
         return false;
     }
 
-    [[nodiscard]] arg_ptr_vec_iter_t _find_opt_arg(const detail::argument_token& flag_tok
-    ) noexcept {
+    [[nodiscard]] arg_ptr_vec_iter_t _find_opt_arg(detail::argument_token& flag_tok) noexcept {
         if (not flag_tok.is_flag_token())
             return this->_optional_args.end();
 
         const auto actual_tok_value = this->_strip_flag_prefix(flag_tok);
-        const auto match_type =
-            flag_tok.type == detail::argument_token::t_flag_primary
-                ? argument_name::m_primary
-                : argument_name::m_secondary;
 
+        if (flag_tok.type == detail::argument_token::t_flag_primary) {
+            // Match by primary name
+            auto it = std::ranges::find_if(
+                this->_optional_args,
+                this->_name_match_predicate(actual_tok_value, argument_name::m_primary)
+            );
+            if (it != this->_optional_args.end())
+                return it;
+
+            // Match by negative name if it can't be matched by primary
+            it = std::ranges::find_if(
+                this->_optional_args,
+                this->_name_match_predicate(actual_tok_value, argument_name::m_negative)
+            );
+            if (it != this->_optional_args.end()) {
+                flag_tok.type = detail::argument_token::t_flag_negative;
+                return it;
+            }
+
+            // Not found
+            return this->_optional_args.end();
+        }
+
+        // Secondary and compound flags cannot have a negative prefix
         return std::ranges::find_if(
-            this->_optional_args, this->_name_match_predicate(actual_tok_value, match_type)
+            this->_optional_args,
+            this->_name_match_predicate(actual_tok_value, argument_name::m_secondary)
         );
     }
 
@@ -1445,7 +1465,12 @@ private:
         }
 
         for (const auto& arg : tok.args) {
-            if (arg->mark_used())
+            const bool accepts_values =
+                (tok.type == detail::argument_token::t_flag_negative)
+                    ? arg->mark_negative_used()
+                    : arg->mark_used();
+
+            if (accepts_values)
                 state.curr_arg = arg;
             else
                 state.curr_arg.reset();
@@ -1732,7 +1757,7 @@ inline void add_default_argument(
     switch (arg_discriminator) {
     case default_argument::p_input:
         arg_parser.add_positional_argument("input")
-            .action<action_type::observe>(action::check_file_exists())
+            .actions<action::observe>(action::check_file_exists())
             .help("Input file path");
         break;
 
@@ -1742,23 +1767,23 @@ inline void add_default_argument(
 
     case default_argument::o_help:
         arg_parser.add_optional_argument<none_type>("help", "h")
-            .action<action_type::on_flag>(action::print_help(arg_parser, EXIT_SUCCESS))
+            .actions<action::on_flag>(action::print_help(arg_parser, EXIT_SUCCESS))
             .help("Display the help message");
         break;
 
     case default_argument::o_version:
         arg_parser.add_optional_argument<none_type>("version", "v")
-            .action<action_type::on_flag>([&arg_parser]() {
+            .actions<action::on_flag>([&arg_parser]() {
                 arg_parser.print_version();
                 std::exit(EXIT_SUCCESS);
             })
-            .help("Dsiplay program's version info");
+            .help("Display program's version info");
         break;
 
     case default_argument::o_input:
         arg_parser.add_optional_argument("input", "i")
             .nargs(1ull)
-            .action<action_type::observe>(action::check_file_exists())
+            .actions<action::observe>(action::check_file_exists())
             .help("Input file path");
         break;
 
@@ -1769,7 +1794,7 @@ inline void add_default_argument(
     case default_argument::o_multi_input:
         arg_parser.add_optional_argument("input", "i")
             .nargs(argon::nargs::at_least(1ull))
-            .action<action_type::observe>(action::check_file_exists())
+            .actions<action::observe>(action::check_file_exists())
             .help("Input files paths");
         break;
 

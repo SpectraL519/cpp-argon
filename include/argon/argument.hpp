@@ -253,37 +253,83 @@ public:
     }
 
     /**
-     * @brief Set the *value* action for the argument.
-     * @tparam AS The action specifier type (see @ref argon/action/type.hpp).
-     * @tparam F The type of the action function.
-     * @param action The action callable.
+     * @brief Set multiple *value* actions for the argument.
+     * @tparam AS The action specifier type (e.g., `argon::action::observe`, `argon::action::transform`, `argon::action::modify`).
+     * @tparam Fs The types of the action callables.
+     * @param value_actions A variadic list of callables to be executed sequentially after the argument's value is parsed.
      * @return Reference to the argument instance.
-     * @note The method is enabled only if:
-     * @note - `value_type` is not `none_type`.
-     * @note - `AS` is a valid value action specifier: `action_type::observe`, `action_type::transform`, `action_type::modify`.
+     * @note The method is enabled only if `value_type` is not `none_type`.
      */
-    template <argon::traits::c_value_action_specifier AS, typename F>
-    argument& action(F&& action) noexcept
+    template <argon::traits::c_value_action_specifier AS, typename... Fs>
+    argument& actions(Fs&&... value_actions) noexcept
     requires(not traits::c_is_none<value_type>)
     {
         using callable_type = action::util::callable_type<AS, value_type>;
-        this->_value_actions.emplace_back(std::forward<callable_type>(action));
+        // clang-format off
+        (this->_value_actions.emplace_back(static_cast<callable_type>(std::forward<Fs>(value_actions))), ...);
+        // clang-format on
         return *this;
     }
 
     /**
-     * @brief Set the *on-flag* action for the argument.
-     * @tparam AS The action specifier type (see @ref argon/action/types.hpp).
-     * @tparam F The type of the action function.
-     * @param action The action callable.
+     * @brief Set multiple *on-flag* actions for the argument.
+     * @tparam AS The action specifier type (must be `argon::action::on_flag`).
+     * @tparam Fs The types of the state action callables or predefined action tags.
+     * @param state_actions A variadic list of predefined tags (e.g., `action::discard_parsed`, `action::store`) or generic invocable callables.
      * @return Reference to the argument instance.
-     * @note The method is enabled only for optional arguments and if `AS` is `action_type::on_flag`.
+     * @note The method is enabled only for optional arguments.
+     * @note On-flag actions are executed immediately after parsing the argument's flag, before parsing any subsequent values.
      */
-    template <argon::traits::c_flag_action_specifier AS, typename F>
-    argument& action(F&& action) noexcept
+    template <argon::traits::c_flag_action_specifier AS, traits::c_state_action... Fs>
+    argument& actions(Fs&&... state_actions)
     requires(type == argument_type::optional)
     {
-        this->_flag_actions.emplace_back(std::forward<flag_action_type>(action));
+        // clang-format off
+        (this->_flag_actions.emplace_back(this->_compile_state_action(std::forward<Fs>(state_actions))), ...);
+        // clang-format on
+        return *this;
+    }
+
+    /**
+     * @brief Set the negative prefix and associated state actions for the argument.
+     * @tparam Actions The types of the state action callables or predefined action tags.
+     * @param prefix The negative prefix string (e.g., "no-", "disable-").
+     * @param state_actions A variadic list of predefined tags (like `action::discard_parsed`) or generic invocable callables executed when the negative flag is used.
+     *                      If left empty, sensible defaults are automatically applied.
+     * @return Reference to the argument instance.
+     * @note If no actions are provided, the default behavior is storing the logical inverse of the positive flag for booleans (via `action::discard_parsed` and `action::store`), and clearing all values (via `action::discard_all`) for others.
+     * @note The method is enabled only for optional arguments.
+     */
+    template <traits::c_state_action... Actions>
+    argument& negative(std::string_view prefix, Actions&&... state_actions)
+    requires(type == argument_type::optional)
+    {
+        this->_name.negative_prefix(prefix);
+
+        if constexpr (sizeof...(Actions) == 0) {
+            if constexpr (std::same_as<value_type, bool>) {
+                this->_negative_actions.emplace_back(
+                    this->_compile_state_action(action::discard_parsed)
+                );
+                // Deduce the logical inverse based on the default value set by add_flag
+                bool inverse_val =
+                    not this->_default_values.empty() ? this->_default_values.front() : false;
+                this->_negative_actions.emplace_back(
+                    this->_compile_state_action(action::store(inverse_val))
+                );
+            }
+            else {
+                this->_negative_actions.emplace_back(this->_compile_state_action(action::discard_all
+                ));
+            }
+        }
+        else {
+            (this->_negative_actions.emplace_back(
+                 this->_compile_state_action(std::forward<Actions>(state_actions))
+             ),
+             ...);
+        }
+
         return *this;
     }
 
@@ -501,8 +547,8 @@ private:
     /// @brief The argument's value action type alias.
     using value_action_type = action::util::value_action_variant_type<T>;
 
-    /// @brief The argument's flag action type alias.
-    using flag_action_type = typename action_type::on_flag::type;
+    /// @brief The argument's state action type alias.
+    using state_action_type = std::function<void()>;
 
     /// @brief The argument's value-argument-specific type alias.
     /// @tparam _T The actual type used if the argument's `value_type` is not `none_type`.
@@ -559,6 +605,8 @@ private:
         return bld;
     }
 
+    // --- parsing ---
+
     /// @brief Mark the optional argument as used.
     /// @return `true` if the argument accepts further values, `false` otherwise.
     bool mark_used() override {
@@ -569,6 +617,18 @@ private:
         }
 
         return this->_accepts_further_values();
+    }
+
+    /// @brief Mark the optional argument's negative flag as used.
+    /// @return `true` if the argument accepts further values, `false` otherwise.
+    bool mark_negative_used() override {
+        if constexpr (type == argument_type::optional) {
+            ++this->_count;
+            for (const auto& action : this->_negative_actions)
+                action();
+        }
+
+        return false; // Negative flags are terminal
     }
 
     /**
@@ -583,10 +643,10 @@ private:
 
     /// @return The ordering relationship of the argument's values and its nargs range attribute.
     [[nodiscard]] std::weak_ordering nvalues_ordering() const noexcept override {
-        if (this->_values.empty() and this->_has_predefined_values_impl())
+        if (this->_parsed_nvalues == 0ull and this->_has_predefined_values_impl())
             return std::weak_ordering::equivalent;
 
-        return this->_values.size() <=> this->_nargs_range;
+        return this->_parsed_nvalues <=> this->_nargs_range;
     }
 
     /// @return Reference to the vector of parsed values for the argument.
@@ -632,6 +692,9 @@ private:
     [[nodiscard]] bool _has_predefined_values_impl() const noexcept
     requires(not traits::c_is_none<value_type>)
     {
+        if (this->_ignore_predefined)
+            return false;
+
         if constexpr (type == argument_type::positional)
             return not this->_default_values.empty();
         else
@@ -649,6 +712,11 @@ private:
     [[nodiscard]] const std::vector<T>& _predefined_values() const
     requires(not traits::c_is_none<value_type>)
     {
+        if (this->_ignore_predefined)
+            throw(std::logic_error(
+                std::format("No predefined values specified for argument '{}'.", this->_name.str())
+            ));
+
         if constexpr (type == argument_type::optional) {
             if (this->is_used()) {
                 if (this->_implicit_values.empty())
@@ -764,11 +832,48 @@ private:
             std::visit(apply_visitor, action);
 
         this->_values.emplace_back(std::move(value));
+        ++this->_parsed_nvalues; // Mark an explicitly parsed value
+
         return this->_accepts_further_values();
     }
 
+    // --- configuration ---
+
+    template <traits::c_state_action F>
+    state_action_type _compile_state_action(F&& action) {
+        using action_t = std::remove_cvref_t<F>;
+
+        if constexpr (traits::c_state_action_specifier<action_t>) {
+            if constexpr (std::same_as<action_t, action::discard_parsed_t>) {
+                return [this]() {
+                    this->_values.clear();
+                    this->_parsed_nvalues = 0ull;
+                };
+            }
+            else if constexpr (std::same_as<action_t, action::discard_all_t>) {
+                return [this]() {
+                    this->_values.clear();
+                    this->_parsed_nvalues = 0ull;
+                    this->_ignore_predefined = true;
+                };
+            }
+            else if constexpr (traits::c_instantiation_of<action_t, action::store_t>) {
+                return [this, vals = action.values]() {
+                    if constexpr (not traits::c_is_none<value_type>) {
+                        for (const auto& v : vals) {
+                            this->_values.emplace_back(v);
+                        }
+                    }
+                };
+            }
+        }
+        else {
+            return std::forward<F>(action); // User provided a raw callable
+        }
+    }
+
     // attributes
-    const argon::argument_name _name; ///< The argument's name.
+    argument_name _name; ///< The argument's name.
     std::string _help_msg; ///< The argument's help message.
 
     nargs::range _nargs_range; ///< The argument's nargs range attribute value.
@@ -778,10 +883,12 @@ private:
         _implicit_values; ///< The optional argument's implicit value list.
     [[no_unique_address]] value_arg_specific_type<std::vector<value_type>>
         _choices; ///< The argument's valid choices collection.
-    [[no_unique_address]] optional_specific_type<std::vector<flag_action_type>>
-        _flag_actions; ///< The optional argument's flag actions collection.
     [[no_unique_address]] value_arg_specific_type<std::vector<value_action_type>>
         _value_actions; ///< The argument's value actions collection.
+    [[no_unique_address]] optional_specific_type<std::vector<state_action_type>>
+        _flag_actions; ///< The optional argument's flag actions collection.
+    [[no_unique_address]] optional_specific_type<std::vector<state_action_type>>
+        _negative_actions; ///< The action executed when the negative flag is used.
 
     bool _required : 1; ///< The argument's `required` attribute value.
     bool _suppress_arg_checks : 1 =
@@ -792,8 +899,13 @@ private:
     bool _hidden : 1 = false; ///< The argument's `hidden` attribute value.
 
     // parsing result
+    bool _ignore_predefined : 1 =
+        false; ///< Indicates whether the argument's predefined values should be masked during the current parsing run (typically set by the discard_all state action).
+
     [[no_unique_address]] optional_specific_type<std::size_t>
         _count; ///< The argument's value count.
+    [[no_unique_address]] std::size_t _parsed_nvalues =
+        0ull; ///< Tracks ONLY the values consumed from the command line.
     std::vector<value_type> _values; ///< The argument's parsed values.
 
     // default attribute values

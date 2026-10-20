@@ -268,6 +268,14 @@ TEST_CASE_FIXTURE(
     CHECK_FALSE(sut.suppresses_group_checks());
 }
 
+TEST_CASE_FIXTURE(argument_test_fixture, "negative() should properly set up the negative prefix") {
+    auto sut = sut_type(arg_name_primary);
+    sut.negative("no-");
+
+    CHECK(sut.name().has_negative());
+    CHECK_EQ(sut.name().negative_prefix(), "no-");
+}
+
 TEST_CASE_FIXTURE(argument_test_fixture, "is_used() should return false by default") {
     const auto sut = sut_type(arg_name_primary);
     CHECK_FALSE(sut.is_used());
@@ -283,6 +291,19 @@ TEST_CASE_FIXTURE(
     CHECK(sut.is_used());
 }
 
+TEST_CASE_FIXTURE(
+    argument_test_fixture,
+    "is_used() should return true if the argument's negative flag has been used"
+) {
+    auto sut = sut_type(arg_name_primary);
+    sut.negative("no-");
+
+    REQUIRE_FALSE(sut.is_used());
+
+    mark_negative_used(sut);
+    CHECK(sut.is_used());
+}
+
 TEST_CASE_FIXTURE(argument_test_fixture, "count() should return 0 by default") {
     const auto sut = sut_type(arg_name_primary);
     CHECK_EQ(sut.count(), 0ull);
@@ -290,25 +311,87 @@ TEST_CASE_FIXTURE(argument_test_fixture, "count() should return 0 by default") {
 
 TEST_CASE_FIXTURE(
     argument_test_fixture,
-    "is_used() should return the number of times the argument's flag has been used "
-    "[number of mark_used() function calls]"
+    "count() should return the number of times the argument's flag has been used "
+    "[number of mark_used/mark_negative_used() function calls]"
 ) {
     auto sut = sut_type(arg_name_primary);
+    REQUIRE_FALSE(sut.is_used());
+    REQUIRE_EQ(sut.count(), 0ull);
 
-    constexpr std::size_t count = 5ull;
-    for (std::size_t n = 0ull; n < count; ++n)
+    constexpr std::size_t count_pos = 5ull;
+    for (std::size_t n = 0ull; n < count_pos; ++n)
         mark_used(sut);
 
-    CHECK_EQ(sut.count(), count);
+    constexpr std::size_t count_neg = 3ull;
+    for (std::size_t n = 0ull; n < count_neg; ++n)
+        mark_negative_used(sut);
+
+    CHECK_EQ(sut.count(), count_pos + count_neg);
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "argument flag usage should trigger the on-flag actions") {
     auto sut = sut_type(arg_name_primary);
 
     const auto throw_action = []() { throw std::runtime_error("no reason"); };
-    sut.action<argon::action_type::on_flag>(throw_action);
+    sut.actions<argon::action::on_flag>(throw_action);
 
     CHECK_THROWS_AS(mark_used(sut), std::runtime_error);
+}
+
+TEST_CASE_FIXTURE(
+    argument_test_fixture, "argument flag usage with predefined store action should inject value"
+) {
+    auto sut = sut_type(arg_name_primary);
+    sut.actions<argon::action::on_flag>(argon::action::store(arbitrary_value));
+
+    mark_used(sut); // trigger the on-flag action
+
+    REQUIRE(sut.has_parsed_values());
+    CHECK_EQ(sut.value(), arbitrary_value);
+}
+
+TEST_CASE_FIXTURE(
+    argument_test_fixture,
+    "argument flag usage with predefined store action should support variadic values"
+) {
+    auto sut = sut_type(arg_name_primary).nargs(argon::nargs::any());
+    sut.actions<argon::action::on_flag>(argon::action::store(10, 20, 30));
+
+    mark_used(sut); // trigger the on-flag action
+
+    REQUIRE(sut.has_parsed_values());
+    CHECK_EQ(sut.values(), (std::vector<sut_value_type>{10, 20, 30}));
+}
+
+TEST_CASE_FIXTURE(
+    argument_test_fixture,
+    "argument flag usage with predefined store action should support range of values"
+) {
+    auto sut = sut_type(arg_name_primary).nargs(argon::nargs::any());
+
+    std::vector<sut_value_type> test_values{10, 20, 30};
+    sut.actions<argon::action::on_flag>(argon::action::store(test_values));
+
+    mark_used(sut); // trigger the on-flag action
+
+    REQUIRE(sut.has_parsed_values());
+    CHECK_EQ(sut.values(), test_values);
+}
+
+TEST_CASE_FIXTURE(
+    argument_test_fixture,
+    "argon::action::store as on-flag action should treat std::string as a single value"
+) {
+    argon::optional_argument<std::string> str_sut(arg_name_primary);
+    str_sut.nargs(argon::nargs::any());
+
+    std::string test_string = "hello world";
+    str_sut.actions<argon::action::on_flag>(argon::action::store(test_string));
+
+    mark_used(str_sut); // trigger the on-flag action
+
+    REQUIRE(str_sut.has_parsed_values());
+    CHECK_EQ(str_sut.values(), std::vector<std::string>{test_string});
 }
 
 TEST_CASE_FIXTURE(argument_test_fixture, "has_value() should return false by default") {
@@ -608,7 +691,7 @@ TEST_CASE_FIXTURE(
             }
         };
 
-        sut.action<argon::action_type::observe>(is_power_of_two);
+        sut.actions<argon::action::observe>(is_power_of_two);
 
         CHECK_THROWS_AS(set_value(sut, 3), std::runtime_error);
 
@@ -619,7 +702,7 @@ TEST_CASE_FIXTURE(
 
     SUBCASE("transform action") {
         const auto double_action = [](const sut_value_type& value) { return 2 * value; };
-        sut.action<argon::action_type::transform>(double_action);
+        sut.actions<argon::action::transform>(double_action);
 
         set_value(sut, arbitrary_value);
 
@@ -628,7 +711,7 @@ TEST_CASE_FIXTURE(
 
     SUBCASE("modify action") {
         const auto double_action = [](sut_value_type& value) { value *= 2; };
-        sut.action<argon::action_type::modify>(double_action);
+        sut.actions<argon::action::modify>(double_action);
 
         auto test_value = arbitrary_value;
 
@@ -636,6 +719,29 @@ TEST_CASE_FIXTURE(
 
         double_action(test_value);
         CHECK_EQ(sut.value(), test_value);
+    }
+
+    SUBCASE("multiple mixed actions execute sequentially") {
+        sut_value_type capture = 0;
+        sut.actions<argon::action::on_flag>([&]() { capture = 100; }
+        ) // Only executes on flag parsing
+            .actions<argon::action::observe>([&](const sut_value_type& v) { capture += v; })
+            .actions<argon::action::transform>([](const sut_value_type& v) { return v + 1; })
+            .actions<argon::action::modify>([](sut_value_type& v) { v *= 2; });
+
+        // Trigger flag
+        mark_used(sut);
+        CHECK_EQ(capture, 100);
+
+        // Trigger values
+        // Initial value = 5
+        // 1. observe: capture += 5  (capture becomes 105)
+        // 2. transform: 5 + 1 = 6   (value becomes 6)
+        // 3. modify: 6 * 2 = 12     (value becomes 12)
+        set_value(sut, 5);
+
+        CHECK_EQ(capture, 105);
+        CHECK_EQ(sut.value(), 12);
     }
 }
 

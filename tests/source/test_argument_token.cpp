@@ -29,9 +29,11 @@ TEST_CASE("argument tokens should be equal if their types and values match") {
         {         t_value, token_value_1},
         {  t_flag_primary, token_value_1},
         {t_flag_secondary, token_value_1},
+        { t_flag_negative, token_value_1},
         {         t_value, token_value_2},
         {  t_flag_primary, token_value_2},
-        {t_flag_secondary, token_value_2}
+        {t_flag_secondary, token_value_2},
+        { t_flag_negative, token_value_2}
     };
 
     for (const auto& [token_type, value] : test_cases) {
@@ -41,10 +43,11 @@ TEST_CASE("argument tokens should be equal if their types and values match") {
     }
 }
 
-TEST_CASE("is_flag_token should return true if the token's type is either primary or secondary flag"
-) {
+TEST_CASE("is_flag_token should return true if the token's type is a flag") {
     CHECK(sut_type{t_flag_primary, ""}.is_flag_token());
     CHECK(sut_type{t_flag_secondary, ""}.is_flag_token());
+    CHECK(sut_type{t_flag_compound, ""}.is_flag_token());
+    CHECK(sut_type{t_flag_negative, ""}.is_flag_token());
 
     CHECK_FALSE(sut_type{t_value, ""}.is_flag_token());
 }
@@ -55,11 +58,14 @@ TEST_CASE("is_valid_flag_token should return true if the token is a flag token a
 
     CHECK_FALSE(sut_type{t_flag_primary, ""}.is_valid_flag_token());
     CHECK_FALSE(sut_type{t_flag_secondary, ""}.is_valid_flag_token());
+    CHECK_FALSE(sut_type{t_flag_negative, ""}.is_valid_flag_token());
 
     auto arg_ptr = std::make_shared<optional_argument<>>(argument_name{"name"});
 
     CHECK(sut_type{t_flag_primary, "", {arg_ptr}}.is_valid_flag_token());
     CHECK(sut_type{t_flag_secondary, "", {arg_ptr}}.is_valid_flag_token());
+    CHECK(sut_type{t_flag_compound, "", {arg_ptr}}.is_valid_flag_token());
+    CHECK(sut_type{t_flag_negative, "", {arg_ptr}}.is_valid_flag_token());
 }
 
 TEST_SUITE_END(); // test_argument_token
