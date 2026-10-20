@@ -265,9 +265,9 @@ public:
     requires(not traits::c_is_none<value_type>)
     {
         using callable_type = action::util::callable_type<AS, value_type>;
-        (this->_value_actions.emplace_back(static_cast<callable_type>(std::forward<Fs>(value_actions
-         ))),
-         ...);
+        // clang-format off
+        (this->_value_actions.emplace_back(static_cast<callable_type>(std::forward<Fs>(value_actions))), ...);
+        // clang-format on
         return *this;
     }
 
@@ -284,9 +284,9 @@ public:
     argument& actions(Fs&&... state_actions)
     requires(type == argument_type::optional)
     {
-        (this->_flag_actions.emplace_back(this->_compile_state_action(std::forward<Fs>(state_actions
-         ))),
-         ...);
+        // clang-format off
+        (this->_flag_actions.emplace_back(this->_compile_state_action(std::forward<Fs>(state_actions))), ...);
+        // clang-format on
         return *this;
     }
 
@@ -542,9 +542,6 @@ public:
 private:
     /// @brief The argument's value action type alias.
     using value_action_type = action::util::value_action_variant_type<T>;
-
-    /// @brief The argument's flag action type alias.
-    using flag_action_type = typename action::on_flag::type;
 
     /// @brief The argument's state action type alias.
     using state_action_type = std::function<void()>;
@@ -866,38 +863,6 @@ private:
         }
     }
 
-    template <traits::c_state_action F>
-    void _add_negative_action(F&& action) {
-        using action_t = std::remove_cvref_t<F>;
-
-        if constexpr (traits::c_state_action_specifier<action_t>) {
-            if constexpr (std::same_as<action_t, action::reset_parsed_t>) {
-                this->_negative_actions.emplace_back([this]() {
-                    this->_values.clear();
-                    this->_parsed_nvalues = 0ull;
-                });
-            }
-            else if constexpr (std::same_as<action_t, action::reset_all_t>) {
-                this->_negative_actions.emplace_back([this]() {
-                    this->_values.clear();
-                    this->_parsed_nvalues = 0ull;
-                    if constexpr (not traits::c_is_none<value_type>) {
-                        this->_default_values.clear();
-                        this->_implicit_values.clear();
-                    }
-                });
-            }
-            else if constexpr (traits::c_instantiation_of<action_t, action::store_t>) {
-                this->_negative_actions.emplace_back([this, val = action.value]() {
-                    this->_values.emplace_back(val);
-                });
-            }
-        }
-        else {
-            this->_negative_actions.emplace_back(std::forward<F>(action));
-        }
-    }
-
     // attributes
     argument_name _name; ///< The argument's name.
     std::string _help_msg; ///< The argument's help message.
@@ -909,10 +874,10 @@ private:
         _implicit_values; ///< The optional argument's implicit value list.
     [[no_unique_address]] value_arg_specific_type<std::vector<value_type>>
         _choices; ///< The argument's valid choices collection.
-    [[no_unique_address]] optional_specific_type<std::vector<flag_action_type>>
-        _flag_actions; ///< The optional argument's flag actions collection.
     [[no_unique_address]] value_arg_specific_type<std::vector<value_action_type>>
         _value_actions; ///< The argument's value actions collection.
+    [[no_unique_address]] optional_specific_type<std::vector<state_action_type>>
+        _flag_actions; ///< The optional argument's flag actions collection.
     [[no_unique_address]] optional_specific_type<std::vector<state_action_type>>
         _negative_actions; ///< The action executed when the negative flag is used.
 

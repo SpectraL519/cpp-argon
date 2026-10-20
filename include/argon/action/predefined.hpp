@@ -32,12 +32,13 @@ template <typename V, typename... Vs>
 requires traits::c_argument_value_type<std::remove_cvref_t<V>>
 inline action::store_t<std::remove_cvref_t<V>> store(V&& val, Vs&&... vals) noexcept {
     using value_type = std::remove_cvref_t<V>;
-    return {
-        std::vector<value_type>{
-                                static_cast<value_type>(std::forward<V>(val)),
-                                static_cast<value_type>(std::forward<Vs>(vals))...
-        }
-    };
+
+    // clang-format off
+    return {std::vector<value_type>{
+        static_cast<value_type>(std::forward<V>(val)),
+        static_cast<value_type>(std::forward<Vs>(vals))...
+    }};
+    // clang-format on
 }
 
 /// @brief A factory function returning a negative action tag that injects a range of values.

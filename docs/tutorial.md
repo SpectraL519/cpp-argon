@@ -328,7 +328,7 @@ parser.add_flag("enable_some_option", "eso").help("enables option: some option")
 /* equivalent to:
 parser.add_optional_argument<bool>("enable_some_option", "eso")
       .default_values(false)
-      .implicit_values(true)
+      .actions<argon::action::on_flag>(argon::action::reset_parsed, argon::action::store(true))
       .nargs(0)
       .help("enables option: some option");
 */

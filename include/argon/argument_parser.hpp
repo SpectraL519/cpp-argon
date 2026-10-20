@@ -39,7 +39,7 @@ enum class default_argument : std::uint8_t {
      * Equivalent to:
      * @code{.cpp}
      * parser.add_positional_argument("input")
-     *       .actiions<argon::action::observe>(argon::action::check_file_exists())
+     *       .actions<argon::action::observe>(argon::action::check_file_exists())
      *       .help("Input file path");
      * @endcode
      */
@@ -60,7 +60,7 @@ enum class default_argument : std::uint8_t {
      * Equivalent to:
      * @code{.cpp}
      * parser.add_optional_argument<argon::none_type>("help")
-     *       .actiions<argon::action::on_flag>(argon::action::print_help(parser, EXIT_SUCCESS))
+     *       .actions<argon::action::on_flag>(argon::action::print_help(parser, EXIT_SUCCESS))
      *       .help("Display the help message");
      * @endcode
      */
@@ -71,7 +71,7 @@ enum class default_argument : std::uint8_t {
      * Equivalent to:
      * @code{.cpp}
      * arg_parser.add_optional_argument<none_type>("version", "v")
-     *           .actiions<action::on_flag>([&arg_parser]() {
+     *           .actions<action::on_flag>([&arg_parser]() {
      *               arg_parser.print_version();
      *               std::exit(EXIT_SUCCESS);
      *           })
@@ -86,7 +86,7 @@ enum class default_argument : std::uint8_t {
      * @code{.cpp}
      * parser.add_positional_argument("input", "i")
      *       .nargs(1ull)
-     *       .actiions<argon::action::observe>(argon::action::check_file_exists())
+     *       .actions<argon::action::observe>(argon::action::check_file_exists())
      *       .help("Input file path");
      * @endcode
      */
@@ -109,7 +109,7 @@ enum class default_argument : std::uint8_t {
      * @code{.cpp}
      * parser.add_positional_argument("input", "i")
      *       .nargs(argon::nargs::at_least(1ull))
-     *       .actiions<argon::action::observe>(argon::action::check_file_exists())
+     *       .actions<argon::action::observe>(argon::action::check_file_exists())
      *       .help("Input file path");
      * @endcode
      */
@@ -516,9 +516,7 @@ public:
         return this->add_optional_argument<bool>(base_name, name_discr)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
-            .template actions<action::on_flag>(
-                action::reset_parsed, action::store(StoreImplicitly)
-            );
+            .actions<action::on_flag>(action::reset_parsed, action::store(StoreImplicitly));
     }
 
     /**
@@ -536,9 +534,7 @@ public:
         return this->add_optional_argument<bool>(base_primary_name, base_secondary_name)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
-            .template actions<action::on_flag>(
-                action::reset_parsed, action::store(StoreImplicitly)
-            );
+            .actions<action::on_flag>(action::reset_parsed, action::store(StoreImplicitly));
     }
 
     /**
@@ -559,9 +555,7 @@ public:
         return this->add_optional_argument<bool>(group, base_name, name_discr)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
-            .template actions<action::on_flag>(
-                action::reset_parsed, action::store(StoreImplicitly)
-            );
+            .actions<action::on_flag>(action::reset_parsed, action::store(StoreImplicitly));
     }
 
     /**
@@ -582,9 +576,7 @@ public:
         return this->add_optional_argument<bool>(group, base_primary_name, base_secondary_name)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
-            .template actions<action::on_flag>(
-                action::reset_parsed, action::store(StoreImplicitly)
-            );
+            .actions<action::on_flag>(action::reset_parsed, action::store(StoreImplicitly));
     }
 
     /**
@@ -1406,6 +1398,7 @@ private:
         const auto actual_tok_value = this->_strip_flag_prefix(flag_tok);
 
         if (flag_tok.type == detail::argument_token::t_flag_primary) {
+            // Match by primary name
             auto it = std::ranges::find_if(
                 this->_optional_args,
                 this->_name_match_predicate(actual_tok_value, argument_name::m_primary)
@@ -1413,6 +1406,7 @@ private:
             if (it != this->_optional_args.end())
                 return it;
 
+            // Match by negative name if it can't be matched by primary
             it = std::ranges::find_if(
                 this->_optional_args,
                 this->_name_match_predicate(actual_tok_value, argument_name::m_negative)
@@ -1422,6 +1416,7 @@ private:
                 return it;
             }
 
+            // Not found
             return this->_optional_args.end();
         }
 
