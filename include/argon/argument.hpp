@@ -253,15 +253,12 @@ public:
     }
 
     /**
-     * @todo align doc
-     * @brief Set the *value* action for the argument.
-     * @tparam AS The action specifier type (see @ref argon/action/type.hpp).
-     * @tparam F The type of the action function.
-     * @param action The action callable.
+     * @brief Set multiple *value* actions for the argument.
+     * @tparam AS The action specifier type (e.g., `argon::action::observe`, `argon::action::transform`, `argon::action::modify`).
+     * @tparam Fs The types of the action callables.
+     * @param value_actions A variadic list of callables to be executed sequentially after the argument's value is parsed.
      * @return Reference to the argument instance.
-     * @note The method is enabled only if:
-     * @note - `value_type` is not `none_type`.
-     * @note - `AS` is a valid value action specifier: `action::observe`, `action::transform`, `action::modify`.
+     * @note The method is enabled only if `value_type` is not `none_type`.
      */
     template <argon::traits::c_value_action_specifier AS, typename... Fs>
     argument& actions(Fs&&... value_actions) noexcept
@@ -275,13 +272,13 @@ public:
     }
 
     /**
-     * @todo align doc
-     * @brief Set the *on-flag* action for the argument.
-     * @tparam AS The action specifier type (see @ref argon/action/types.hpp).
-     * @tparam F The type of the action function.
-     * @param action The action callable.
+     * @brief Set multiple *on-flag* actions for the argument.
+     * @tparam AS The action specifier type (must be `argon::action::on_flag`).
+     * @tparam Fs The types of the state action callables or predefined action tags.
+     * @param state_actions A variadic list of predefined tags (e.g., `action::reset_parsed`, `action::store`) or generic invocable callables.
      * @return Reference to the argument instance.
-     * @note The method is enabled only for optional arguments and if `AS` is `action::on_flag`.
+     * @note The method is enabled only for optional arguments.
+     * @note On-flag actions are executed immediately after parsing the argument's flag, before parsing any subsequent values.
      */
     template <argon::traits::c_flag_action_specifier AS, traits::c_state_action... Fs>
     argument& actions(Fs&&... state_actions)
@@ -294,16 +291,17 @@ public:
     }
 
     /**
-     * @brief Set the negative prefix and action for the argument.
-     * @param prefix The negative prefix string (e.g., "no-").
-     * @param actions A variadic list of predefined tags (like `action::reset_parsed`) or generic invocable callables.
-     *                If left empty, sensible defaults are applied.
-     * @note Defaults to storing `false` for booleans, and clearing all values (the @ref reset_all action) for others.
-     * @note The method is enabled only for optional arguments.
+     * @brief Set the negative prefix and associated state actions for the argument.
+     * @tparam Actions The types of the state action callables or predefined action tags.
+     * @param prefix The negative prefix string (e.g., "no-", "disable-").
+     * @param state_actions A variadic list of predefined tags (like `action::reset_parsed`) or generic invocable callables executed when the negative flag is used.
+     *                      If left empty, sensible defaults are automatically applied.
      * @return Reference to the argument instance.
+     * @note If no actions are provided, the default behavior is storing `false` (via `action::reset_parsed` and `action::store(false)`) for booleans, and clearing all values (via `action::reset_all`) for others.
+     * @note The method is enabled only for optional arguments.
      */
     template <traits::c_state_action... Actions>
-    argument& negative(std::string_view prefix, Actions&&... actions_)
+    argument& negative(std::string_view prefix, Actions&&... state_actions)
     requires(type == argument_type::optional)
     {
         this->_name.with_negative_prefix(prefix);
@@ -323,7 +321,7 @@ public:
         }
         else {
             (this->_negative_actions.emplace_back(
-                 this->_compile_state_action(std::forward<Actions>(actions_))
+                 this->_compile_state_action(std::forward<Actions>(state_actions))
              ),
              ...);
         }

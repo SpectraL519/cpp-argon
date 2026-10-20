@@ -25,22 +25,18 @@ inline constexpr action::reset_parsed_t reset_parsed{};
 /// @brief A predefined negative flag action tag that clears all parsed, default, and implicit values.
 inline constexpr action::reset_all_t reset_all{};
 
-/**
- * @brief A factory function returning a negative action tag that injects a specific value.
- * @param val The value to store when the negative flag is used.
- * @todo Make variadic
- */
+/// @brief A factory function returning a negative action tag that injects a specific value.
+/// @param val The value to store when the negative flag is used.
+/// @todo Make variadic
 template <traits::c_argument_value_type V>
 inline action::store_t<std::remove_cvref_t<V>> store(V&& val) noexcept {
     return {std::forward<V>(val)};
 }
 
-/**
- * @brief Returns an *on-flag* action which prints the argument parser's help message.
- * @param parser Argument parser instance the help message of which will be printed.
- * @param exit_code The exit code with which `std::exit` will be called (if not `std::nullopt`).
- * @param os The output stream to which the help message will be printed.
- */
+/// @brief Returns an *on-flag* action which prints the argument parser's help message.
+/// @param parser Argument parser instance the help message of which will be printed.
+/// @param exit_code The exit code with which `std::exit` will be called (if not `std::nullopt`).
+/// @param os The output stream to which the help message will be printed.
 inline typename argon::action::on_flag::type print_help(
     const argument_parser& parser,
     const std::optional<int> exit_code = std::nullopt,
@@ -65,11 +61,9 @@ inline util::callable_type<action::observe, std::string> check_file_exists() noe
     };
 }
 
-/**
- * @brief Returns an *observe* action which checks if a parsed value is greater than the given bound.
- * @tparam T The *arithmetic* value type.
- * @param lower_bound The exclusive lower bound to validate against.
- */
+/// @brief Returns an *observe* action which checks if a parsed value is greater than the given bound.
+/// @tparam T The *arithmetic* value type.
+/// @param lower_bound The exclusive lower bound to validate against.
 template <argon::traits::c_arithmetic T>
 util::callable_type<action::observe, T> gt(const T lower_bound) noexcept {
     return [lower_bound](const T& value) {
@@ -80,11 +74,9 @@ util::callable_type<action::observe, T> gt(const T lower_bound) noexcept {
     };
 }
 
-/**
- * @brief Returns an *observe* action which checks if a parsed value is greater than or equal to the given bound.
- * @tparam T The *arithmetic* value type.
- * @param lower_bound The inclusive lower bound to validate against.
- */
+/// @brief Returns an *observe* action which checks if a parsed value is greater than or equal to the given bound.
+/// @tparam T The *arithmetic* value type.
+/// @param lower_bound The inclusive lower bound to validate against.
 template <argon::traits::c_arithmetic T>
 util::callable_type<action::observe, T> geq(const T lower_bound) noexcept {
     return [lower_bound](const T& value) {
@@ -95,11 +87,9 @@ util::callable_type<action::observe, T> geq(const T lower_bound) noexcept {
     };
 }
 
-/**
- * @brief Returns an *observe* action which checks if a parsed value is less than the given bound.
- * @tparam T The *arithmetic* value type.
- * @param lower_bound The exclusive upper bound to validate against.
- */
+/// @brief Returns an *observe* action which checks if a parsed value is less than the given bound.
+/// @tparam T The *arithmetic* value type.
+/// @param lower_bound The exclusive upper bound to validate against.
 template <argon::traits::c_arithmetic T>
 util::callable_type<action::observe, T> lt(const T upper_bound) noexcept {
     return [upper_bound](const T& value) {
@@ -110,11 +100,9 @@ util::callable_type<action::observe, T> lt(const T upper_bound) noexcept {
     };
 }
 
-/**
- * @brief Returns an *observe* action which checks if a parsed value is less than or equal to the given bound.
- * @tparam T The *arithmetic* value type.
- * @param lower_bound The inclusive upper bound to validate against.
- */
+/// @brief Returns an *observe* action which checks if a parsed value is less than or equal to the given bound.
+/// @tparam T The *arithmetic* value type.
+/// @param lower_bound The inclusive upper bound to validate against.
 template <argon::traits::c_arithmetic T>
 util::callable_type<action::observe, T> leq(const T upper_bound) noexcept {
     return [upper_bound](const T& value) {
@@ -125,18 +113,16 @@ util::callable_type<action::observe, T> leq(const T upper_bound) noexcept {
     };
 }
 
-/**
- * @brief Returns an *observe* action which checks if a parsed value falls within the specified interval.
- *
- * The interval is defined by the given lower and upper bounds, with inclusivity controlled by the template parameters.
- *
- * @tparam T The *arithmetic* value type.
- * @tparam LeftInclusive Whether the lower bound is inclusive (`[`) or exclusive (`(`) - default: true.
- * @tparam RightInclusive Whether the upper bound is inclusive (`]`) or exclusive (`)`) - default: true.
- * @param lower_bound The lower bound of the interval.
- * @param upper_bound The upper bound of the interval.
- * @todo Add explicit inclusive/exclusive constants (perhaps in argon::traits)
- */
+/// @brief Returns an *observe* action which checks if a parsed value falls within the specified interval.
+///
+/// The interval is defined by the given lower and upper bounds, with inclusivity controlled by the template parameters.
+///
+/// @tparam T The *arithmetic* value type.
+/// @tparam LeftInclusive Whether the lower bound is inclusive (`[`) or exclusive (`(`) - default: true.
+/// @tparam RightInclusive Whether the upper bound is inclusive (`]`) or exclusive (`)`) - default: true.
+/// @param lower_bound The lower bound of the interval.
+/// @param upper_bound The upper bound of the interval.
+/// @todo Add explicit inclusive/exclusive constants (perhaps in argon::traits)
 template <traits::c_arithmetic T, bool LeftInclusive = true, bool RightInclusive = true>
 util::callable_type<argon::action::observe, T> within(
     const T lower_bound, const T upper_bound

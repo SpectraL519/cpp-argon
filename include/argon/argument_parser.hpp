@@ -513,7 +513,6 @@ public:
     optional_argument<bool>& add_flag(
         const std::string_view base_name, const argument_name_discriminator name_discr = n_primary
     ) {
-        // TODO: use public add_flag(group) overload, use .actions, allow .actions to accept the reset/store actions as well
         return this->add_optional_argument<bool>(base_name, name_discr)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
@@ -534,7 +533,6 @@ public:
     optional_argument<bool>& add_flag(
         const std::string_view base_primary_name, const std::string_view base_secondary_name
     ) {
-        // TODO: use public add_flag(group) overload, use .actions, allow .actions to accept the reset/store actions as well
         return this->add_optional_argument<bool>(base_primary_name, base_secondary_name)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
@@ -558,7 +556,6 @@ public:
         const std::string_view base_name,
         const argument_name_discriminator name_discr = n_primary
     ) {
-        // TODO: allow .actions to accept the reset/store actions as well
         return this->add_optional_argument<bool>(group, base_name, name_discr)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
@@ -582,7 +579,6 @@ public:
         const std::string_view base_primary_name,
         const std::string_view base_secondary_name
     ) {
-        // TODO: allow .actions to accept the reset/store actions as well
         return this->add_optional_argument<bool>(group, base_primary_name, base_secondary_name)
             .default_values(not StoreImplicitly)
             .nargs(0ull)
