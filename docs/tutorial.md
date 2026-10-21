@@ -65,6 +65,7 @@
   - [Parsing Arguments with Subparsers](#parsing-arguments-with-subparsers)
   - [Tracking Parser State](#tracking-parser-state)
     - [Example: Inspecting Parsing States](#example-inspecting-parsing-states)
+- [Resetting Parser State](#resetting-parser-state)
 - [Examples](#examples)
 - [Common Utility](#common-utility)
 
@@ -1896,6 +1897,34 @@ submodule_init : invoked=true, finalized=true
 
 Resolved parser : init (argon-git submodule init)
 ```
+
+<br/>
+<br/>
+<br/>
+
+## Resetting Parser State
+
+If you need to reuse an `argument_parser` instance multiple times within the same program execution (e.g., inside a REPL loop, a long-running service, or a test suite), you can clear its parsing state using the `reset()` method:
+
+```cpp
+parser.reset();
+```
+
+Calling `reset()` performs a deep clean of the runtime state while keeping your configuration entirely intact. Specifically, it will:
+
+- Clear all explicitly parsed values and reset argument usage counts to zero.
+- Lift any masks on default or implicit values that were suppressed by negative flags (e.g., flags utilizing `argon::action::discard_all`).
+- Revert the parser's `invoked()` and `finalized()` state flags to `false`.
+- Recursively reset the state of all attached subparsers.
+- Revert dynamically deduced program names (`argon::dynamic_name`) back to an unresolved state, ensuring the parser safely re-deduces its name from `argv[0]` on the next run.
+
+> [!IMPORTANT]
+>
+> `reset()` only clears the **runtime parsing state**. It does not alter, remove, or destroy your parser's structural configuration (defined arguments, groups, explicit default values, choices, or actions).
+
+> [!NOTE]
+>
+> The parser does **not** call `reset()` automatically when you invoke `parse_args()`. This deliberate design choice preserves the parser's state across multiple calls, enabling advanced multi-pass parsing workflows (for example, parsing a string of base configurations first, and then parsing user CLI overrides to accumulate values). If your intent is to start a completely fresh parsing run, you must call `reset()` explicitly.
 
 <br/>
 <br/>
