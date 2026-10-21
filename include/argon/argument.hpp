@@ -14,6 +14,8 @@
 #include "argon/traits.hpp"
 #include "argon/types.hpp"
 
+#include <utility>
+
 #ifdef AP_TESTING
 
 namespace argon_testing {
@@ -68,18 +70,20 @@ public:
      * @param name The name of the positional argument.
      * @note The constructor is enabled only if `type` is `argument_type::positional`.
      */
-    argument(const argument_name& name)
+    argument(argument_name name)
     requires(type == argument_type::positional)
-    : _name(name), _nargs_range(_default_nargs_range_actual), _required(_default_required) {}
+    : _name(std::move(name)),
+      _nargs_range(_default_nargs_range_actual),
+      _required(_default_required) {}
 
     /**
      * @brief Optional argument constructor.
      * @param name The name of the optional argument.
      * @note The constructor is enabled only if `type` is `argument_type::optional`.
      */
-    argument(const argument_name& name)
+    argument(argument_name name)
     requires(type == argument_type::optional)
-    : _name(name),
+    : _name(std::move(name)),
       _nargs_range(_default_nargs_range_actual),
       _required(_default_required),
       _count(0ull) {}
