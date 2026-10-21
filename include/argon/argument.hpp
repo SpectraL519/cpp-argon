@@ -581,6 +581,7 @@ private:
         if constexpr (type == argument_type::optional)
             this->_count = 0ull;
         this->_ignore_predefined = false;
+        this->_last_flag_sign = true;
     }
 
     /**
@@ -623,6 +624,8 @@ private:
     /// @brief Mark the optional argument as used.
     /// @return `true` if the argument accepts further values, `false` otherwise.
     bool mark_used() override {
+        this->_last_flag_sign = true;
+        this->_ignore_predefined = false;
         if constexpr (type == argument_type::optional) {
             ++this->_count;
             for (const auto& action : this->_flag_actions)
@@ -635,6 +638,7 @@ private:
     /// @brief Mark the optional argument's negative flag as used.
     /// @return `true` if the argument accepts further values, `false` otherwise.
     bool mark_negative_used() override {
+        this->_last_flag_sign = false;
         if constexpr (type == argument_type::optional) {
             ++this->_count;
             for (const auto& action : this->_negative_actions)
@@ -712,7 +716,8 @@ private:
             return not this->_default_values.empty();
         else
             return not this->_default_values.empty()
-                or (this->is_used() and not this->_implicit_values.empty());
+                or (this->is_used() and this->_last_flag_sign and not this->_implicit_values.empty()
+                );
     }
 
     /**
@@ -731,7 +736,7 @@ private:
             ));
 
         if constexpr (type == argument_type::optional) {
-            if (this->is_used()) {
+            if (this->is_used() and this->_last_flag_sign) {
                 if (this->_implicit_values.empty())
                     throw(std::logic_error(std::format(
                         "No implicit values specified for argument '{}'.", this->_name.str()
@@ -912,6 +917,8 @@ private:
     bool _hidden : 1 = false; ///< The argument's `hidden` attribute value.
 
     // parsing result
+    bool _last_flag_sign : 1 =
+        false; ///< Tracks the sign of the last flag used (true for positive, false for negative).
     bool _ignore_predefined : 1 =
         false; ///< Indicates whether the argument's predefined values should be masked during the current parsing run (typically set by the discard_all state action).
 

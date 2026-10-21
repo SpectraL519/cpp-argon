@@ -783,4 +783,102 @@ TEST_CASE_FIXTURE(
     CHECK(std::is_gt(nvalues_ordering(sut)));
 }
 
+TEST_CASE_FIXTURE(
+    argument_test_fixture,
+    "negative flag with discard_parsed should clear parsed values but preserve predefined values"
+) {
+    auto sut = sut_type(arg_name_primary);
+    sut.default_values(default_value);
+    sut.negative("no-", argon::action::discard_parsed);
+
+    set_value(sut, arbitrary_value);
+    REQUIRE(sut.has_parsed_values());
+    REQUIRE_EQ(sut.value(), arbitrary_value);
+
+    mark_negative_used(sut);
+
+    CHECK_FALSE(sut.has_parsed_values());
+    CHECK(sut.has_predefined_values()); // Predefined values are untouched
+    CHECK_EQ(sut.value(), default_value);
+}
+
+TEST_CASE_FIXTURE(
+    argument_test_fixture,
+    "negative flag with discard_all should clear parsed values and mask predefined values"
+) {
+    auto sut = sut_type(arg_name_primary);
+    sut.default_values(default_value);
+    sut.negative("no-", argon::action::discard_all);
+
+    set_value(sut, arbitrary_value);
+    REQUIRE(sut.has_parsed_values());
+    REQUIRE(sut.has_predefined_values());
+
+    mark_negative_used(sut);
+
+    CHECK_FALSE(sut.has_parsed_values());
+    CHECK_FALSE(sut.has_predefined_values()); // _ignore_predefined is now true
+    CHECK_THROWS_AS(discard(sut.value()), std::logic_error);
+}
+
+TEST_CASE_FIXTURE(
+    argument_test_fixture,
+    "reset() should clear parsed values, count, and restore masked predefined values"
+) {
+    auto sut = sut_type(arg_name_primary);
+    sut.default_values(default_value);
+    sut.negative("no-", argon::action::discard_all);
+
+    mark_used(sut);
+    set_value(sut, arbitrary_value);
+    mark_negative_used(sut);
+
+    REQUIRE_EQ(sut.count(), 2ull);
+    REQUIRE_FALSE(sut.has_predefined_values());
+
+    reset(sut); // This should flip _ignore_predefined back to false
+
+    CHECK_EQ(sut.count(), 0ull);
+    CHECK_FALSE(sut.has_parsed_values());
+    CHECK(sut.has_predefined_values()); // Mask is lifted
+    CHECK_EQ(sut.value(), default_value);
+}
+
+TEST_CASE_FIXTURE(
+    argument_test_fixture,
+    "negative boolean flags should automatically deduce and store the inverse of the default value"
+) {
+    SUBCASE("Default is true (e.g., add_flag<false>)") {
+        argon::optional_argument<bool> sut(arg_name_primary);
+        sut.default_values(true);
+        sut.negative("no-"); // Automatically sets up discard_parsed + store(true)
+
+        mark_negative_used(sut);
+
+        REQUIRE(sut.has_parsed_values());
+        CHECK_EQ(sut.value(), true);
+    }
+
+    SUBCASE("Default is false (e.g., add_flag<true>)") {
+        argon::optional_argument<bool> sut(arg_name_primary);
+        sut.default_values(false);
+        sut.negative("no-"); // Automatically sets up discard_parsed + store(true)
+
+        mark_negative_used(sut);
+
+        REQUIRE(sut.has_parsed_values());
+        CHECK_EQ(sut.value(), false);
+    }
+
+    SUBCASE("No default set (raw optional_argument<bool>)") {
+        argon::optional_argument<bool> sut(arg_name_primary);
+        sut.negative("no-"); // Fallback inverse is false
+
+        mark_negative_used(sut);
+
+        REQUIRE(sut.has_parsed_values());
+        CHECK_EQ(sut.value(), false);
+    }
+}
+
 TEST_SUITE_END(); // test_optional_argument
