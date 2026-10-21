@@ -574,6 +574,15 @@ private:
     using optional_specific_type =
         std::conditional_t<type == argument_type::optional, _T, none_type>;
 
+    /// @brief Reset the argument's state, clearing parsed values and resetting counters.
+    void reset() noexcept override {
+        this->_values.clear();
+        this->_parsed_nvalues = 0ull;
+        if constexpr (type == argument_type::optional)
+            this->_count = 0ull;
+        this->_ignore_predefined = false;
+    }
+
     /**
      * @brief Creates a help message builder object for the argument.
      * @param verbose The verbosity mode value.

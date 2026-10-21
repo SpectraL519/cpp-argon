@@ -711,7 +711,7 @@ public:
      */
     template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     void parse_args(const ArgvRange& argv_rng) {
-        if (not this->_is_name_resolved)
+        if (this->_name_res == name_resolution::unresolved)
             throw std::logic_error("Dynamic program name must be resolved before calling parsing "
                                    "the program's arguments");
 
@@ -808,7 +808,7 @@ public:
      */
     template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     std::vector<std::string> parse_known_args(const ArgvRange& argv_rng) {
-        if (not this->_is_name_resolved)
+        if (this->_name_res == name_resolution::unresolved)
             throw std::logic_error("Dynamic program name must be resolved before calling parsing "
                                    "the program's arguments");
 
@@ -984,6 +984,31 @@ public:
         return typed_arg->values();
     }
 
+    /// @brief Reset the state of the parser.
+    /// @note This function resets the state of the parser and all its arguments and subparsers, but does not reset the parser's configuration.
+    void reset() noexcept {
+        // reset own state
+        if (this->_name_res == name_resolution::dynamically_resolved) {
+            this->_name.clear();
+            this->_full_name.clear();
+            this->_name_res = name_resolution::unresolved;
+            for (const auto& subparser : this->_subparsers)
+                subparser->_update_program_name(this->_full_name);
+        }
+        this->_invoked = false;
+        this->_finalized = false;
+
+        // reset arguments
+        for (const auto& arg : this->_positional_args)
+            arg->reset();
+        for (const auto& arg : this->_optional_args)
+            arg->reset();
+
+        // recursively reset subparsers
+        for (const auto& subparser : this->_subparsers)
+            subparser->reset();
+    }
+
     /**
      * @brief Prints the argument parser's help message to an output stream.
      * @param verbose The verbosity mode value.
@@ -1063,6 +1088,12 @@ private:
     using arg_token_vec_t = std::vector<detail::argument_token>;
     using arg_token_vec_iter_t = typename arg_token_vec_t::const_iterator;
 
+    enum class name_resolution : std::uint8_t {
+        unresolved,
+        statically_resolved,
+        dynamically_resolved
+    };
+
     struct parsing_state {
         parsing_state(argument_parser& parser, const bool parse_known_only = false)
         : curr_arg(nullptr),
@@ -1089,21 +1120,21 @@ private:
               ? ""
               : std::format("{}{}{}", parent_name, std::string(not parent_name.empty(), ' '), name)
       ),
+      _name_res(dynamic ? name_resolution::unresolved : name_resolution::statically_resolved),
       _gr_positional_args(add_group("Positional Arguments")),
-      _gr_optional_args(add_group("Optional Arguments")),
-      _is_name_resolved(not dynamic) {
-        if (not this->_is_name_resolved)
-            return;
+      _gr_optional_args(add_group("Optional Arguments")) {
+        if (this->_name_res == name_resolution::statically_resolved) {
+            if (name.empty())
+                throw invalid_configuration("The program name cannot be empty!");
 
-        if (name.empty())
-            throw invalid_configuration("The program name cannot be empty!");
-
-        if (util::contains_whitespaces(name))
-            throw invalid_configuration("The program name cannot contain whitespace characters!");
+            if (util::contains_whitespaces(name))
+                throw invalid_configuration("The program name cannot contain whitespace characters!"
+                );
+        }
     }
 
     void _resolve_name(std::string_view path) {
-        if (this->_is_name_resolved)
+        if (this->_name_res != name_resolution::unresolved)
             return;
 
         const auto pos = path.find_last_of("/\\");
@@ -1113,7 +1144,7 @@ private:
             this->_name = "unknown";
 
         this->_full_name = this->_name;
-        this->_is_name_resolved = true;
+        this->_name_res = name_resolution::dynamically_resolved;
 
         for (auto& sub : this->_subparsers)
             sub->_update_program_name(this->_full_name);
@@ -1694,6 +1725,7 @@ private:
 
     // --- parsing cfg & state ---
 
+    name_resolution _name_res = name_resolution::unresolved;
     arg_ptr_vec_t _positional_args = {};
     arg_ptr_vec_t _optional_args = {};
     arg_group_ptr_vec_t _argument_groups = {};
@@ -1703,7 +1735,6 @@ private:
 
     // --- cfg flags ---
 
-    bool _is_name_resolved : 1 = false;
     bool _verbose : 1 = false;
 
     // --- parsing state flags ---
