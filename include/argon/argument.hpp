@@ -14,8 +14,6 @@
 #include "argon/traits.hpp"
 #include "argon/types.hpp"
 
-#include <utility>
-
 #ifdef AP_TESTING
 
 namespace argon_testing {
