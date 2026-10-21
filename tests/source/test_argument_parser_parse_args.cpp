@@ -12,7 +12,7 @@ using argon::unknown_policy;
 TEST_SUITE_BEGIN("test_argument_parser_parse_args");
 
 struct test_argument_parser_parse_args : public argument_parser_test_fixture {
-    const std::string_view test_program_name = "test program name";
+    const std::string_view test_program_name = "test-program";
 
     const std::size_t no_args = 0ull;
     const std::size_t n_positional_args = 3ull;
@@ -2051,6 +2051,147 @@ TEST_CASE_FIXTURE(
 
     CHECK(sut.has_value("opt"));
     CHECK_EQ(sut.value<int>("opt"), 20);
+
+    free_argv(argc, argv);
+}
+
+// reset
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "reset() should reset parser state to un-invoked and un-finalized"
+) {
+    sut.add_flag("flag");
+
+    std::vector<std::string> argv_vec{"program", "--flag"};
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    sut.parse_args(argc, argv);
+
+    REQUIRE(sut.invoked());
+    REQUIRE(sut.finalized());
+
+    sut.reset();
+
+    CHECK_FALSE(sut.invoked());
+    CHECK_FALSE(sut.finalized());
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "reset() should clear all parsed argument values and usage counts"
+) {
+    sut.add_positional_argument("pos");
+    sut.add_optional_argument<int>("opt", "o").nargs(argon::nargs::any());
+    sut.add_flag("flag", "f");
+
+    std::vector<std::string> argv_vec{"program", "pos-value", "-o", "10", "20", "--flag", "-f"};
+
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    sut.parse_args(argc, argv);
+
+    REQUIRE(sut.has_value("pos"));
+    REQUIRE_EQ(sut.values<int>("opt").size(), 2ull);
+    REQUIRE_EQ(sut.count("flag"), 2ull);
+
+    sut.reset();
+
+    CHECK_FALSE(sut.has_value("pos"));
+    CHECK_FALSE(sut.has_value("opt"));
+    CHECK_EQ(sut.count("flag"), 0ull);
+    CHECK_FALSE(sut.is_used("flag"));
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "reset() should clear the dynamic name resolution state and full names for dynamic parsers"
+) {
+    argon::argument_parser dynamic_parser(argon::dynamic_name);
+    auto& sub_cmd = dynamic_parser.add_subparser("commit");
+
+    std::vector<std::string> argv_vec{"/usr/bin/git", "commit"};
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    dynamic_parser.parse_args(argc, argv);
+
+    REQUIRE_EQ(dynamic_parser.name(), "git");
+    REQUIRE_EQ(sub_cmd.full_name(), "git commit");
+
+    dynamic_parser.reset();
+
+    // The name should be un-resolved
+    CHECK(dynamic_parser.name().empty());
+    CHECK(dynamic_parser.full_name().empty());
+
+    // Attempting range-based parsing immediately after reset should throw again
+    std::vector<std::string> empty_args;
+    CHECK_THROWS_WITH_AS(
+        dynamic_parser.parse_args(empty_args),
+        "Dynamic program name must be resolved before calling parsing the program's arguments",
+        std::logic_error
+    );
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "reset() should NOT clear names for statically initialized parsers"
+) {
+    argon::argument_parser static_parser(test_program_name);
+    auto& sub_cmd = static_parser.add_subparser("testcmd");
+
+    std::vector<std::string> argv_vec{"some_random_argv0", "testcmd"};
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    static_parser.parse_args(argc, argv);
+
+    REQUIRE_EQ(static_parser.name(), test_program_name);
+    REQUIRE_EQ(sub_cmd.full_name(), std::format("{} testcmd", test_program_name));
+
+    static_parser.reset();
+
+    CHECK_EQ(static_parser.name(), test_program_name);
+    CHECK_EQ(sub_cmd.full_name(), std::format("{} testcmd", test_program_name));
+
+    free_argv(argc, argv);
+}
+
+TEST_CASE_FIXTURE(
+    test_argument_parser_parse_args,
+    "reset() should recursively reset all subparsers and argument states"
+) {
+    auto& sub_cmd = sut.add_subparser("sub");
+    sub_cmd.add_flag("subflag");
+
+    std::vector<std::string> argv_vec{"program", "sub", "--subflag"};
+    const int argc = static_cast<int>(argv_vec.size());
+    auto argv = to_char_2d_array(argv_vec);
+
+    sut.parse_args(argc, argv);
+
+    REQUIRE(sut.invoked());
+    REQUIRE_FALSE(sut.finalized());
+
+    REQUIRE(sub_cmd.invoked());
+    REQUIRE(sub_cmd.finalized());
+    REQUIRE_EQ(sub_cmd.count("subflag"), 1ull);
+
+    sut.reset();
+
+    CHECK_FALSE(sut.invoked());
+    CHECK_FALSE(sub_cmd.invoked());
+    CHECK_FALSE(sub_cmd.finalized());
+    CHECK_EQ(sub_cmd.count("subflag"), 0ull);
 
     free_argv(argc, argv);
 }

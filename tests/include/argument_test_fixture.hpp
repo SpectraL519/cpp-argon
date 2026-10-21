@@ -44,6 +44,11 @@ struct argument_test_fixture {
     }
 
     template <argument_type ArgT, c_argument_value_type T>
+    void reset(argument<ArgT, T>& arg) const {
+        arg.reset();
+    }
+
+    template <argument_type ArgT, c_argument_value_type T>
     void reset_values(argument<ArgT, T>& arg) const {
         arg._values.clear();
         arg._parsed_nvalues = 0ull;

@@ -75,6 +75,9 @@ public:
     friend class ::argon::argument_parser;
 
 protected:
+    /// @brief Reset the argument's state, clearing parsed values and resetting counters.
+    virtual void reset() noexcept = 0;
+
     /// @param verbose The verbosity mode value. If `true` all non-default parameters will be included in the output.
     /// @return A help message builder object for the argument.
     virtual detail::help_builder help_builder(const bool verbose) const noexcept = 0;

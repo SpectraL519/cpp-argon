@@ -552,4 +552,24 @@ TEST_CASE_FIXTURE(
     CHECK(std::is_gt(nvalues_ordering(sut)));
 }
 
+TEST_CASE_FIXTURE(
+    argument_test_fixture, "reset() should clear parsed values and reset the argument state"
+) {
+    auto sut = sut_type(arg_name);
+    sut.default_values(default_value);
+
+    set_value(sut, valid_value);
+
+    REQUIRE(sut.has_parsed_values());
+    REQUIRE_EQ(sut.value(), valid_value);
+    REQUIRE_EQ(sut.count(), 1ull);
+
+    reset(sut);
+
+    CHECK_FALSE(sut.has_parsed_values());
+    CHECK_EQ(sut.count(), 0ull);
+    CHECK(sut.has_predefined_values());
+    CHECK_EQ(sut.value(), default_value);
+}
+
 TEST_SUITE_END(); // test_positional_argument
