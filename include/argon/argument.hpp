@@ -256,38 +256,35 @@ public:
 
     /**
      * @brief Set multiple *value* actions for the argument.
-     * @tparam AS The action specifier type (e.g., `argon::action::observe`, `argon::action::transform`, `argon::action::modify`).
-     * @tparam Fs The types of the action callables.
+     * @tparam AC The action category type (defaults to `argon::action::value`).
+     * @tparam Fs The raw callable types.
      * @param value_actions A variadic list of callables to be executed sequentially after the argument's value is parsed.
      * @return Reference to the argument instance.
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
-    template <argon::traits::c_value_action_specifier AS, typename... Fs>
+    template <traits::c_action_category AC = action::value, typename... Fs>
     argument& actions(Fs&&... value_actions) noexcept
-    requires(not traits::c_is_none<value_type>)
+    requires(std::same_as<AC, action::value> and not traits::c_is_none<value_type>)
     {
-        using callable_type = action::util::callable_type<AS, value_type>;
-        // clang-format off
-        (this->_value_actions.emplace_back(static_cast<callable_type>(std::forward<Fs>(value_actions))), ...);
-        // clang-format on
+        (this->_add_value_action(std::forward<Fs>(value_actions)), ...);
         return *this;
     }
 
     /**
      * @brief Set multiple *on-flag* actions for the argument.
-     * @tparam AS The action specifier type (must be `argon::action::on_flag`).
+     * @tparam AC The action category type (must be explicitly set to `argon::action::on_flag`).
      * @tparam Fs The types of the state action callables or predefined action tags.
      * @param state_actions A variadic list of predefined tags (e.g., `action::discard_parsed`, `action::store`) or generic invocable callables.
      * @return Reference to the argument instance.
      * @note The method is enabled only for optional arguments.
      * @note On-flag actions are executed immediately after parsing the argument's flag, before parsing any subsequent values.
      */
-    template <argon::traits::c_flag_action_specifier AS, traits::c_state_action... Fs>
+    template <traits::c_action_category AC, traits::c_state_action... Fs>
     argument& actions(Fs&&... state_actions)
-    requires(type == argument_type::optional)
+    requires(std::same_as<AC, action::on_flag> and type == argument_type::optional)
     {
         // clang-format off
-        (this->_flag_actions.emplace_back(this->_compile_state_action(std::forward<Fs>(state_actions))), ...);
+        (this->_state_actions.emplace_back(this->_compile_state_action(std::forward<Fs>(state_actions))), ...);
         // clang-format on
         return *this;
     }
@@ -310,23 +307,24 @@ public:
 
         if constexpr (sizeof...(Actions) == 0) {
             if constexpr (std::same_as<value_type, bool>) {
-                this->_negative_actions.emplace_back(
+                this->_neg_state_actions.emplace_back(
                     this->_compile_state_action(action::discard_parsed)
                 );
                 // Deduce the logical inverse based on the default value set by add_flag
                 bool inverse_val =
                     not this->_default_values.empty() ? this->_default_values.front() : false;
-                this->_negative_actions.emplace_back(
+                this->_neg_state_actions.emplace_back(
                     this->_compile_state_action(action::store(inverse_val))
                 );
             }
             else {
-                this->_negative_actions.emplace_back(this->_compile_state_action(action::discard_all
-                ));
+                this->_neg_state_actions.emplace_back(
+                    this->_compile_state_action(action::discard_all)
+                );
             }
         }
         else {
-            (this->_negative_actions.emplace_back(
+            (this->_neg_state_actions.emplace_back(
                  this->_compile_state_action(std::forward<Actions>(state_actions))
              ),
              ...);
@@ -550,7 +548,7 @@ private:
     using value_action_type = action::util::value_action_variant_type<T>;
 
     /// @brief The argument's state action type alias.
-    using state_action_type = std::function<void()>;
+    using state_action_type = action::util::state_callable_type;
 
     /// @brief The argument's value-argument-specific type alias.
     /// @tparam _T The actual type used if the argument's `value_type` is not `none_type`.
@@ -626,7 +624,7 @@ private:
         this->_ignore_predefined = false;
         if constexpr (type == argument_type::optional) {
             ++this->_count;
-            for (const auto& action : this->_flag_actions)
+            for (const auto& action : this->_state_actions)
                 action();
         }
 
@@ -639,7 +637,7 @@ private:
         this->_last_flag_sign = false;
         if constexpr (type == argument_type::optional) {
             ++this->_count;
-            for (const auto& action : this->_negative_actions)
+            for (const auto& action : this->_neg_state_actions)
                 action();
         }
 
@@ -660,6 +658,12 @@ private:
     [[nodiscard]] std::weak_ordering nvalues_ordering() const noexcept override {
         if (this->_parsed_nvalues == 0ull and this->_has_predefined_values_impl())
             return std::weak_ordering::equivalent;
+
+        // If the last interaction was a negative flag, the user explicitly bypassed values.
+        if constexpr (type == argument_type::optional) {
+            if (this->is_used() and not this->_last_flag_sign)
+                return std::weak_ordering::equivalent;
+        }
 
         return this->_parsed_nvalues <=> this->_nargs_range;
     }
@@ -710,12 +714,17 @@ private:
         if (this->_ignore_predefined)
             return false;
 
-        if constexpr (type == argument_type::positional)
+        if constexpr (type == argument_type::positional) {
             return not this->_default_values.empty();
-        else
-            return not this->_default_values.empty()
-                or (this->is_used() and this->_last_flag_sign and not this->_implicit_values.empty()
-                );
+        }
+        else {
+            // If the user explicitly used the positive flag, check implicit values.
+            if (this->is_used() and this->_last_flag_sign)
+                return not this->_implicit_values.empty();
+
+            // Otherwise (unused, or negative flag), we check default values.
+            return not this->_default_values.empty();
+        }
     }
 
     /**
@@ -855,6 +864,20 @@ private:
 
     // --- configuration ---
 
+    template <traits::c_value_action<value_type> F>
+    void _add_value_action(F&& f) {
+        if constexpr (traits::c_observe_callable<F, value_type>) {
+            this->_value_actions.emplace_back(
+                std::in_place_type<std::function<void(const value_type&)>>, std::forward<F>(f)
+            );
+        }
+        else if constexpr (traits::c_modify_callable<F, value_type>) {
+            this->_value_actions.emplace_back(
+                std::in_place_type<std::function<void(value_type&)>>, std::forward<F>(f)
+            );
+        }
+    }
+
     template <traits::c_state_action F>
     state_action_type _compile_state_action(F&& action) {
         using action_t = std::remove_cvref_t<F>;
@@ -902,9 +925,9 @@ private:
     [[no_unique_address]] value_arg_specific_type<std::vector<value_action_type>>
         _value_actions; ///< The argument's value actions collection.
     [[no_unique_address]] optional_specific_type<std::vector<state_action_type>>
-        _flag_actions; ///< The optional argument's flag actions collection.
+        _state_actions; ///< The optional argument's flag actions collection.
     [[no_unique_address]] optional_specific_type<std::vector<state_action_type>>
-        _negative_actions; ///< The action executed when the negative flag is used.
+        _neg_state_actions; ///< The action executed when the negative flag is used.
 
     bool _required : 1; ///< The argument's `required` attribute value.
     bool _suppress_arg_checks : 1 =

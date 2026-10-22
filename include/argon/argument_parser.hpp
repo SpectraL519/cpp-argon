@@ -1788,7 +1788,7 @@ inline void add_default_argument(
     switch (arg_discriminator) {
     case default_argument::p_input:
         arg_parser.add_positional_argument("input")
-            .actions<action::observe>(action::check_file_exists())
+            .actions(action::check_file_exists())
             .help("Input file path");
         break;
 
@@ -1814,7 +1814,7 @@ inline void add_default_argument(
     case default_argument::o_input:
         arg_parser.add_optional_argument("input", "i")
             .nargs(1ull)
-            .actions<action::observe>(action::check_file_exists())
+            .actions(action::check_file_exists())
             .help("Input file path");
         break;
 
@@ -1825,7 +1825,7 @@ inline void add_default_argument(
     case default_argument::o_multi_input:
         arg_parser.add_optional_argument("input", "i")
             .nargs(argon::nargs::at_least(1ull))
-            .actions<action::observe>(action::check_file_exists())
+            .actions(action::check_file_exists())
             .help("Input files paths");
         break;
 

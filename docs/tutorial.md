@@ -624,9 +624,9 @@ parser.add_optional_argument<char>("method", "m").choices('a', 'b', 'c');
 <br />
 
 #### Value Actions - Functions that are called after parsing an argument's value.
-Actions are represented as functions, which take the argument's value as an argument. The available action types are:
+Actions are represented as standard C++ callables. The library automatically deduces the action's intent based on the function's signature. The available value action types are:
 
-- `observe` actions | `void(const value_type&)` - applied to the parsed value. No value is returned - this action type is used to perform some logic on the parsed value without modifying it.
+- **observe** actions | `void(const value_type&)` - applied to the parsed value. No value is returned. This is used to validate or log the parsed value without modifying it.
 
   ```cpp
   void is_valid_user_tag(const std::string& tag) {
@@ -635,23 +635,10 @@ Actions are represented as functions, which take the argument's value as an argu
   }
 
   parser.add_optional_argument<std::string>("user", "u")
-        .actions<argon::action::observe>(is_valid_user_tag);
+        .actions(is_valid_user_tag); // The compiler automatically deduces this as an observer
   ```
 
-- `transform` actions | `value_type(const value_type&)` - applied to the parsed value. The returned value will be used to initialize the argument's value.
-
-  ```cpp
-  std::string to_lower(std::string s) {
-      for (auto& c : s)
-          c = static_cast<char>(std::tolower(c));
-      return s;
-  }
-
-  parser.add_optional_argument<std::string>("key", "k")
-        .actions<argon::action::transform>(to_lower);
-  ```
-
-- `modify` actions | `void(value_type&)` - applied to the initialized value of an argument.
+- **modify** actions | `void(value_type&)` - mutates the parsed value of an argument in-place.
 
   ```cpp
   void capitalize(std::string& s) {
@@ -659,17 +646,18 @@ Actions are represented as functions, which take the argument's value as an argu
   }
 
   parser.add_optional_argument<std::string>("name", "n")
-        .actions<argon::action::modify>(capitalize);
+        .actions(capitalize); // The compiler automatically deduces this as a modifier
   ```
 
 > [!TIP]
 >
-> A single argument can have multiple value actions. Instead of writing complex logic in one action, consider composing several simple, focused actions for better readability and reusability. You can pass multiple actions into a single `.actions<type>(...)` call, e.g.:
+> A single argument can have multiple value actions. Instead of writing complex logic in one action, consider composing several simple, focused actions for better readability and reusability. You can pass multiple actions (both observers and modifiers) into a single `.actions(...)` call, e.g.:
 > ```cpp
 > parser.add_optional_argument("email")
->       .actions<argon::action::observe>(
+>       .actions(
 >         validate_email_format,
->         validate_active_user
+>         validate_active_user,
+>         normalize_lowercase // A modifier that runs after validation
 >       )
 > ```
 
@@ -839,7 +827,7 @@ parser.add_optional_argument<std::string>("mode")
   Prints the parser's help message to the output stream and optionally exits with the given code.
 
   ```cpp
-  typename argon::action::on_flag::type print_help(
+  argon::action::util::state_callable_type print_help(
       const argon::argument_parser& parser,
       const std::optional<int> exit_code = std::nullopt,
       std::ostream& os = std::cout
@@ -847,11 +835,11 @@ parser.add_optional_argument<std::string>("mode")
   ```
 
 - `check_file_exists` | observe (value type: `std::string`)
-
+  
   Throws if the provided file path does not exist.
-
+  
   ```cpp
-  argon::action::util::callable_type<argon::action::observe, std::string> check_file_exists() noexcept;
+  auto check_file_exists() noexcept;
   ```
 
 - `gt` | observe (value type: [arithmetic](https://www.google.com/search?q=https%3A%2F%2Fen.cppreference.com%2Fw%2Fcpp%2Ftypes%2Fis_arithmetic))
@@ -860,7 +848,7 @@ parser.add_optional_argument<std::string>("mode")
 
   ```cpp
   template <argon::traits::c_arithmetic T>
-  argon::action::util::callable_type<argon::action::observe, T> gt(const T lower_bound) noexcept;
+  auto gt(const T lower_bound) noexcept;
   ```
 
 - `geq` | observe (value type: [arithmetic](https://www.google.com/search?q=https%3A%2F%2Fen.cppreference.com%2Fw%2Fcpp%2Ftypes%2Fis_arithmetic))
@@ -869,7 +857,7 @@ parser.add_optional_argument<std::string>("mode")
 
   ```cpp
   template <argon::traits::c_arithmetic T>
-  argon::action::util::callable_type<argon::action::observe, T> geq(const T lower_bound) noexcept;
+  auto geq(const T lower_bound) noexcept;
   ```
 
 - `lt` | observe (value type: [arithmetic](https://www.google.com/search?q=https%3A%2F%2Fen.cppreference.com%2Fw%2Fcpp%2Ftypes%2Fis_arithmetic))
@@ -878,7 +866,7 @@ parser.add_optional_argument<std::string>("mode")
 
   ```cpp
   template <argon::traits::c_arithmetic T>
-  argon::action::util::callable_type<argon::action::observe, T> lt(const T upper_bound) noexcept;
+  auto lt(const T upper_bound) noexcept;
   ```
 
 - `leq` | observe (value type: [arithmetic](https://www.google.com/search?q=https%3A%2F%2Fen.cppreference.com%2Fw%2Fcpp%2Ftypes%2Fis_arithmetic))
@@ -887,7 +875,7 @@ parser.add_optional_argument<std::string>("mode")
 
   ```cpp
   template <argon::traits::c_arithmetic T>
-  argon::action::util::callable_type<argon::action::observe, T> leq(const T upper_bound) noexcept;
+  auto leq(const T upper_bound) noexcept;
   ```
 
 - `within` | observe (value type: [arithmetic](https://www.google.com/search?q=https%3A%2F%2Fen.cppreference.com%2Fw%2Fcpp%2Ftypes%2Fis_arithmetic))
@@ -895,10 +883,8 @@ parser.add_optional_argument<std::string>("mode")
   Checks if the value is within the given interval. Bound inclusivity is customizable using template parameters.
 
   ```cpp
-  template <argon::traits::c_arithmetic T, bool LeftInclusive = true, bool RightInclusive = true>
-  argon::action::util::callable_type<argon::action::observe, T> within(
-      const T lower_bound, const T upper_bound
-  ) noexcept;
+  template <traits::c_arithmetic T, bool LeftInclusive = true, bool RightInclusive = true>
+  auto within(const T lower_bound, const T upper_bound) noexcept;
   ```
 
 <br/>
@@ -924,7 +910,7 @@ parser.default_arguments(<args>);
   ```cpp
   // equivalent to:
   parser.add_positional_argument<std::string>("input")
-        .actions<argon::action::observe>(argon::action::check_file_exists())
+        .actions(argon::action::check_file_exists())
         .help("Input file path");
   ```
 
@@ -959,18 +945,18 @@ parser.default_arguments(<args>);
 - `o_input` and `o_multi_input`:
 
   ```cpp
-  // input - equivalent to:
+  // o_input - equivalent to:
   parser.add_optional_argument("input", "i")
         .required()
         .nargs(1)
-        .actions<argon::action::observe>(argon::action::check_file_exists())
+        .actions(argon::action::check_file_exists())
         .help("Input file path");
 
-  // multi_input - equivalent to:
+  // o_multi_input - equivalent to:
   parser.add_optional_argument("input", "i")
         .required()
         .nargs(argon::nargs::at_least(1))
-        .actions<argon::action::observe>(argon::action::check_file_exists())
+        .actions(argon::action::check_file_exists())
         .help("Input files paths");
   ```
 
