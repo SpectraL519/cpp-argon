@@ -659,6 +659,12 @@ private:
         if (this->_parsed_nvalues == 0ull and this->_has_predefined_values_impl())
             return std::weak_ordering::equivalent;
 
+        // If the last interaction was a negative flag, the user explicitly bypassed values.
+        if constexpr (type == argument_type::optional) {
+            if (this->is_used() and not this->_last_flag_sign)
+                return std::weak_ordering::equivalent;
+        }
+
         return this->_parsed_nvalues <=> this->_nargs_range;
     }
 
@@ -708,12 +714,17 @@ private:
         if (this->_ignore_predefined)
             return false;
 
-        if constexpr (type == argument_type::positional)
+        if constexpr (type == argument_type::positional) {
             return not this->_default_values.empty();
-        else
-            return not this->_default_values.empty()
-                or (this->is_used() and this->_last_flag_sign and not this->_implicit_values.empty()
-                );
+        }
+        else {
+            // If the user explicitly used the positive flag, check implicit values.
+            if (this->is_used() and this->_last_flag_sign)
+                return not this->_implicit_values.empty();
+
+            // Otherwise (unused, or negative flag), we check default values.
+            return not this->_default_values.empty();
+        }
     }
 
     /**
