@@ -257,38 +257,34 @@ public:
     /**
      * @brief Set multiple *value* actions for the argument.
      * @tparam AC The action category type (defaults to `argon::action::value`).
-     * @tparam Actions The types of the value action specifiers (`observe_t`, `transform_t`, `modify_t`).
-     * @param value_actions A variadic list of value action specifiers to be executed sequentially after the argument's value is parsed.
+     * @tparam Fs The raw callable types.
+     * @param value_actions A variadic list of callables to be executed sequentially after the argument's value is parsed.
      * @return Reference to the argument instance.
      * @note The method is enabled only if `value_type` is not `none_type`.
      */
-    template <
-        traits::c_action_category AC = action::value,
-        traits::c_value_action_for<value_type>... Actions>
-    argument& actions(Actions&&... value_actions) noexcept
+    template <traits::c_action_category AC = action::value, typename... Fs>
+    argument& actions(Fs&&... value_actions) noexcept
     requires(std::same_as<AC, action::value> and not traits::c_is_none<value_type>)
     {
-        // clang-format off
-        (this->_value_actions.emplace_back(this->_compile_value_action(std::forward<Actions>(value_actions))), ...);
-        // clang-format on
+        (this->_add_value_action(std::forward<Fs>(value_actions)), ...);
         return *this;
     }
 
     /**
      * @brief Set multiple *on-flag* actions for the argument.
-     * @tparam AC The action category type (must be `argon::action::on_flag`).
-     * @tparam Actions The types of the state action callables or predefined action tags.
+     * @tparam AC The action category type (must be explicitly set to `argon::action::on_flag`).
+     * @tparam Fs The types of the state action callables or predefined action tags.
      * @param state_actions A variadic list of predefined tags (e.g., `action::discard_parsed`, `action::store`) or generic invocable callables.
      * @return Reference to the argument instance.
      * @note The method is enabled only for optional arguments.
      * @note On-flag actions are executed immediately after parsing the argument's flag, before parsing any subsequent values.
      */
-    template <traits::c_action_category AC, traits::c_state_action... Actions>
-    argument& actions(Actions&&... state_actions)
+    template <traits::c_action_category AC, traits::c_state_action... Fs>
+    argument& actions(Fs&&... state_actions)
     requires(std::same_as<AC, action::on_flag> and type == argument_type::optional)
     {
         // clang-format off
-        (this->_state_actions.emplace_back(this->_compile_state_action(std::forward<Actions>(state_actions))), ...);
+        (this->_state_actions.emplace_back(this->_compile_state_action(std::forward<Fs>(state_actions))), ...);
         // clang-format on
         return *this;
     }
@@ -857,14 +853,18 @@ private:
 
     // --- configuration ---
 
-    template <traits::c_value_action_for<value_type> A>
-    value_action_type _compile_value_action(A&& action_spec) {
-        using action_t = std::remove_cvref_t<A>;
-        using target_callable_t = action::util::callable_type<action_t, value_type>;
-
-        return value_action_type(
-            std::in_place_type<target_callable_t>, std::forward<A>(action_spec).callable
-        );
+    template <traits::c_value_action<value_type> F>
+    void _add_value_action(F&& f) {
+        if constexpr (traits::c_observe_callable<F, value_type>) {
+            this->_value_actions.emplace_back(
+                std::in_place_type<std::function<void(const value_type&)>>, std::forward<F>(f)
+            );
+        }
+        else if constexpr (traits::c_modify_callable<F, value_type>) {
+            this->_value_actions.emplace_back(
+                std::in_place_type<std::function<void(value_type&)>>, std::forward<F>(f)
+            );
+        }
     }
 
     template <traits::c_state_action F>

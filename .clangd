@@ -21,3 +21,11 @@ Diagnostics:
 
 Index:
   Background: Build
+
+---
+
+If:
+  PathMatch: .tmp/actions-api/.*
+
+Diagnostics:
+  Suppress: ["*"]

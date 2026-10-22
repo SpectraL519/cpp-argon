@@ -691,7 +691,7 @@ TEST_CASE_FIXTURE(
             }
         };
 
-        sut.actions(argon::action::observe(is_power_of_two));
+        sut.actions(is_power_of_two);
 
         CHECK_THROWS_AS(set_value(sut, 3), std::runtime_error);
 
@@ -700,18 +700,9 @@ TEST_CASE_FIXTURE(
         CHECK_EQ(sut.value(), valid_value);
     }
 
-    SUBCASE("transform action") {
-        const auto double_action = [](const sut_value_type& value) { return 2 * value; };
-        sut.actions(argon::action::transform(double_action));
-
-        set_value(sut, arbitrary_value);
-
-        CHECK_EQ(sut.value(), double_action(arbitrary_value));
-    }
-
     SUBCASE("modify action") {
         const auto double_action = [](sut_value_type& value) { value *= 2; };
-        sut.actions(argon::action::modify(double_action));
+        sut.actions(double_action);
 
         auto test_value = arbitrary_value;
 
@@ -724,11 +715,11 @@ TEST_CASE_FIXTURE(
     SUBCASE("multiple mixed actions execute sequentially") {
         sut_value_type capture = 0;
         sut.actions<argon::action::on_flag>([&]() { capture = 100; }
-        ) // Only executes on flag parsing
+        ) // Only executes on flag parsing.actions
             .actions(
-                argon::action::observe([&](const sut_value_type& v) { capture += v; }),
-                argon::action::transform([](const sut_value_type& v) { return v + 1; }),
-                argon::action::modify([](sut_value_type& v) { v *= 2; })
+                [&](const sut_value_type& v) { capture += v; },
+                [](sut_value_type& v) { v += 1; },
+                [](sut_value_type& v) { v *= 2; }
             );
 
         // Trigger flag

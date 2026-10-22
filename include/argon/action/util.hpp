@@ -11,26 +11,22 @@
 
 #include "argon/action/traits.hpp"
 
+#include <functional>
 #include <utility>
 #include <variant>
 
 namespace argon::action::util {
 
-/// @brief Template argument value action callable type alias.
-/// @ingroup util
-template <traits::c_value_action_specifier AS, traits::c_argument_value_type T>
-using callable_type = typename std::remove_cvref_t<AS>::template type<T>;
-
 /// @brief State action callable type alias.
 /// @ingroup util
 using state_callable_type = typename action::on_flag::type;
 
-/// @brief Template argument action callable variant type alias.
+/// @brief Variant type used to store different value action signatures.
 template <traits::c_argument_value_type T>
 using value_action_variant_type = std::variant<
-    callable_type<action::observe_t<>, T>,
-    callable_type<action::transform_t<>, T>,
-    callable_type<action::modify_t<>, T>>;
+    std::function<void(const T&)>, // observe
+    std::function<void(T&)> // modify
+    >;
 
 /**
  * @brief A visitor structure used to apply *value* actions.
@@ -43,25 +39,15 @@ struct apply_visitor {
 
     /**
      * @brief The call operator overload for the *observe* action type.
-     * @param action The *observe* action callable.
      */
-    void operator()(const callable_type<action::observe_t<>, value_type>& action) const {
+    void operator()(const std::function<void(const value_type&)>& action) const {
         action(std::as_const(value));
     }
 
     /**
-     * @brief The call operator overload for the *transform* action type.
-     * @param action The *transform* action callable.
-     */
-    void operator()(const callable_type<action::transform_t<>, value_type>& action) const {
-        value = action(std::as_const(value));
-    }
-
-    /**
      * @brief The call operator overload for the *modify* action type.
-     * @param action The *modify* action callable.
      */
-    void operator()(const callable_type<action::modify_t<>, value_type>& action) const {
+    void operator()(const std::function<void(value_type&)>& action) const {
         action(value);
     }
 
