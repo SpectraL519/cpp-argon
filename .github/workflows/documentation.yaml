@@ -8,10 +8,12 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
-  build-doc:
-    name: Build and validate documentation
-    if: github.event_name == 'pull_request'
+  build-and-deploy:
+    name: Build & Deploy Documentation
     runs-on: ubuntu-24.04
 
     steps:
@@ -21,100 +23,66 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
-      - name: Set up python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.14"
 
-      - name: Install dependencies
-        run: |
-          sudo apt install doxygen -y
-          pip install beautifulsoup4
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install doxygen -y
 
-      - name: Validate the project version
+      - name: Install Python dependencies (uv)
         run: |
-          VERSION=$(python3 scripts/check_version.py)
+          pip install uv
+          uv sync
+
+      - name: Validate Internal Project Versions
+        run: |
+          VERSION=$(uv run python scripts/check_version.py)
           echo "project version = $VERSION"
-
-      - name: Run doxygen
-        continue-on-error: false
-        run: |
-          doxygen Doxyfile
-          python3 scripts/postprocess_doxyhtml.py ./documentation --img-rules docs/style/img_style_rules.json
-
-      - name: Validate output
-        run: test -d documentation && test -f documentation/index.html
-
-  deploy-doc:
-    name: Deploy documentation
-    if: github.event_name == 'push'
-    runs-on: ubuntu-24.04
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
-
-      - name: Set up python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        run: |
-          sudo apt install doxygen -y
-          pip install beautifulsoup4
-
-      - name: Extract and validate the project version
-        continue-on-error: false
-        run: |
-          VERSION=$(python3 scripts/check_version.py)
-          echo "project version = $VERSION"
-          VERSION_TAG="${GITHUB_REF##*/}"
-          echo "git version tag = $VERSION_TAG"
-          if [[ "$VERSION_TAG" != "v$VERSION" ]]; then
-            echo "Error: Tag missmatch: git version tag = $VERSION_TAG, project version: v$VERSION"
-            exit 1
-          fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Run doxygen
-        continue-on-error: false
+      - name: Validate Git Tag (Deploy Only)
+        if: github.event_name == 'push'
         run: |
-          doxygen Doxyfile
-          python3 scripts/postprocess_doxyhtml.py ./documentation --img-rules docs/style/img_style_rules.json
+          VERSION_TAG="${GITHUB_REF_NAME}"
+          echo "git version tag = $VERSION_TAG"
+          if [[ "$VERSION_TAG" != "v$VERSION" ]]; then
+            echo "Error: Tag mismatch: git version tag = $VERSION_TAG, project version: v$VERSION"
+            exit 1
+          fi
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./documentation
-          publish_branch: gh-pages
-          destination_dir: ${{ env.VERSION }}
+      - name: Build Docs (PR Validation Only)
+        if: github.event_name == 'pull_request'
+        run: make build-docs
 
-      - name: Deploy documantation as latest (setup)
-        if: ${{ success() }}
+      # See: https://api.github.com/users/github-actions%5Bbot%5D
+      - name: Configure Git (Deploy Only)
+        if: github.event_name == 'push'
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Determine if Latest Tag (Deploy Only)
+        if: github.event_name == 'push'
         run: |
           CURRENT_VERSION="v${VERSION}"
-          echo "Current version: $CURRENT_VERSION"
           git fetch --tags --force
           ALL_TAGS=$(git tag | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V)
           LATEST_TAG=$(echo "$ALL_TAGS" | tail -n 1)
-          echo "Latest tag: $LATEST_TAG"
+
           if [ "$CURRENT_VERSION" = "$LATEST_TAG" ]; then
-            echo "Current tag is the latest. Deploying to 'latest/'..."
             echo "DEPLOY_LATEST=true" >> $GITHUB_ENV
           else
-            echo "Current tag is NOT the latest. Skipping deployment to 'latest/'."
+            echo "DEPLOY_LATEST=false" >> $GITHUB_ENV
           fi
 
-      - name: Deploy to GitHub Pages as 'latest'
-        if: env.DEPLOY_LATEST == 'true'
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./documentation
-          publish_branch: gh-pages
-          destination_dir: latest
+      - name: Deploy with mike (Latest)
+        if: github.event_name == 'push' && env.DEPLOY_LATEST == 'true'
+        run: |
+          make docs TAGS="--push --update-aliases v${VERSION} latest"
+          uv run mike set-default --push latest
+
+      - name: Deploy with mike (Older Version)
+        if: github.event_name == 'push' && env.DEPLOY_LATEST == 'false'
+        run: make docs TAGS="--push v${VERSION}"
