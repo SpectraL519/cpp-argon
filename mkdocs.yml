@@ -1,0 +1,103 @@
+site_name: CPP-ARGON Documentation
+site_description: "Lightweight and feature-rich command-line argument parsing library for C++20"
+repo_url: "https://github.com/SpectraL519/cpp-argon"
+
+nav:
+  - Home: pages/index.md
+  - Argon:
+      - Quick Start: pages/argon/quick_start.md
+      - Parser Configuration: pages/argon/parser.md
+      - Defining Arguments: pages/argon/arguments.md
+      - Argument Groups: pages/argon/groups.md
+      - Parsing & Values: pages/argon/parsing.md
+      - Subparsers: pages/argon/subparsers.md
+      - Examples: pages/argon/examples.md
+  # - API Reference:
+  #     - Overview: pages/api/group__Argon.md
+  #     - Core Components: pages/api/group__Argon-Core.md
+  #     - Actions & Traits: pages/api/group__Argon-Traits.md
+  #     - Exceptions: pages/api/group__Argon-Exceptions.md
+  #     - Utility: pages/api/group__Argon-Util.md
+  - API Index:
+      - Classes & Structs: pages/api/annotated.md
+      - Class Hierarchy: pages/api/hierarchy.md
+      - Concepts: pages/api/concepts.md
+      - Files: pages/api/files.md
+  - Developer Notes: pages/dev_notes.md
+  - License: pages/license.md
+
+theme:
+  name: material
+  logo: img/cpp-argon-hex.png
+  favicon: img/cpp-argon-hex.png
+  icon:
+    annotation: material/chevron-right-circle
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-5
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-3
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - tables
+  - md_in_html
+  - attr_list
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.snippets:
+      base_path: "."
+      check_paths: true
+  - toc:
+      baselevel: 1
+      toc_depth: 3
+
+plugins:
+  - search
+  - include-markdown
+  - callouts:
+      aliases: false
+  - mkdoxy:
+      projects:
+        cpp-argon:
+          src-dirs: "include docs/config/groups.dox"
+          full-doc: true
+          sorting:
+            classes: false
+          hideparams: true
+          doxy-cfg-file: Doxyfile
+
+extra_javascript:
+  - scripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css:
+  - style/logo.css
+  - style/theme.css
