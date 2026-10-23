@@ -12,11 +12,9 @@
 
 namespace argon {
 
-/**
- * @brief A type representing the absence of a value.
- * This type is used for arguments that should not store any values
- * or as a fallback type for conditionally defined types.
- */
+/// @brief A type representing the absence of a value.
+/// This type is used for arguments that should not store any values
+/// or as a fallback type for conditionally defined types.
 struct none_type {};
 
 /// @brief Tag type used to enable dynamic program name deduction.

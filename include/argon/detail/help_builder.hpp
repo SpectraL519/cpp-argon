@@ -2,10 +2,8 @@
 // This file is part of the CPP-ARGON project (https://github.com/SpectraL519/cpp-argon).
 // Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 
-/**
- * @file argon/detail/help_builder.hpp
- * @brief Defines structures for creating and formatting help messages.
- */
+/// @file argon/detail/help_builder.hpp
+/// @brief Defines structures for creating and formatting help messages.
 
 #pragma once
 
@@ -23,36 +21,20 @@
 
 namespace argon::detail {
 
-/// @brief A structure used to represent an element's parameter description.
 struct parameter_descriptor {
     std::string name;
     std::string value;
 };
 
-/// @brief A help message builder class.
 class help_builder {
 public:
-    /**
-     * @param name The string representation of the element's name.
-     * @param help A help message string.
-     */
-    help_builder(const std::string& name, const std::string& help = "") : name(name), help(help) {}
+    help_builder(std::string name, std::string help = "")
+    : name(std::move(name)), help(std::move(help)) {}
 
-    /**
-     * @brief Adds a parameter descriptor with the given string value.
-     * @param param_name The parameter's name.
-     * @param value The parameter's value's string representation.
-     */
     void add_param(const std::string& param_name, const std::string& value) {
         this->params.emplace_back(param_name, value);
     }
 
-    /**
-     * @brief Adds a parameter descriptor with the given value.
-     * @tparam T The type of the parameter; must satisfy the @ref argon::traits::c_writable concept.
-     * @param param_name The parameter's name.
-     * @param value The parameter's value.
-     */
     template <traits::c_writable T>
     void add_param(const std::string& param_name, const T& value) {
         std::ostringstream oss;
@@ -60,13 +42,6 @@ public:
         this->params.emplace_back(param_name, oss.str());
     }
 
-    /**
-     * @brief Adds a range parameter descriptor with the given value.
-     * @tparam R The type of the parameter range. The value type of R must satisfy the @ref argon::traits::c_writable concept.
-     * @param param_name The parameter's name.
-     * @param range The parameter value range.
-     * @param delimiter The delimiter used to separate the range values.
-     */
     template <std::ranges::range R>
     requires(traits::c_writable<std::ranges::range_value_t<R>>)
     void add_range_param(
@@ -77,11 +52,7 @@ public:
         this->params.emplace_back(param_name, util::join(range, delimiter));
     }
 
-    /**
-     * @param fmt The formatting configuration.
-     * @param align_to Optional minimum width for the element name (0 means no extra alignment).
-     * @return A basic element description string in the format "<indent><arg-name> : <help-msg>"
-     */
+    // Builds a basic element description string in the format "<indent><arg-name> : <help-msg>"
     [[nodiscard]] std::string build_base(const format_config& fmt, const std::size_t align_to = 0)
         const {
         std::ostringstream oss;
@@ -111,15 +82,7 @@ public:
         return oss.str();
     }
 
-    /**
-     * Generates a full string representation of the element descriptor, optionally formatted
-     * to fit within a specified maximum line width. The output includes the element name,
-     * help message (if present), and any added parameters.
-     *
-     * @param fmt The formatting configuration.
-     * @param align_to Optional minimum width for the element name (0 means no extra alignment).
-     * @return A formatted string describing the element and its parameters.
-     */
+    // Builds a full element description string, including parameters
     [[nodiscard]] std::string build(const format_config& fmt, const std::size_t align_to = 0) const {
         if (this->params.empty())
             return this->_build_compact(fmt, align_to);

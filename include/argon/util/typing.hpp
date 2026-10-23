@@ -2,10 +2,8 @@
 // This file is part of the CPP-ARGON project (https://github.com/SpectraL519/cpp-argon).
 // Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 
-/**
- * @file argon/util/typing.hpp
- * @brief Provides common typing utility functions.
- */
+/// @file argon/util/typing.hpp
+/// @brief Provides common typing utility functions.
 
 #pragma once
 
@@ -17,14 +15,12 @@
 
 namespace argon::util {
 
-/**
- * @brief Retrieves the demangled name of a type `T`.
- * @tparam T The type to retrieve the name for.
- * @return A string view representing the demangled name of type `T`.
- * @note - The function uses compiler-specific macros to extract the type name.
- * @note - Supported compilers: GCC, Clang, MSVC.
- * @ingroup util
- */
+/// @brief Retrieves the demangled name of a type `T`.
+/// @tparam T The type to retrieve the name for.
+/// @return A string view representing the demangled name of type `T`.
+/// @note - The function uses compiler-specific macros to extract the type name.
+/// @note - Supported compilers: GCC, Clang, MSVC.
+/// @ingroup util
 template <typename T>
 constexpr std::string_view demangled_type_name() {
 #if defined(__clang__) || defined(__GNUC__)

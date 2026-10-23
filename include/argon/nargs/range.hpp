@@ -2,10 +2,8 @@
 // This file is part of the CPP-ARGON project (https://github.com/SpectraL519/cpp-argon).
 // Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 
-/**
- * @file argon/nargs/range.hpp
- * @brief Defines the `nargs::range` class and it's builder functions.
- */
+/// @file argon/nargs/range.hpp
+/// @brief Defines the `nargs::range` class and it's builder functions.
 
 #pragma once
 
@@ -29,17 +27,13 @@ public:
     /// @brief Default constructor: creates an unbound range.
     constexpr range() = default;
 
-    /**
-     * @brief Exact count constructor: creates range [n, n].
-     * @param n Expected value count.
-     */
+    /// @brief Exact count constructor: creates range [n, n].
+    /// @param n Expected value count.
     explicit constexpr range(const count_type n) : _lower_bound(n), _upper_bound(n) {}
 
-    /**
-     * @brief Concrete range constructor: creates range [lower, upper].
-     * @param lower The lower bound.
-     * @param upper The upper bound.
-     */
+    /// @brief Concrete range constructor: creates range [lower, upper].
+    /// @param lower The lower bound.
+    /// @param upper The upper bound.
     constexpr range(const count_type lower, const count_type upper)
     : _lower_bound(lower), _upper_bound(upper) {
         if (upper < lower)
@@ -48,35 +42,37 @@ public:
             );
     }
 
+    /// @brief Checks if the range has an explicit lower bound (greater than `min_bound`).
     [[nodiscard]] constexpr bool has_explicit_lower_bound() const noexcept {
         return this->_lower_bound > min_bound;
     }
 
+    /// @brief Checks if the range has an explicit upper bound (less than `max_bound`).
     [[nodiscard]] constexpr bool has_explicit_upper_bound() const noexcept {
         return this->_upper_bound < max_bound;
     }
 
+    /// @brief Checks if the range has any explicit bounds (either lower or upper).
     [[nodiscard]] constexpr bool is_explicitly_bound() const noexcept {
         return this->has_explicit_lower_bound() or this->has_explicit_upper_bound();
     }
 
+    /// @brief Checks if the range is exactly bound (lower bound equals upper bound).
     [[nodiscard]] constexpr bool is_exactly_bound() const noexcept {
         return this->_lower_bound == this->_upper_bound;
     }
 
     constexpr bool operator==(const range& other) const = default;
 
-    /**
-     * @brief Determines the ordering of the count against a range instance.
-     *
-     * For a `[lower, upper]` range and the count `n` the returned value is:
-     * - `less` if `n < lower`,
-     * - `equivalent` if `n >= lower` and `n <= upper`,
-     * - `greater` if `n > upper`.
-     *
-     * @param n The value count to order.
-     * @return Ordering relationship between the count and the range.
-     */
+    /// @brief Determines the ordering of the count against a range instance.
+    ///
+    /// For a `[lower, upper]` range and the count `n` the returned value is:
+    /// - `less` if `n < lower`,
+    /// - `equivalent` if `n >= lower` and `n <= upper`,
+    /// - `greater` if `n > upper`.
+    ///
+    /// @param n The value count to order.
+    /// @return Ordering relationship between the count and the range.
     [[nodiscard]] friend constexpr std::weak_ordering operator<=>(
         const count_type n, const range& r
     ) noexcept {
@@ -109,58 +105,48 @@ public:
         return os;
     }
 
-    friend constexpr range at_least(const count_type) noexcept;
-    friend constexpr range more_than(const count_type) noexcept;
-    friend constexpr range less_than(const count_type) noexcept;
-    friend constexpr range up_to(const count_type) noexcept;
-    friend constexpr range any() noexcept;
+    friend constexpr range at_least(const count_type);
+    friend constexpr range more_than(const count_type);
+    friend constexpr range less_than(const count_type);
+    friend constexpr range up_to(const count_type);
+    friend constexpr range any();
 
 private:
     count_type _lower_bound = min_bound;
     count_type _upper_bound = max_bound;
 };
 
-/**
- * @brief `range` class builder function. Creates a range [n, inf).
- * @param n The lower bound.
- * @return Built `range` class instance.
- */
-[[nodiscard]] constexpr range at_least(const count_type n) noexcept {
+/// @brief `range` class builder function. Creates a range [n, inf).
+/// @param n The lower bound.
+/// @return Built `range` class instance.
+[[nodiscard]] constexpr range at_least(const count_type n) {
     return range(n, max_bound);
 }
 
-/**
- * @brief `range` class builder function. Creates a range [n + 1, inf).
- * @param n The lower bound.
- * @return Built `range` class instance.
- */
-[[nodiscard]] constexpr range more_than(const count_type n) noexcept {
+/// @brief `range` class builder function. Creates a range [n + 1, inf).
+/// @param n The lower bound.
+/// @return Built `range` class instance.
+[[nodiscard]] constexpr range more_than(const count_type n) {
     return range(n + 1ull, max_bound);
 }
 
-/**
- * @brief `range` class builder function. Creates a range [0, n - 1].
- * @param n The upper bound
- * @return Built `range` class instance.
- */
-[[nodiscard]] constexpr range less_than(const count_type n) noexcept {
+/// @brief `range` class builder function. Creates a range [0, n - 1].
+/// @param n The upper bound
+/// @return Built `range` class instance.
+[[nodiscard]] constexpr range less_than(const count_type n) {
     return range(min_bound, n - 1ull);
 }
 
-/**
- * @brief `range` class builder function. Creates a range [0, n].
- * @param n The upper bound
- * @return Built `range` class instance.
- */
-[[nodiscard]] constexpr range up_to(const count_type n) noexcept {
+/// @brief `range` class builder function. Creates a range [0, n].
+/// @param n The upper bound
+/// @return Built `range` class instance.
+[[nodiscard]] constexpr range up_to(const count_type n) {
     return range(min_bound, n);
 }
 
-/**
- * @brief `range` class builder function. Creates a range [0, inf].
- * @return Built `range` class instance.
- */
-[[nodiscard]] constexpr range any() noexcept {
+/// @brief `range` class builder function. Creates a range [0, inf].
+/// @return Built `range` class instance.
+[[nodiscard]] constexpr range any() {
     return range(min_bound, max_bound);
 }
 

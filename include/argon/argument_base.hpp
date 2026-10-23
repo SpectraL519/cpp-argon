@@ -2,10 +2,9 @@
 // This file is part of the CPP-ARGON project (https://github.com/SpectraL519/cpp-argon).
 // Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 
-/**
- * @file argon/argument_base.hpp
- * @brief Defines the base argument class and common utility.
- */
+
+/// @file argon/argument_base.hpp
+/// @brief Defines the base argument class and common utility.
 
 #pragma once
 

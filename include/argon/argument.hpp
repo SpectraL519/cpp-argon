@@ -27,32 +27,30 @@ namespace argon {
 /// @brief A discriminator type used to specify the type of an argument within the @ref argon::argument class.
 enum class argument_type : bool { positional, optional };
 
-/**
- * @brief Represents a command-line argument, either positional or optional.
- *
- * This class defines the behaviour of command-line arguments - both positional and optional,
- * depending on the given type discriminator.
- *
- * @note This class is not intended to be constructed directly, but rather throught the
- * @note - `add_positional_argument`
- * @note - `add_optional_argument`
- * @note - `add_flag`
- * @note methods of @ref argon::argument_parser.
- * @attention Some member functions are conditionally enabled/disabled depending on the argument type and value type.
- *
- * Example usage:
- * @code{.cpp}
- * argon::argument_parser parser;
- * parser.add_positional_argument("input", "i")
- *       .help("An input file path");
- * parser.add_optional_argument("output", "o")
- *       .default_values("out.txt")
- *       .help("An output file path");
- * @endcode
- *
- * @tparam ArgT The argument type, either @ref argon::argument_type::positional or @ref argon::argument_type::optional.
- * @tparam T The value type accepted by the argument (defaults to std::string).
- */
+/// @brief Represents a command-line argument, either positional or optional.
+///
+/// This class defines the behaviour of command-line arguments - both positional and optional,
+/// depending on the given type discriminator.
+///
+/// @note This class is not intended to be constructed directly, but rather throught the
+/// @note - `add_positional_argument`
+/// @note - `add_optional_argument`
+/// @note - `add_flag`
+/// @note methods of @ref argon::argument_parser.
+/// @attention Some member functions are conditionally enabled/disabled depending on the argument type and value type.
+///
+/// Example usage:
+/// @code{.cpp}
+/// argon::argument_parser parser;
+/// parser.add_positional_argument("input", "i")
+///       .help("An input file path");
+/// parser.add_optional_argument("output", "o")
+///       .default_values("out.txt")
+///       .help("An output file path");
+/// @endcode
+///
+/// @tparam ArgT The argument type, either @ref argon::argument_type::positional or @ref argon::argument_type::optional.
+/// @tparam T The value type accepted by the argument (defaults to std::string).
 template <argument_type ArgT, traits::c_argument_value_type T = std::string>
 class argument : public typed_argument_base<T> {
 public:
@@ -63,22 +61,18 @@ public:
 
     argument() = delete;
 
-    /**
-     * @brief Positional argument constructor.
-     * @param name The name of the positional argument.
-     * @note The constructor is enabled only if `type` is `argument_type::positional`.
-     */
+    /// @brief Positional argument constructor.
+    /// @param name The name of the positional argument.
+    /// @note The constructor is enabled only if `type` is `argument_type::positional`.
     argument(argument_name name)
     requires(type == argument_type::positional)
     : _name(std::move(name)),
       _nargs_range(_default_nargs_range_actual),
       _required(_default_required) {}
 
-    /**
-     * @brief Optional argument constructor.
-     * @param name The name of the optional argument.
-     * @note The constructor is enabled only if `type` is `argument_type::optional`.
-     */
+    /// @brief Optional argument constructor.
+    /// @param name The name of the optional argument.
+    /// @note The constructor is enabled only if `type` is `argument_type::optional`.
     argument(argument_name name)
     requires(type == argument_type::optional)
     : _name(std::move(name)),
@@ -135,32 +129,26 @@ public:
 
     // attribute setters
 
-    /**
-     * @brief Set the help message for the argument.
-     * @param help_msg The help message to set.
-     * @return Reference to the argument instance.
-     */
+    /// @brief Set the help message for the argument.
+    /// @param help_msg The help message to set.
+    /// @return Reference to the argument instance.
     argument& help(std::string_view help_msg) noexcept {
         this->_help_msg = help_msg;
         return *this;
     }
 
-    /**
-     * @brief Set the `hidden` attribute for the argument.
-     * @param h The attribute value.
-     * @return Reference to the argument instance.
-     */
+    /// @brief Set the `hidden` attribute for the argument.
+    /// @param h The attribute value.
+    /// @return Reference to the argument instance.
     argument& hidden(const bool h = true) noexcept {
         this->_hidden = h;
         return *this;
     }
 
-    /**
-     * @brief Set the `required` attribute of the argument
-     * @param value The attribute value (default: `true`).
-     * @return Reference to the argument instance.
-     * @throws argon::invalid_configuration if the argument is configured to suppress argument/group checks.
-     */
+    /// @brief Set the `required` attribute of the argument
+    /// @param value The attribute value (default: `true`).
+    /// @return Reference to the argument instance.
+    /// @throws argon::invalid_configuration if the argument is configured to suppress argument/group checks.
     argument& required(const bool value = true) {
         if (value and (this->_suppress_arg_checks or this->_suppress_group_checks))
             throw invalid_configuration(
@@ -171,12 +159,10 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Enable/disable suppressing argument checks for other arguments.
-     * @param value The attribute value (default: `true`).
-     * @return Reference to the argument instance.
-     * @throws argon::invalid_configuration if the argument is configured to be required.
-     */
+    /// @brief Enable/disable suppressing argument checks for other arguments.
+    /// @param value The attribute value (default: `true`).
+    /// @return Reference to the argument instance.
+    /// @throws argon::invalid_configuration if the argument is configured to be required.
     argument& suppress_arg_checks(const bool value = true) {
         if (value and this->_required)
             throw invalid_configuration(std::format(
@@ -187,12 +173,10 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Enable/disable suppressing argument group checks.
-     * @param value The attribute value (default: `true`).
-     * @return Reference to the argument instance.
-     * @throws argon::invalid_configuration if the argument is configured to be required.
-     */
+    /// @brief Enable/disable suppressing argument group checks.
+    /// @param value The attribute value (default: `true`).
+    /// @return Reference to the argument instance.
+    /// @throws argon::invalid_configuration if the argument is configured to be required.
     argument& suppress_group_checks(const bool value = true) {
         if (value and this->_required)
             throw invalid_configuration(std::format(
@@ -203,12 +187,10 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Set the `greedy` attribute of the argument.
-     * @param value The attribute value (default: `true`).
-     * @return Reference to the argument instance.
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     */
+    /// @brief Set the `greedy` attribute of the argument.
+    /// @param value The attribute value (default: `true`).
+    /// @return Reference to the argument instance.
+    /// @note The method is enabled only if `value_type` is not `none_type`.
     argument& greedy(const bool value = true) noexcept
     requires(not traits::c_is_none<value_type>)
     {
@@ -216,12 +198,10 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Set the nargs range for the argument.
-     * @param range The attribute value.
-     * @return Reference to the argument instance.
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     */
+    /// @brief Set the nargs range for the argument.
+    /// @param range The attribute value.
+    /// @return Reference to the argument instance.
+    /// @note The method is enabled only if `value_type` is not `none_type`.
     argument& nargs(const nargs::range& range) noexcept
     requires(not traits::c_is_none<value_type>)
     {
@@ -229,39 +209,33 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Set the nargs range for the argument.
-     * @param n The exact bound for the nargs range attribute.
-     * @return Reference to the argument instance.
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     */
+    /// @brief Set the nargs range for the argument.
+    /// @param n The exact bound for the nargs range attribute.
+    /// @return Reference to the argument instance.
+    /// @note The method is enabled only if `value_type` is not `none_type`.
     argument& nargs(const count_type n) noexcept
     requires(not traits::c_is_none<value_type>)
     {
         return this->nargs(nargs::range(n));
     }
 
-    /**
-     * @brief Set the nargs range for the optional argument.
-     * @param lower The lower bound for the nargs range attribute.
-     * @param upper The upper bound for the nargs range attribute.
-     * @return Reference to the argument instance.
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     */
+    /// @brief Set the nargs range for the optional argument.
+    /// @param lower The lower bound for the nargs range attribute.
+    /// @param upper The upper bound for the nargs range attribute.
+    /// @return Reference to the argument instance.
+    /// @note The method is enabled only if `value_type` is not `none_type`.
     argument& nargs(const count_type lower, const count_type upper) noexcept
     requires(not traits::c_is_none<value_type>)
     {
         return this->nargs(nargs::range(lower, upper));
     }
 
-    /**
-     * @brief Set multiple *value* actions for the argument.
-     * @tparam AC The action category type (defaults to `argon::action::value`).
-     * @tparam Fs The raw callable types.
-     * @param value_actions A variadic list of callables to be executed sequentially after the argument's value is parsed.
-     * @return Reference to the argument instance.
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     */
+    /// @brief Set multiple *value* actions for the argument.
+    /// @tparam AC The action category type (defaults to `argon::action::value`).
+    /// @tparam Fs The raw callable types.
+    /// @param value_actions A variadic list of callables to be executed sequentially after the argument's value is parsed.
+    /// @return Reference to the argument instance.
+    /// @note The method is enabled only if `value_type` is not `none_type`.
     template <traits::c_action_category AC = action::value, typename... Fs>
     argument& actions(Fs&&... value_actions) noexcept
     requires(std::same_as<AC, action::value> and not traits::c_is_none<value_type>)
@@ -270,15 +244,13 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Set multiple *on-flag* actions for the argument.
-     * @tparam AC The action category type (must be explicitly set to `argon::action::on_flag`).
-     * @tparam Fs The types of the state action callables or predefined action tags.
-     * @param state_actions A variadic list of predefined tags (e.g., `action::discard_parsed`, `action::store`) or generic invocable callables.
-     * @return Reference to the argument instance.
-     * @note The method is enabled only for optional arguments.
-     * @note On-flag actions are executed immediately after parsing the argument's flag, before parsing any subsequent values.
-     */
+    /// @brief Set multiple *on-flag* actions for the argument.
+    /// @tparam AC The action category type (must be explicitly set to `argon::action::on_flag`).
+    /// @tparam Fs The types of the state action callables or predefined action tags.
+    /// @param state_actions A variadic list of predefined tags (e.g., `action::discard_parsed`, `action::store`) or generic invocable callables.
+    /// @return Reference to the argument instance.
+    /// @note The method is enabled only for optional arguments.
+    /// @note On-flag actions are executed immediately after parsing the argument's flag, before parsing any subsequent values.
     template <traits::c_action_category AC, traits::c_state_action... Fs>
     argument& actions(Fs&&... state_actions)
     requires(std::same_as<AC, action::on_flag> and type == argument_type::optional)
@@ -289,16 +261,15 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Set the negative prefix and associated state actions for the argument.
-     * @tparam Actions The types of the state action callables or predefined action tags.
-     * @param prefix The negative prefix string (e.g., "no-", "disable-").
-     * @param state_actions A variadic list of predefined tags (like `action::discard_parsed`) or generic invocable callables executed when the negative flag is used.
-     *                      If left empty, sensible defaults are automatically applied.
-     * @return Reference to the argument instance.
-     * @note If no actions are provided, the default behavior is storing the logical inverse of the positive flag for booleans (via `action::discard_parsed` and `action::store`), and clearing all values (via `action::discard_all`) for others.
-     * @note The method is enabled only for optional arguments.
-     */
+    /// @brief Set the negative prefix and associated state actions for the argument.
+    /// @tparam Actions The types of the state action callables or predefined action tags.
+    /// @param prefix The negative prefix string (e.g., "no-", "disable-").
+    /// @param state_actions A variadic list of predefined tags (like `action::discard_parsed`) or generic invocable callables executed when the negative flag is used.
+    ///                      If left empty, sensible defaults are automatically applied.
+    /// @return Reference to the argument instance.
+    /// @note If no actions are provided, the default behavior is storing the logical inverse of the positive flag for booleans
+    ///       (via `action::discard_parsed` and `action::store`), and clearing all values (via `action::discard_all`) for others.
+    /// @note The method is enabled only for optional arguments.
     template <traits::c_state_action... Actions>
     argument& negative(std::string_view prefix, Actions&&... state_actions)
     requires(type == argument_type::optional)
@@ -333,15 +304,13 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Add the choices for the argument.
-     * @tparam CR The choices range type.
-     * @param choices The range of valid choices for the argument.
-     * @return Reference to the argument instance.
-     * @note The method is enabled only if:
-     * @note - `value_type` must not be `none_type` and must be equality comparable
-     * @note - `CR` must be a range such that its value type is convertible to the argument's `value_type`
-     */
+    /// @brief Add the choices for the argument.
+    /// @tparam CR The choices range type.
+    /// @param choices The range of valid choices for the argument.
+    /// @return Reference to the argument instance.
+    /// @note The method is enabled only if:
+    /// @note - `value_type` must not be `none_type` and must be equality comparable
+    /// @note - `CR` must be a range such that its value type is convertible to the argument's `value_type`
     template <traits::c_range_of<value_type, traits::type_validator::convertible> CR>
     argument& choices(const CR& choices) noexcept
     requires(not traits::c_is_none<value_type> and std::equality_comparable<value_type>)
@@ -351,25 +320,21 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Add the choices for the argument.
-     * @param choices The list of valid choices for the argument.
-     * @return Reference to the argument instance.
-     * @note The method is enabled only if `value_type` is not `none_type` and is equality comparable.
-     */
+    /// @brief Add the choices for the argument.
+    /// @param choices The list of valid choices for the argument.
+    /// @return Reference to the argument instance.
+    /// @note The method is enabled only if `value_type` is not `none_type` and is equality comparable.
     argument& choices(std::initializer_list<value_type> choices) noexcept
     requires(not traits::c_is_none<value_type> and std::equality_comparable<value_type>)
     {
         return this->choices<>(choices);
     }
 
-    /**
-     * @brief Add the choices for the argument.
-     * @tparam Args The types of the choices.
-     * @param choices The list of valid choices for the argument.
-     * @return Reference to the argument instance.
-     * @note The method is enabled only if `value_type` is not `none_type` and is equality comparable.
-     */
+    /// @brief Add the choices for the argument.
+    /// @tparam Args The types of the choices.
+    /// @param choices The list of valid choices for the argument.
+    /// @return Reference to the argument instance.
+    /// @note The method is enabled only if `value_type` is not `none_type` and is equality comparable.
     argument& choices(const std::convertible_to<value_type> auto&... choices) noexcept
     requires(not traits::c_is_none<value_type> and std::equality_comparable<value_type>)
     {
@@ -377,13 +342,11 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Add default values for the argument.
-     * @param values The default values to add.
-     * @return Reference to the argument instance.
-     * @attention Setting the default values resets the `required` attribute to `false`.
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     */
+    /// @brief Add default values for the argument.
+    /// @param values The default values to add.
+    /// @return Reference to the argument instance.
+    /// @attention Setting the default values resets the `required` attribute to `false`.
+    /// @note The method is enabled only if `value_type` is not `none_type`.
     template <traits::c_range_of<value_type, traits::type_validator::convertible> CR>
     argument& default_values(const CR& values) noexcept
     requires(not traits::c_is_none<value_type> and std::equality_comparable<value_type>)
@@ -394,26 +357,22 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Add default values for the argument.
-     * @param values The default values to add.
-     * @return Reference to the argument instance.
-     * @attention Setting the default values resets the `required` attribute to `false`.
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     */
+    /// @brief Add default values for the argument.
+    /// @param values The default values to add.
+    /// @return Reference to the argument instance.
+    /// @attention Setting the default values resets the `required` attribute to `false`.
+    /// @note The method is enabled only if `value_type` is not `none_type`.
     argument& default_values(std::initializer_list<value_type> values) noexcept
     requires(not traits::c_is_none<value_type> and std::equality_comparable<value_type>)
     {
         return this->default_values<>(values);
     }
 
-    /**
-     * @brief Add default values for the argument.
-     * @param values The default values to add.
-     * @return Reference to the argument instance.
-     * @attention Setting the default values resets the `required` attribute to `false`.
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     */
+    /// @brief Add default values for the argument.
+    /// @param values The default values to add.
+    /// @return Reference to the argument instance.
+    /// @attention Setting the default values resets the `required` attribute to `false`.
+    /// @note The method is enabled only if `value_type` is not `none_type`.
     argument& default_values(const std::convertible_to<value_type> auto&... values) noexcept
     requires(not traits::c_is_none<value_type>)
     {
@@ -422,13 +381,11 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Add implicit values for the optional argument.
-     * @tparam CR The choices range type.
-     * @param values The range of implicit values to set.
-     * @return Reference to the optional argument instance.
-     * @note The method is enabled only for optional arguments and if `value_type` is not `none_type`.
-     */
+    /// @brief Add implicit values for the optional argument.
+    /// @tparam CR The choices range type.
+    /// @param values The range of implicit values to set.
+    /// @return Reference to the optional argument instance.
+    /// @note The method is enabled only for optional arguments and if `value_type` is not `none_type`.
     template <traits::c_range_of<value_type, traits::type_validator::convertible> CR>
     argument& implicit_values(const CR& values) noexcept
     requires(not traits::c_is_none<value_type> and type == argument_type::optional)
@@ -438,24 +395,20 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Add implicit values for the optional argument.
-     * @param values The initializer list of implicit values to set.
-     * @return Reference to the optional argument instance.
-     * @note The method is enabled only for optional arguments and if `value_type` is not `none_type`.
-     */
+    /// @brief Add implicit values for the optional argument.
+    /// @param values The initializer list of implicit values to set.
+    /// @return Reference to the optional argument instance.
+    /// @note The method is enabled only for optional arguments and if `value_type` is not `none_type`.
     argument& implicit_values(std::initializer_list<value_type> values) noexcept
     requires(not traits::c_is_none<value_type> and type == argument_type::optional)
     {
         return this->implicit_values<>(values);
     }
 
-    /**
-     * @brief Add a implicit values for the optional argument.
-     * @param values The implicit values to set.
-     * @return Reference to the optional argument instance.
-     * @note The method is enabled only for optional arguments and if `value_type` is not `none_type`.
-     */
+    /// @brief Add a implicit values for the optional argument.
+    /// @param values The implicit values to set.
+    /// @return Reference to the optional argument instance.
+    /// @note The method is enabled only for optional arguments and if `value_type` is not `none_type`.
     argument& implicit_values(const std::convertible_to<value_type> auto&... values) noexcept
     requires(not traits::c_is_none<value_type> and type == argument_type::optional)
     {
@@ -470,11 +423,9 @@ public:
         return this->count() > 0ull;
     }
 
-    /**
-     * @return The number of times the argument has been used.
-     * @note - For positional arguments, the count is either `0` (not used) or `1` (used).
-     * @note - For optional arguments, the count reflects the number of times the argument's flag has been used.
-     */
+    /// @return The number of times the argument has been used.
+    /// @note - For positional arguments, the count is either `0` (not used) or `1` (used).
+    /// @note - For optional arguments, the count reflects the number of times the argument's flag has been used.
     [[nodiscard]] std::size_t count() const noexcept override {
         if constexpr (type == argument_type::optional)
             return this->_count;
@@ -498,11 +449,9 @@ public:
         return this->_has_predefined_values_impl();
     }
 
-    /**
-     * @return Reference to the stored value of the argument.
-     * @note If multiple values are available, the first one is returned.
-     * @throws std::logic_error if no values are available.
-     */
+    /// @return Reference to the stored value of the argument.
+    /// @note If multiple values are available, the first one is returned.
+    /// @throws std::logic_error if no values are available.
     [[nodiscard]] traits::argument_result_type<T> value() const override {
         if (this->has_parsed_values())
             return this->_values.front();
@@ -515,12 +464,10 @@ public:
             return this->_predefined_values().front();
     }
 
-    /**
-     * @brief Get the value of the argument, if it has any, or a fallback value, if not.
-     * @tparam U The fallback value type.
-     * @param fallback_value The fallback value.
-     * @return The value of the argument.
-     */
+    /// @brief Get the value of the argument, if it has any, or a fallback value, if not.
+    /// @tparam U The fallback value type.
+    /// @param fallback_value The fallback value.
+    /// @return The value of the argument.
     template <std::convertible_to<value_type> U>
     [[nodiscard]] value_type value_or(U&& fallback_value) const
     requires(not traits::c_is_none<value_type>)
@@ -544,33 +491,21 @@ public:
 #endif
 
 private:
-    /// @brief The argument's value action type alias.
     using value_action_type = action::util::value_action_variant_type<T>;
-
-    /// @brief The argument's state action type alias.
     using state_action_type = action::util::state_callable_type;
 
-    /// @brief The argument's value-argument-specific type alias.
-    /// @tparam _T The actual type used if the argument's `value_type` is not `none_type`.
     template <typename _T>
-    using value_arg_specific_type = std::conditional_t<
-        traits::c_is_none<value_type>,
-        none_type,
-        _T>; ///< Type alias for value-argument-specific types.
+    using value_arg_specific_type =
+        std::conditional_t<traits::c_is_none<value_type>, none_type, _T>;
 
-    /// @brief The argument's positional-argument-specific type alias.
-    /// @tparam _T The actual type used if the argument's `type` is `argument_type::positional`.
     template <typename _T>
     using positional_specific_type =
         std::conditional_t<type == argument_type::positional, _T, none_type>;
 
-    /// @brief The argument's optional-argument-specific type alias.
-    /// @tparam _T The actual type used if the argument's `type` is `argument_type::optional`.
     template <typename _T>
     using optional_specific_type =
         std::conditional_t<type == argument_type::optional, _T, none_type>;
 
-    /// @brief Reset the argument's state, clearing parsed values and resetting counters.
     void reset() noexcept override {
         this->_values.clear();
         this->_parsed_nvalues = 0ull;
@@ -580,19 +515,13 @@ private:
         this->_last_flag_sign = true;
     }
 
-    /**
-     * @brief Creates a help message builder object for the argument.
-     * @param verbose The verbosity mode value.
-     * @note If the `verbose` parameter is set to `true` all non-default parameters will be included in the output,
-     * @note otherwise only the argument's name and help message will be included.
-     */
     [[nodiscard]] detail::help_builder help_builder(const bool verbose) const noexcept override {
         detail::help_builder bld(this->_name.str(), this->_help_msg);
 
         if (not verbose)
             return bld;
 
-        bld.params.reserve(6ull);
+        bld.params.reserve(7ull);
         if (this->_required != _default_required)
             bld.add_param("required", std::format("{}", this->_required));
         if (this->_suppress_arg_checks)
@@ -617,8 +546,6 @@ private:
 
     // --- parsing ---
 
-    /// @brief Mark the optional argument as used.
-    /// @return `true` if the argument accepts further values, `false` otherwise.
     bool mark_used() override {
         this->_last_flag_sign = true;
         this->_ignore_predefined = false;
@@ -631,8 +558,6 @@ private:
         return this->_accepts_further_values();
     }
 
-    /// @brief Mark the optional argument's negative flag as used.
-    /// @return `true` if the argument accepts further values, `false` otherwise.
     bool mark_negative_used() override {
         this->_last_flag_sign = false;
         if constexpr (type == argument_type::optional) {
@@ -641,20 +566,13 @@ private:
                 action();
         }
 
-        return false; // Negative flags are terminal
+        return false; // Negative flags are terminal (the argument doesn't accept further values)
     }
 
-    /**
-     * @brief Set the value for the optional argument.
-     * @param str_value The string value to use.
-     * @return `true` if the argument accepts further values, `false` otherwise.
-     * @throws argon::parsing_failure
-     */
     bool set_value(const std::string& str_value) override {
         return this->_set_value_impl(str_value);
     }
 
-    /// @return The ordering relationship of the argument's values and its nargs range attribute.
     [[nodiscard]] std::weak_ordering nvalues_ordering() const noexcept override {
         if (this->_parsed_nvalues == 0ull and this->_has_predefined_values_impl())
             return std::weak_ordering::equivalent;
@@ -668,19 +586,12 @@ private:
         return this->_parsed_nvalues <=> this->_nargs_range;
     }
 
-    /// @return Reference to the vector of parsed values for the argument.
-    /// @note For none-type arguments, the method always returns an empty vector.
     [[nodiscard]] const std::vector<T>& _values_impl() const noexcept
     requires(traits::c_is_none<value_type>)
     {
         return this->_values;
     }
 
-    /**
-     * @return Reference to the vector of parsed values for the argument.
-     * @note If no parsed values are available, the method attempts to return the predefined values (default/implicit).
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     */
     [[nodiscard]] const std::vector<T>& _values_impl() const noexcept
     requires(not traits::c_is_none<value_type>)
     {
@@ -695,19 +606,12 @@ private:
         }
     }
 
-    /// @return `true` if the argument has a predefined value, `false` otherwise.
     [[nodiscard]] bool _has_predefined_values_impl() const noexcept
     requires(traits::c_is_none<value_type>)
     {
         return false;
     }
 
-    /**
-     * @return `true` if the argument has a predefined value, `false` otherwise.
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     * @note - For positional arguments, a predefined value exists if a default value is set.
-     * @note - For optional arguments, a predefined value exists if either a default value is set or if the argument has been used and an implicit value is set.
-     */
     [[nodiscard]] bool _has_predefined_values_impl() const noexcept
     requires(not traits::c_is_none<value_type>)
     {
@@ -727,13 +631,6 @@ private:
         }
     }
 
-    /**
-     * @return Reference to the argument's predefined value list.
-     * @throws std::logic_error if no predefined values are available.
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     * @note - For positional arguments, the default value list is returned.
-     * @note - For optional arguments, if the argument has been used, the implicit value list is returned, otherwise the default value list is returned.
-     */
     [[nodiscard]] const std::vector<T>& _predefined_values() const
     requires(not traits::c_is_none<value_type>)
     {
@@ -761,12 +658,10 @@ private:
         return this->_default_values;
     }
 
-    /// @return `true` if the argument accepts further values, `false` otherwise.
     [[nodiscard]] bool _accepts_further_values() const noexcept {
         return not std::is_gt(this->_values.size() + 1ull <=> this->_nargs_range);
     }
 
-    /// @return `true` if the given value is a valid choice for the argument, `false` otherwise.
     [[nodiscard]] bool _is_valid_choice(const value_type& value) const noexcept
     requires(not traits::c_is_none<value_type>)
     {
@@ -774,12 +669,6 @@ private:
             or std::ranges::find(this->_choices, value) != std::ranges::end(this->_choices);
     }
 
-    /**
-     * @brief The implementation of the `set_value` method for none-type arguments.
-     * @param str_value The string value to set.
-     * @throws argon::parsing_failure
-     * @attention Always throws! (`set_value` should never be called for a none-type argument).
-     */
     bool _set_value_impl(const std::string& str_value)
     requires(traits::c_is_none<value_type>)
     {
@@ -790,16 +679,6 @@ private:
         ));
     }
 
-    /**
-     * @brief The implementation of the `set_value` method for non-none-type arguments.
-     * @return `true` if the argument accepts further values, `false` otherwise.
-     * @param str_value The string value to set.
-     * @throws argon::parsing_failure if:
-     * @throws - the argument does not accept further values (nargs limit exceeded).
-     * @throws - the value cannot be parsed to the argument's `value_type`.
-     * @throws - the value is not a valid choice for the argument (if choices are defined).
-     * @note The method is enabled only if `value_type` is not `none_type`.
-     */
     bool _set_value_impl(const std::string& str_value)
     requires(not traits::c_is_none<value_type>)
     {
@@ -912,42 +791,32 @@ private:
     }
 
     // attributes
-    argument_name _name; ///< The argument's name.
-    std::string _help_msg; ///< The argument's help message.
+    argument_name _name;
+    std::string _help_msg;
 
-    nargs::range _nargs_range; ///< The argument's nargs range attribute value.
-    [[no_unique_address]] value_arg_specific_type<std::vector<value_type>>
-        _default_values; ///< The argument's default value list.
+    nargs::range _nargs_range;
+    [[no_unique_address]] value_arg_specific_type<std::vector<value_type>> _default_values;
     [[no_unique_address]] value_arg_specific_type<optional_specific_type<std::vector<value_type>>>
-        _implicit_values; ///< The optional argument's implicit value list.
-    [[no_unique_address]] value_arg_specific_type<std::vector<value_type>>
-        _choices; ///< The argument's valid choices collection.
-    [[no_unique_address]] value_arg_specific_type<std::vector<value_action_type>>
-        _value_actions; ///< The argument's value actions collection.
-    [[no_unique_address]] optional_specific_type<std::vector<state_action_type>>
-        _state_actions; ///< The optional argument's flag actions collection.
-    [[no_unique_address]] optional_specific_type<std::vector<state_action_type>>
-        _neg_state_actions; ///< The action executed when the negative flag is used.
+        _implicit_values;
+    [[no_unique_address]] value_arg_specific_type<std::vector<value_type>> _choices;
+    [[no_unique_address]] value_arg_specific_type<std::vector<value_action_type>> _value_actions;
+    [[no_unique_address]] optional_specific_type<std::vector<state_action_type>> _state_actions;
+    [[no_unique_address]] optional_specific_type<std::vector<state_action_type>> _neg_state_actions;
 
-    bool _required : 1; ///< The argument's `required` attribute value.
-    bool _suppress_arg_checks : 1 =
-        false; ///< The argument's `suppress_arg_checks` attribute value.
-    bool _suppress_group_checks : 1 =
-        false; ///< The argument's `suppress_group_checks` attribute value.
-    bool _greedy : 1 = false; ///< The argument's `greedy` attribute value.
-    bool _hidden : 1 = false; ///< The argument's `hidden` attribute value.
+    bool _required : 1;
+    bool _suppress_arg_checks : 1 = false;
+    bool _suppress_group_checks : 1 = false;
+    bool _greedy : 1 = false;
+    bool _hidden : 1 = false;
 
     // parsing result
     bool _last_flag_sign : 1 =
-        false; ///< Tracks the sign of the last flag used (true for positive, false for negative).
-    bool _ignore_predefined : 1 =
-        false; ///< Indicates whether the argument's predefined values should be masked during the current parsing run (typically set by the discard_all state action).
+        false; // Tracks the sign of the last flag used (true for positive, false for negative).
+    bool _ignore_predefined : 1 = false;
 
-    [[no_unique_address]] optional_specific_type<std::size_t>
-        _count; ///< The argument's value count.
-    [[no_unique_address]] std::size_t _parsed_nvalues =
-        0ull; ///< Tracks ONLY the values consumed from the command line.
-    std::vector<value_type> _values; ///< The argument's parsed values.
+    [[no_unique_address]] optional_specific_type<std::size_t> _count;
+    [[no_unique_address]] std::size_t _parsed_nvalues = 0ull;
+    std::vector<value_type> _values;
 
     // default attribute values
     static constexpr bool _default_required = (type == argument_type::positional);
@@ -957,19 +826,15 @@ private:
         traits::c_is_none<value_type> ? nargs::range(0ull) : _default_nargs_range;
 };
 
-/**
- * @brief Positional argument alias.
- * @tparam T The value type accepted by the argument (defaults to std::string).
- * @see argon::argument
- */
+/// @brief Positional argument alias.
+/// @tparam T The value type accepted by the argument (defaults to std::string).
+/// @see argon::argument
 template <traits::c_argument_value_type T = std::string>
 using positional_argument = argument<argument_type::positional, T>;
 
-/**
- * @brief Optional argument alias.
- * @tparam T The value type accepted by the argument (defaults to std::string).
- * @see argon::argument
- */
+/// @brief Optional argument alias.
+/// @tparam T The value type accepted by the argument (defaults to std::string).
+/// @see argon::argument
 template <traits::c_argument_value_type T = std::string>
 using optional_argument = argument<argument_type::optional, T>;
 

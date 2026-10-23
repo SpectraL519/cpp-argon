@@ -2,10 +2,8 @@
 // This file is part of the CPP-ARGON project (https://github.com/SpectraL519/cpp-argon).
 // Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 
-/**
- * @file argon/argument_parser.hpp
- * @brief Main library header file. Defines the `argument_parser` class.
- */
+/// @file argon/argument_parser.hpp
+/// @brief Main library header file. Defines the `argument_parser` class.
 
 #pragma once
 
@@ -34,96 +32,80 @@ class argument_parser;
 
 /// @brief The enumeration of default arguments provided by the library.
 enum class default_argument : std::uint8_t {
-    /**
-     * @brief A positional argument representing a single input file path.
-     * Equivalent to:
-     * @code{.cpp}
-     * parser.add_positional_argument("input")
-     *       .actions<argon::action::observe>(argon::action::check_file_exists())
-     *       .help("Input file path");
-     * @endcode
-     */
+    /// @brief A positional argument representing a single input file path.
+    /// Equivalent to:
+    /// @code{.cpp}
+    /// parser.add_positional_argument("input")
+    ///       .actions<argon::action::observe>(argon::action::check_file_exists())
+    ///       .help("Input file path");
+    /// @endcode
     p_input,
 
-    /**
-     * @brief A positional argument representing a single output file path.
-     * Equivalent to:
-     * @code{.cpp}
-     * parser.add_positional_argument("output")
-     *       .help("Output file path");
-     * @endcode
-     */
+    /// @brief A positional argument representing a single output file path.
+    /// Equivalent to:
+    /// @code{.cpp}
+    /// parser.add_positional_argument("output")
+    ///       .help("Output file path");
+    /// @endcode
     p_output,
 
-    /**
-     * @brief An optional argument representing the program's help flag.
-     * Equivalent to:
-     * @code{.cpp}
-     * parser.add_optional_argument<argon::none_type>("help")
-     *       .actions<argon::action::on_flag>(argon::action::print_help(parser, EXIT_SUCCESS))
-     *       .help("Display the help message");
-     * @endcode
-     */
+    /// @brief An optional argument representing the program's help flag.
+    /// Equivalent to:
+    /// @code{.cpp}
+    /// parser.add_optional_argument<argon::none_type>("help")
+    ///       .actions<argon::action::on_flag>(argon::action::print_help(parser, EXIT_SUCCESS))
+    ///       .help("Display the help message");
+    /// @endcode
     o_help,
 
-    /**
-     * @brief An optional argument representing the program's version flag.
-     * Equivalent to:
-     * @code{.cpp}
-     * arg_parser.add_optional_argument<none_type>("version", "v")
-     *           .actions<action::on_flag>([&arg_parser]() {
-     *               arg_parser.print_version();
-     *               std::exit(EXIT_SUCCESS);
-     *           })
-     *           .help("Display program's version info");
-     * @endcode
-     */
+    /// @brief An optional argument representing the program's version flag.
+    /// Equivalent to:
+    /// @code{.cpp}
+    /// arg_parser.add_optional_argument<none_type>("version", "v")
+    ///           .actions<action::on_flag>([&arg_parser]() {
+    ///               arg_parser.print_version();
+    ///               std::exit(EXIT_SUCCESS);
+    ///           })
+    ///           .help("Display program's version info");
+    /// @endcode
     o_version,
 
-    /**
-     * @brief A positional argument representing multiple input file paths.
-     * Equivalent to:
-     * @code{.cpp}
-     * parser.add_positional_argument("input", "i")
-     *       .nargs(1ull)
-     *       .actions<argon::action::observe>(argon::action::check_file_exists())
-     *       .help("Input file path");
-     * @endcode
-     */
+    /// @brief A positional argument representing multiple input file paths.
+    /// Equivalent to:
+    /// @code{.cpp}
+    /// parser.add_positional_argument("input", "i")
+    ///       .nargs(1ull)
+    ///       .actions<argon::action::observe>(argon::action::check_file_exists())
+    ///       .help("Input file path");
+    /// @endcode
     o_input,
 
-    /**
-     * @brief A positional argument representing multiple output file paths.
-     * Equivalent to:
-     * @code{.cpp}
-     * parser.add_positional_argument("output", "o")
-     *       .nargs(1ull)
-     *       .help("Output file path");
-     * @endcode
-     */
+    /// @brief A positional argument representing multiple output file paths.
+    /// Equivalent to:
+    /// @code{.cpp}
+    /// parser.add_positional_argument("output", "o")
+    ///       .nargs(1ull)
+    ///       .help("Output file path");
+    /// @endcode
     o_output,
 
-    /**
-     * @brief A positional argument representing multiple input file paths.
-     * Equivalent to:
-     * @code{.cpp}
-     * parser.add_positional_argument("input", "i")
-     *       .nargs(argon::nargs::at_least(1ull))
-     *       .actions<argon::action::observe>(argon::action::check_file_exists())
-     *       .help("Input file path");
-     * @endcode
-     */
+    /// @brief A positional argument representing multiple input file paths.
+    /// Equivalent to:
+    /// @code{.cpp}
+    /// parser.add_positional_argument("input", "i")
+    ///       .nargs(argon::nargs::at_least(1ull))
+    ///       .actions<argon::action::observe>(argon::action::check_file_exists())
+    ///       .help("Input file path");
+    /// @endcode
     o_multi_input,
 
-    /**
-     * @brief A positional argument representing multiple output file paths.
-     * Equivalent to:
-     * @code{.cpp}
-     * parser.add_positional_argument("output", "o")
-     *       .nargs(argon::nargs::at_least(1ull))
-     *       .help("Output file path");
-     * @endcode
-     */
+    /// @brief A positional argument representing multiple output file paths.
+    /// Equivalent to:
+    /// @code{.cpp}
+    /// parser.add_positional_argument("output", "o")
+    ///       .nargs(argon::nargs::at_least(1ull))
+    ///       .help("Output file path");
+    /// @endcode
     o_multi_output
 };
 
@@ -141,40 +123,38 @@ void add_default_argument(const default_argument, argument_parser&) noexcept;
 
 } // namespace detail
 
-/**
- * @brief The main argument parser class.
- *
- * This class provides methods to define positional and optional arguments, set parser options,
- * and parse the command-line input.
- *
- * ## Basic Usage:
- * @code{.cpp}
- * #include <argon/argument_parser.hpp>
- *
- * int main(int argc, char* argv[]) {
- *     // Create the argument parser instance
- *     argon::argument_parser parser("fcopy");
- *     parser.version("v0.1.0")
- *           .description("A simple file copy utility.")
- *           .default_arguments(
- *               argon::default_argument::o_help,
- *               argon::default_argument::o_input,
- *               argon::default_argument::o_output
- *           )
- *           .verbose()
- *           .unknown_arguments_policy(argon::unknown_policy::ignore)
- *           .try_parse_args(argc, argv);
- *
- *     // Access parsed argument values
- *     const std::string& input_file = parser.value("input");
- *     const std::string& output_file = parser.value("output");
- *
- *     // Application logic here
- *     std::cout << "Copying from " << input_file << " to " << output_file << std::endl;
- *
- *     return 0;
- * }
- */
+/// @brief The main argument parser class.
+///
+/// This class provides methods to define positional and optional arguments, set parser options,
+/// and parse the command-line input.
+///
+/// ## Basic Usage:
+/// @code{.cpp}
+/// #include <argon/argument_parser.hpp>
+///
+/// int main(int argc, char* argv[]) {
+///     // Create the argument parser instance
+///     argon::argument_parser parser("fcopy");
+///     parser.version("v0.1.0")
+///           .description("A simple file copy utility.")
+///           .default_arguments(
+///             argon::default_argument::o_help,
+///             argon::default_argument::o_input,
+///             argon::default_argument::o_output
+///           )
+///           .verbose()
+///           .unknown_arguments_policy(argon::unknown_policy::ignore)
+///           .try_parse_args(argc, argv);
+///
+///     // Access parsed argument values
+///     const std::string& input_file = parser.value("input");
+///     const std::string& output_file = parser.value("output");
+///
+///     // Application logic here
+///     std::cout << "Copying from " << input_file << " to " << output_file << std::endl;
+///
+///     return 0;
+/// }
 class argument_parser {
 public:
     argument_parser(const argument_parser&) = delete;
@@ -197,27 +177,23 @@ public:
         return this->_name;
     }
 
-    /**
-     * @brief Returns the parser's full name.
-     *
-     * - For top-level parsers, this is the same as the parser's name.
-     * - For subparsers, the name is prefixed with its parent parser names:
-     *
-     * Example:
-     * - Top-level parser: `git`
-     * - Subparser: `git submodule`
-     * - Nested subparser : `git submodule init`
-     */
+    /// @brief Returns the parser's full name.
+    ///
+    /// - For top-level parsers, this is the same as the parser's name.
+    /// - For subparsers, the name is prefixed with its parent parser names:
+    ///
+    /// Example:
+    /// - Top-level parser: `git`
+    /// - Subparser: `git submodule`
+    /// - Nested subparser : `git submodule init`
     [[nodiscard]] std::string_view full_name() const noexcept {
         return this->_full_name;
     }
 
-    /**
-     * @brief Set the program version.
-     * @param version The version of the program.
-     * @return Reference to the argument parser.
-     * @throws argon::invalid_configuration if the given version string contains whitespaces.
-     */
+    /// @brief Set the program version.
+    /// @param version The version of the program.
+    /// @return Reference to the argument parser.
+    /// @throws argon::invalid_configuration if the given version string contains whitespaces.
     argument_parser& version(std::string_view version) {
         for (const char c : version)
             if (std::iscntrl(static_cast<unsigned char>(c)))
@@ -233,11 +209,9 @@ public:
         return this->_version;
     }
 
-    /**
-     * @brief Set the program description.
-     * @param description The description of the program.
-     * @return Reference to the argument parser.
-     */
+    /// @brief Set the program description.
+    /// @param description The description of the program.
+    /// @return Reference to the argument parser.
     argument_parser& description(std::string_view description) noexcept {
         this->_description = description;
         return *this;
@@ -248,12 +222,10 @@ public:
         return this->_description;
     }
 
-    /**
-     * @brief Set the verbosity mode.
-     * @note The default verbosity mode value is `false`.
-     * @param v The verbosity mode value.
-     * @return Reference to the argument parser.
-     */
+    /// @brief Set the verbosity mode.
+    /// @note The default verbosity mode value is `false`.
+    /// @param v The verbosity mode value.
+    /// @return Reference to the argument parser.
     argument_parser& verbose(const bool v = true) noexcept {
         this->_verbose = v;
         return *this;
@@ -264,12 +236,10 @@ public:
         return this->_verbose;
     }
 
-    /**
-     * @brief Set the unknown argument flags handling policy.
-     * @param policy The unknown arguments policy value.
-     * @return Reference to the argument parser.
-     * @note The default unknown arguments policy value is `argon::unknown_policy::fail`.
-     */
+    /// @brief Set the unknown argument flags handling policy.
+    /// @param policy The unknown arguments policy value.
+    /// @return Reference to the argument parser.
+    /// @note The default unknown arguments policy value is `argon::unknown_policy::fail`.
     argument_parser& unknown_arguments_policy(const unknown_policy policy) noexcept {
         this->_unknown_policy = policy;
         return *this;
@@ -280,14 +250,12 @@ public:
         return this->_unknown_policy;
     }
 
-    /**
-     * @brief Set the flag character.
-     * @param chr The flag character.
-     * @return Reference to the argument parser.
-     * @throws argon::invalid_configuration if the flag character is not a printable
-     *         ASCII character or if any arguments have already been added to the parser.
-     * @note The default flag character is `'-'`.
-     */
+    /// @brief Set the flag character.
+    /// @param chr The flag character.
+    /// @return Reference to the argument parser.
+    /// @throws argon::invalid_configuration if the flag character is not a printable
+    ///         ASCII character or if any arguments have already been added to the parser.
+    /// @note The default flag character is `'-'`.
     argument_parser& flag_char(const char chr) {
         if (not this->_positional_args.empty() or not this->_optional_args.empty())
             throw invalid_configuration("The flag character must be set before adding any "
@@ -310,11 +278,9 @@ public:
         return this->_flag_char;
     }
 
-    /**
-     * @brief Set the formatting configuration for the help output.
-     * @param cfg The formatting configuration object.
-     * @return Reference to the argument parser.
-     */
+    /// @brief Set the formatting configuration for the help output.
+    /// @param cfg The formatting configuration object.
+    /// @return Reference to the argument parser.
     argument_parser& formatting(const format_config& cfg) noexcept {
         this->_format_cfg = cfg;
         return *this;
@@ -325,13 +291,11 @@ public:
         return this->_format_cfg;
     }
 
-    /**
-     * @brief Add default arguments to the argument parser.
-     * @tparam ArgvRange Type of the positional argument discriminator range.
-     * @param arg_discriminators A range of default positional argument discriminators.
-     * @note `arg_discriminators` must be a `std::ranges::range` with the `argon::default_argument` value type.
-     * @return Reference to the argument parser.
-     */
+    /// @brief Add default arguments to the argument parser.
+    /// @tparam ArgvRange Type of the positional argument discriminator range.
+    /// @param arg_discriminators A range of default positional argument discriminators.
+    /// @note `arg_discriminators` must be a `std::ranges::range` with the `argon::default_argument` value type.
+    /// @return Reference to the argument parser.
     template <traits::c_range_of<default_argument> ArgvRange>
     argument_parser& default_arguments(const ArgvRange& arg_discriminators) noexcept {
         for (const auto arg_discriminator : arg_discriminators)
@@ -339,22 +303,18 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Add default arguments to the argument parser.
-     * @param arg_discriminators A list of default positional argument discriminators.
-     * @return Reference to the argument parser.
-     */
+    /// @brief Add default arguments to the argument parser.
+    /// @param arg_discriminators A list of default positional argument discriminators.
+    /// @return Reference to the argument parser.
     argument_parser& default_arguments(
         const std::initializer_list<default_argument>& arg_discriminators
     ) noexcept {
         return this->default_arguments<>(arg_discriminators);
     }
 
-    /**
-     * @brief Add default arguments to the argument parser.
-     * @param arg_discriminators A list of default positional argument discriminators.
-     * @return Reference to the argument parser.
-     */
+    /// @brief Add default arguments to the argument parser.
+    /// @param arg_discriminators A list of default positional argument discriminators.
+    /// @return Reference to the argument parser.
     argument_parser& default_arguments(
         const std::same_as<default_argument> auto... arg_discriminators
     ) noexcept {
@@ -362,25 +322,21 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Adds a positional argument to the parser's configuration.
-     * @tparam T Type of the argument value.
-     * @param base_name The base name of the argument.
-     * @return Reference to the added positional argument.
-     * @throws argon::invalid_configuration
-     */
+    /// @brief Adds a positional argument to the parser's configuration.
+    /// @tparam T Type of the argument value.
+    /// @param base_name The base name of the argument.
+    /// @return Reference to the added positional argument.
+    /// @throws argon::invalid_configuration
     template <traits::c_argument_value_type T = std::string>
     positional_argument<T>& add_positional_argument(const std::string_view base_name) {
         return this->add_positional_argument<T>(this->_gr_positional_args, base_name);
     }
 
-    /**
-     * @brief Adds a positional argument to the parser's configuration and binds it to the given group.
-     * @tparam T Type of the argument value.
-     * @param base_name The base name of the argument.
-     * @return Reference to the added positional argument.
-     * @throws argon::invalid_configuration
-     */
+    /// @brief Adds a positional argument to the parser's configuration and binds it to the given group.
+    /// @tparam T Type of the argument value.
+    /// @param base_name The base name of the argument.
+    /// @return Reference to the added positional argument.
+    /// @throws argon::invalid_configuration
     template <traits::c_argument_value_type T = std::string>
     positional_argument<T>& add_positional_argument(
         argument_group& group, const std::string_view base_name
@@ -400,14 +356,12 @@ public:
         return static_cast<positional_argument<T>&>(*new_arg_ptr);
     }
 
-    /**
-     * @brief Adds an optional argument to the parser's configuration.
-     * @tparam T Type of the argument value.
-     * @param base_name The base name of the argument.
-     * @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
-     * @return Reference to the added optional argument.
-     * @throws argon::invalid_configuration
-     */
+    /// @brief Adds an optional argument to the parser's configuration.
+    /// @tparam T Type of the argument value.
+    /// @param base_name The base name of the argument.
+    /// @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
+    /// @return Reference to the added optional argument.
+    /// @throws argon::invalid_configuration
     template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         const std::string_view base_name, const argument_name_discriminator name_discr = n_primary
@@ -415,14 +369,12 @@ public:
         return this->add_optional_argument<T>(this->_gr_optional_args, base_name, name_discr);
     }
 
-    /**
-     * @brief Adds an optional argument to the parser's configuration.
-     * @tparam T Type of the argument value.
-     * @param base_primary_name The base primary name of the argument.
-     * @param base_secondary_name The base secondary name of the argument.
-     * @return Reference to the added optional argument.
-     * @throws argon::invalid_configuration
-     */
+    /// @brief Adds an optional argument to the parser's configuration.
+    /// @tparam T Type of the argument value.
+    /// @param base_primary_name The base primary name of the argument.
+    /// @param base_secondary_name The base secondary name of the argument.
+    /// @return Reference to the added optional argument.
+    /// @throws argon::invalid_configuration
     template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         const std::string_view base_primary_name, const std::string_view base_secondary_name
@@ -432,15 +384,13 @@ public:
         );
     }
 
-    /**
-     * @brief Adds an optional argument to the parser's configuration and binds it to the given group.
-     * @tparam T Type of the argument value.
-     * @param group The argument group to bind the new argument to.
-     * @param base_name The base name of the argument.
-     * @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
-     * @return Reference to the added optional argument.
-     * @throws std::logic_error, argon::invalid_configuration
-     */
+    /// @brief Adds an optional argument to the parser's configuration and binds it to the given group.
+    /// @tparam T Type of the argument value.
+    /// @param group The argument group to bind the new argument to.
+    /// @param base_name The base name of the argument.
+    /// @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
+    /// @return Reference to the added optional argument.
+    /// @throws std::logic_error, argon::invalid_configuration
     template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         argument_group& group,
@@ -466,15 +416,13 @@ public:
         return static_cast<optional_argument<T>&>(*new_arg_ptr);
     }
 
-    /**
-     * @brief Adds an optional argument to the parser's configuration and binds it to the given group.
-     * @tparam T Type of the argument value.
-     * @param group The argument group to bind the new argument to.
-     * @param base_primary_name The base primary name of the argument.
-     * @param base_secondary_name The base secondary name of the argument.
-     * @return Reference to the added optional argument.
-     * @throws argon::invalid_configuration
-     */
+    /// @brief Adds an optional argument to the parser's configuration and binds it to the given group.
+    /// @tparam T Type of the argument value.
+    /// @param group The argument group to bind the new argument to.
+    /// @param base_primary_name The base primary name of the argument.
+    /// @param base_secondary_name The base secondary name of the argument.
+    /// @return Reference to the added optional argument.
+    /// @throws argon::invalid_configuration
     template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         argument_group& group,
@@ -501,14 +449,12 @@ public:
         return static_cast<optional_argument<T>&>(*new_arg_ptr);
     }
 
-    /**
-     * @brief Adds a boolean flag argument (an optional argument with `value_type = bool`) to the parser's configuration.
-     * @tparam StoreImplicitly A boolean value used as the `implicit_values` parameter of the argument.
-     * @note The argument's `default_values` attribute will be set to `not StoreImplicitly`.
-     * @param base_name The primary base name of the flag.
-     * @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
-     * @return Reference to the added boolean flag argument.
-     */
+    /// @brief Adds a boolean flag argument (an optional argument with `value_type = bool`) to the parser's configuration.
+    /// @tparam StoreImplicitly A boolean value used as the `implicit_values` parameter of the argument.
+    /// @note The argument's `default_values` attribute will be set to `not StoreImplicitly`.
+    /// @param base_name The primary base name of the flag.
+    /// @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
+    /// @return Reference to the added boolean flag argument.
     template <bool StoreImplicitly = true>
     optional_argument<bool>& add_flag(
         const std::string_view base_name, const argument_name_discriminator name_discr = n_primary
@@ -519,14 +465,12 @@ public:
             .actions<action::on_flag>(action::discard_parsed, action::store(StoreImplicitly));
     }
 
-    /**
-     * @brief Adds a boolean flag argument (an optional argument with `value_type = bool`) to the parser's configuration.
-     * @tparam StoreImplicitly A boolean value used as the `implicit_values` parameter of the argument.
-     * @note The argument's `default_values` attribute will be set to `not StoreImplicitly`.
-     * @param base_primary_name The base primary name of the flag.
-     * @param base_secondary_name The base secondary name of the flag.
-     * @return Reference to the added boolean flag argument.
-     */
+    /// @brief Adds a boolean flag argument (an optional argument with `value_type = bool`) to the parser's configuration.
+    /// @tparam StoreImplicitly A boolean value used as the `implicit_values` parameter of the argument.
+    /// @note The argument's `default_values` attribute will be set to `not StoreImplicitly`.
+    /// @param base_primary_name The base primary name of the flag.
+    /// @param base_secondary_name The base secondary name of the flag.
+    /// @return Reference to the added boolean flag argument.
     template <bool StoreImplicitly = true>
     optional_argument<bool>& add_flag(
         const std::string_view base_primary_name, const std::string_view base_secondary_name
@@ -537,15 +481,13 @@ public:
             .actions<action::on_flag>(action::discard_parsed, action::store(StoreImplicitly));
     }
 
-    /**
-     * @brief Adds a boolean flag argument (an optional argument with `value_type = bool`) to the parser's configuration and binds it to the given group.
-     * @tparam StoreImplicitly A boolean value used as the `implicit_values` parameter of the argument.
-     * @note The argument's `default_values` attribute will be set to `not StoreImplicitly`.
-     * @param group The argument group to bind the new argument to.
-     * @param base_name The base name of the flag.
-     * @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
-     * @return Reference to the added boolean flag argument.
-     */
+    /// @brief Adds a boolean flag argument (an optional argument with `value_type = bool`) to the parser's configuration and binds it to the given group.
+    /// @tparam StoreImplicitly A boolean value used as the `implicit_values` parameter of the argument.
+    /// @note The argument's `default_values` attribute will be set to `not StoreImplicitly`.
+    /// @param group The argument group to bind the new argument to.
+    /// @param base_name The base name of the flag.
+    /// @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
+    /// @return Reference to the added boolean flag argument.
     template <bool StoreImplicitly = true>
     optional_argument<bool>& add_flag(
         argument_group& group,
@@ -558,15 +500,13 @@ public:
             .actions<action::on_flag>(action::discard_parsed, action::store(StoreImplicitly));
     }
 
-    /**
-     * @brief Adds a boolean flag argument (an optional argument with `value_type = bool`) to the parser's configuration and binds it to the given group.
-     * @tparam StoreImplicitly A boolean value used as the `implicit_values` parameter of the argument.
-     * @note The argument's `default_values` attribute will be set to `not StoreImplicitly`.
-     * @param group The argument group to bind the new argument to.
-     * @param base_primary_name The base primary name of the flag.
-     * @param base_secondary_name The base secondary name of the flag.
-     * @return Reference to the added boolean flag argument.
-     */
+    /// @brief Adds a boolean flag argument (an optional argument with `value_type = bool`) to the parser's configuration and binds it to the given group.
+    /// @tparam StoreImplicitly A boolean value used as the `implicit_values` parameter of the argument.
+    /// @note The argument's `default_values` attribute will be set to `not StoreImplicitly`.
+    /// @param group The argument group to bind the new argument to.
+    /// @param base_primary_name The base primary name of the flag.
+    /// @param base_secondary_name The base secondary name of the flag.
+    /// @return Reference to the added boolean flag argument.
     template <bool StoreImplicitly = true>
     optional_argument<bool>& add_flag(
         argument_group& group,
@@ -579,31 +519,25 @@ public:
             .actions<action::on_flag>(action::discard_parsed, action::store(StoreImplicitly));
     }
 
-    /**
-     * @brief Retrieves an argument's base configuration interface by its name.
-     * @param arg_name The name of the argument.
-     * @return Constant reference to the argument base.
-     * @throws argon::lookup_failure if an argument with the given name cannot be found.
-     */
+    /// @brief Retrieves an argument's base configuration interface by its name.
+    /// @param arg_name The name of the argument.
+    /// @return Constant reference to the argument base.
+    /// @throws argon::lookup_failure if an argument with the given name cannot be found.
     [[nodiscard]] const argument_base& argument(std::string_view arg_name) const {
         return *this->_get_argument(arg_name);
     }
 
-    /**
-     * @brief Adds an argument group with the given name to the parser's configuration.
-     * @param name Name of the group.
-     * @return Reference to the added argument group.
-     */
+    /// @brief Adds an argument group with the given name to the parser's configuration.
+    /// @param name Name of the group.
+    /// @return Reference to the added argument group.
     argument_group& add_group(const std::string_view name) noexcept {
         return *this->_argument_groups.emplace_back(argument_group::create(*this, name));
     }
 
-    /**
-     * @brief Retrieves an argument group by its name.
-     * @param name The name of the group.
-     * @return Reference to the argument group.
-     * @throws argon::lookup_failure if a group with the given name does not exist.
-     */
+    /// @brief Retrieves an argument group by its name.
+    /// @param name The name of the group.
+    /// @return Reference to the argument group.
+    /// @throws argon::lookup_failure if a group with the given name does not exist.
     [[nodiscard]] argument_group& group(std::string_view name) {
         const auto it = std::ranges::find_if(this->_argument_groups, [name](const auto& grp) {
             return grp->_name == name;
@@ -614,12 +548,10 @@ public:
         return **it;
     }
 
-    /**
-     * @brief Retrieves an argument group by its name.
-     * @param name The name of the group.
-     * @return Constant reference to the argument group.
-     * @throws argon::lookup_failure if a group with the given name does not exist.
-     */
+    /// @brief Retrieves an argument group by its name.
+    /// @param name The name of the group.
+    /// @return Constant reference to the argument group.
+    /// @throws argon::lookup_failure if a group with the given name does not exist.
     [[nodiscard]] const argument_group& group(std::string_view name) const {
         const auto it = std::ranges::find_if(this->_argument_groups, [name](const auto& grp) {
             return grp->_name == name;
@@ -630,11 +562,9 @@ public:
         return **it;
     }
 
-    /**
-     * @brief Adds an subparser with the given name to the parser's configuration.
-     * @param name Name of the subparser.
-     * @return Reference to the added subparser.
-     */
+    /// @brief Adds an subparser with the given name to the parser's configuration.
+    /// @param name Name of the subparser.
+    /// @return Reference to the added subparser.
     argument_parser& add_subparser(const std::string_view name) {
         const auto subparser_it = std::ranges::find(
             this->_subparsers, name, [](const auto& subparser) { return subparser->_name; }
@@ -651,12 +581,10 @@ public:
         );
     }
 
-    /**
-     * @brief Retrieves a subparser by its name.
-     * @param name The name of the subparser.
-     * @return Reference to the subparser.
-     * @throws argon::lookup_failure if a subparser with the given name does not exist.
-     */
+    /// @brief Retrieves a subparser by its name.
+    /// @param name The name of the subparser.
+    /// @return Reference to the subparser.
+    /// @throws argon::lookup_failure if a subparser with the given name does not exist.
     [[nodiscard]] argument_parser& subparser(std::string_view name) {
         const auto it = std::ranges::find_if(this->_subparsers, [name](const auto& sub) {
             return sub->_name == name;
@@ -666,12 +594,10 @@ public:
         return **it;
     }
 
-    /**
-     * @brief Retrieves a subparser by its name.
-     * @param name The name of the subparser.
-     * @return Constant reference to the subparser.
-     * @throws argon::lookup_failure if a subparser with the given name does not exist.
-     */
+    /// @brief Retrieves a subparser by its name.
+    /// @param name The name of the subparser.
+    /// @return Constant reference to the subparser.
+    /// @throws argon::lookup_failure if a subparser with the given name does not exist.
     [[nodiscard]] const argument_parser& subparser(std::string_view name) const {
         const auto it = std::ranges::find_if(this->_subparsers, [name](const auto& sub) {
             return sub->_name == name;
@@ -681,19 +607,17 @@ public:
         return **it;
     }
 
-    /**
-     * @brief Parses the command-line arguments.
-     *
-     * Roughly equivalent to:
-     * ```cpp
-     * parse_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
-     * ```
-     *
-     * @param argc Number of command-line arguments.
-     * @param argv Array of command-line argument values.
-     * @throws argon::invalid_configuration, argon::parsing_failure
-     * @attention The first argument (the program name) is ignored.
-     */
+    /// @brief Parses the command-line arguments.
+    ///
+    /// Roughly equivalent to:
+    /// ```cpp
+    /// parse_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
+    /// ```
+    ///
+    /// @param argc Number of command-line arguments.
+    /// @param argv Array of command-line argument values.
+    /// @throws argon::invalid_configuration, argon::parsing_failure
+    /// @attention The first argument (the program name) is ignored.
     void parse_args(int argc, char* argv[]) {
         if (argc > 0)
             this->_resolve_name(argv[0]);
@@ -701,14 +625,12 @@ public:
         this->parse_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)));
     }
 
-    /**
-     * @brief Parses the command-line arguments.
-     * @tparam ArgvRange The argument range type.
-     * @param argv_rng A range of command-line argument values.
-     * @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
-     * @throws argon::invalid_configuration, argon::parsing_failure
-     * @attention This overload of the `parse_args` function assumes that the program name argument has already been discarded.
-     */
+    /// @brief Parses the command-line arguments.
+    /// @tparam ArgvRange The argument range type.
+    /// @param argv_rng A range of command-line argument values.
+    /// @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
+    /// @throws argon::invalid_configuration, argon::parsing_failure
+    /// @attention This overload of the `parse_args` function assumes that the program name argument has already been discarded.
     template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     void parse_args(const ArgvRange& argv_rng) {
         if (this->_name_res == name_resolution::unresolved)
@@ -724,18 +646,16 @@ public:
             ));
     }
 
-    /**
-     * @brief Parses the command-line arguments and exits on error.
-     *
-     * Roughly equivalent to:
-     * ```cpp
-     * try_parse_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
-     * ```
-     *
-     * @param argc Number of command-line arguments.
-     * @param argv Array of command-line argument values.
-     * @note The first argument (the program name) is ignored.
-     */
+    /// @brief Parses the command-line arguments and exits on error.
+    ///
+    /// Roughly equivalent to:
+    /// ```cpp
+    /// try_parse_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
+    /// ```
+    ///
+    /// @param argc Number of command-line arguments.
+    /// @param argv Array of command-line argument values.
+    /// @note The first argument (the program name) is ignored.
     void try_parse_args(int argc, char* argv[]) {
         if (argc > 0)
             this->_resolve_name(argv[0]);
@@ -743,18 +663,16 @@ public:
         this->try_parse_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)));
     }
 
-    /**
-     * @brief Parses the command-line arguments and exits on error.
-     *
-     * Calls `parse_args(argv_rng)` in a try-catch block. If an error is thrown, then its
-     * message and the parser are printed to `std::cerr` and the function exists with
-     * `EXIT_FAILURE` status.
-     *
-     * @tparam ArgvRange The argument range type.
-     * @param argv_rng A range of command-line argument values.
-     * @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
-     * @attention This overload of the `try_parse_args` function assumes that the program name argument has already been discarded.
-     */
+    /// @brief Parses the command-line arguments and exits on error.
+    ///
+    /// Calls `parse_args(argv_rng)` in a try-catch block. If an error is thrown, then its
+    /// message and the parser are printed to `std::cerr` and the function exists with
+    /// `EXIT_FAILURE` status.
+    ///
+    /// @tparam ArgvRange The argument range type.
+    /// @param argv_rng A range of command-line argument values.
+    /// @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
+    /// @attention This overload of the `try_parse_args` function assumes that the program name argument has already been discarded.
     template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     void try_parse_args(const ArgvRange& argv_rng) {
         try {
@@ -767,24 +685,22 @@ public:
         }
     }
 
-    /**
-     * @brief Parses the known command-line arguments.
-     *
-     * Roughly equivalent to:
-     * ```cpp
-     * try_parse_known_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
-     * ```
-     *
-     * An argument is considered "known" if it was defined using the parser's argument declaraion methods:
-     * - `add_positional_argument`
-     * - `add_optional_argument`
-     * - `add_flag`
-     *
-     * @param argc Number of command-line arguments.
-     * @param argv Array of command-line argument values.
-     * @throws argon::invalid_configuration, argon::parsing_failure
-     * @attention The first argument (the program name) is ignored.
-     */
+    /// @brief Parses the known command-line arguments.
+    ///
+    /// Roughly equivalent to:
+    /// ```cpp
+    /// try_parse_known_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
+    /// ```
+    ///
+    /// An argument is considered "known" if it was defined using the parser's argument declaraion methods:
+    /// - `add_positional_argument`
+    /// - `add_optional_argument`
+    /// - `add_flag`
+    ///
+    /// @param argc Number of command-line arguments.
+    /// @param argv Array of command-line argument values.
+    /// @throws argon::invalid_configuration, argon::parsing_failure
+    /// @attention The first argument (the program name) is ignored.
     std::vector<std::string> parse_known_args(int argc, char* argv[]) {
         if (argc > 0)
             this->_resolve_name(argv[0]);
@@ -792,20 +708,18 @@ public:
         return this->parse_known_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)));
     }
 
-    /**
-     * @brief Parses the known command-line arguments.
-     *
-     * * An argument is considered "known" if it was defined using the parser's argument declaraion methods:
-     * - `add_positional_argument`
-     * - `add_optional_argument`
-     * - `add_flag`
-     *
-     * @tparam ArgvRange The argument range type.
-     * @param argv_rng A range of command-line argument values.
-     * @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
-     * @throws argon::invalid_configuration, argon::parsing_failure
-     * @attention This overload of the `parse_known_args` function assumes that the program name argument already been discarded.
-     */
+    /// @brief Parses the known command-line arguments.
+    ///
+    /// * An argument is considered "known" if it was defined using the parser's argument declaraion methods:
+    /// - `add_positional_argument`
+    /// - `add_optional_argument`
+    /// - `add_flag`
+    ///
+    /// @tparam ArgvRange The argument range type.
+    /// @param argv_rng A range of command-line argument values.
+    /// @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
+    /// @throws argon::invalid_configuration, argon::parsing_failure
+    /// @attention This overload of the `parse_known_args` function assumes that the program name argument already been discarded.
     template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     std::vector<std::string> parse_known_args(const ArgvRange& argv_rng) {
         if (this->_name_res == name_resolution::unresolved)
@@ -817,19 +731,17 @@ public:
         return std::move(state.unknown_args);
     }
 
-    /**
-     * @brief Parses the known command-line arguments and exits on error.
-     *
-     * Roughly equivalent to:
-     * ```cpp
-     * try_parse_known_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
-     * ```
-     *
-     * @param argc Number of command-line arguments.
-     * @param argv Array of command-line argument values.
-     * @return A vector of unknown argument values.
-     * @attention The first argument (the program name) is ignored.
-     */
+    /// @brief Parses the known command-line arguments and exits on error.
+    ///
+    /// Roughly equivalent to:
+    /// ```cpp
+    /// try_parse_known_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)))
+    /// ```
+    ///
+    /// @param argc Number of command-line arguments.
+    /// @param argv Array of command-line argument values.
+    /// @return A vector of unknown argument values.
+    /// @attention The first argument (the program name) is ignored.
     std::vector<std::string> try_parse_known_args(int argc, char* argv[]) {
         if (argc > 0)
             this->_resolve_name(argv[0]);
@@ -837,19 +749,17 @@ public:
         return this->try_parse_known_args(std::span(argv + 1, static_cast<std::size_t>(argc - 1)));
     }
 
-    /**
-     * @brief Parses known the command-line arguments and exits on error.
-     *
-     * Calls `parse_known_args(argv_rng)` in a try-catch block. If an error is thrown, then its message
-     * and the parser are printed to `std::cerr` and the function exists with `EXIT_FAILURE` status.
-     * Otherwise the result of `parse_known_args(argv_rng)` is returned.
-     *
-     * @tparam ArgvRange The argument range type.
-     * @param argv_rng A range of command-line argument values.
-     * @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
-     * @return A vector of unknown argument values.
-     * @attention This overload of the `try_parse_known_args` function assumes that the program name argument has already been discarded.
-     */
+    /// @brief Parses known the command-line arguments and exits on error.
+    ///
+    /// Calls `parse_known_args(argv_rng)` in a try-catch block. If an error is thrown, then its message
+    /// and the parser are printed to `std::cerr` and the function exists with `EXIT_FAILURE` status.
+    /// Otherwise the result of `parse_known_args(argv_rng)` is returned.
+    ///
+    /// @tparam ArgvRange The argument range type.
+    /// @param argv_rng A range of command-line argument values.
+    /// @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
+    /// @return A vector of unknown argument values.
+    /// @attention This overload of the `try_parse_known_args` function assumes that the program name argument has already been discarded.
     template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     std::vector<std::string> try_parse_known_args(const ArgvRange& argv_rng) {
         try {
@@ -864,27 +774,21 @@ public:
 
     // --- parsing state and argument value getters ---
 
-    /**
-     * @brief Check whether this parser was invoked.
-     * @return `true` if the parser was selected when parsing the command-line arguments, `false` otherwise.
-     * @note A parser is *invoked* as soon as the parser is selected during parsing, even if parsing is later delegated to one of its subparsers.
-     */
+    /// @brief Check whether this parser was invoked.
+    /// @return `true` if the parser was selected when parsing the command-line arguments, `false` otherwise.
+    /// @note A parser is *invoked* as soon as the parser is selected during parsing, even if parsing is later delegated to one of its subparsers.
     [[nodiscard]] bool invoked() const noexcept {
         return this->_invoked;
     }
 
-    /**
-     * @brief Check whether the parser has finalized parsing its own arguments.
-     * @return `true` if parsing was completed for the parser, `false` otherwise.
-     */
+    /// @brief Check whether the parser has finalized parsing its own arguments.
+    /// @return `true` if parsing was completed for the parser, `false` otherwise.
     [[nodiscard]] bool finalized() const noexcept {
         return this->_finalized;
     }
 
-    /**
-     * @brief Returns the *deepest invoked parser*.
-     * @return Reference to the finalized parser that ultimately processed the arguments.
-     */
+    /// @brief Returns the *deepest invoked parser*.
+    /// @return Reference to the finalized parser that ultimately processed the arguments.
     [[nodiscard]] argument_parser& resolved_parser() noexcept {
         const auto used_subparser_it = std::ranges::find_if(
             this->_subparsers, [](const auto& subparser) { return subparser->_invoked; }
@@ -894,40 +798,32 @@ public:
         return (*used_subparser_it)->resolved_parser();
     }
 
-    /**
-     * @brief Check if a specific argument was used in the command-line.
-     * @param arg_name The name of the argument.
-     * @return `true` if the argument was used on the command line, `false` otherwise.
-     */
+    /// @brief Check if a specific argument was used in the command-line.
+    /// @param arg_name The name of the argument.
+    /// @return `true` if the argument was used on the command line, `false` otherwise.
     [[nodiscard]] bool is_used(std::string_view arg_name) const {
         return this->_get_argument(arg_name)->is_used();
     }
 
-    /**
-     * @brief Check if the given argument has a value.
-     * @param arg_name The name of the argument.
-     * @return `true` if the argument has a value, `false` otherwise.
-     */
+    /// @brief Check if the given argument has a value.
+    /// @param arg_name The name of the argument.
+    /// @return `true` if the argument has a value, `false` otherwise.
     [[nodiscard]] bool has_value(std::string_view arg_name) const {
         return this->_get_argument(arg_name)->has_value();
     }
 
-    /**
-     * @brief Get the given argument's usage count.
-     * @param arg_name The name of the argument.
-     * @return The number of times the argument has been used.
-     */
+    /// @brief Get the given argument's usage count.
+    /// @param arg_name The name of the argument.
+    /// @return The number of times the argument has been used.
     [[nodiscard]] std::size_t count(std::string_view arg_name) const {
         return this->_get_argument(arg_name)->count();
     }
 
-    /**
-     * @brief Get the value of the given argument.
-     * @tparam T Type of the argument value.
-     * @param arg_name The name of the argument.
-     * @return The value of the argument.
-     * @throws argon::lookup_failure, argon::type_error
-     */
+    /// @brief Get the value of the given argument.
+    /// @tparam T Type of the argument value.
+    /// @param arg_name The name of the argument.
+    /// @return The value of the argument.
+    /// @throws argon::lookup_failure, argon::type_error
     template <traits::c_argument_value_type T = std::string>
     [[nodiscard]] traits::argument_result_type<T> value(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
@@ -939,15 +835,13 @@ public:
         return typed_arg->value();
     }
 
-    /**
-     * @brief Get the value of the given argument, if it has any, or a fallback value, if not.
-     * @tparam T Type of the argument value.
-     * @tparam U The default value type.
-     * @param arg_name The name of the argument.
-     * @param fallback_value The fallback value.
-     * @return The value of the argument.
-     * @throws argon::lookup_failure, argon::type_error
-     */
+    /// @brief Get the value of the given argument, if it has any, or a fallback value, if not.
+    /// @tparam T Type of the argument value.
+    /// @tparam U The default value type.
+    /// @param arg_name The name of the argument.
+    /// @param fallback_value The fallback value.
+    /// @return The value of the argument.
+    /// @throws argon::lookup_failure, argon::type_error
     template <traits::c_argument_value_type T = std::string, std::convertible_to<T> U>
     [[nodiscard]] T value_or(std::string_view arg_name, U&& fallback_value) const {
         const auto arg = this->_get_argument(arg_name);
@@ -966,13 +860,11 @@ public:
         }
     }
 
-    /**
-     * @brief Get all values of the given argument.
-     * @tparam T Type of the argument values.
-     * @param arg_name The name of the argument.
-     * @return The values of the argument as a vector.
-     * @throws argon::lookup_failure, argon::type_error
-     */
+    /// @brief Get all values of the given argument.
+    /// @tparam T Type of the argument values.
+    /// @param arg_name The name of the argument.
+    /// @return The values of the argument as a vector.
+    /// @throws argon::lookup_failure, argon::type_error
     template <traits::c_argument_value_type T = std::string>
     [[nodiscard]] const std::vector<T>& values(std::string_view arg_name) const {
         const auto arg = this->_get_argument(arg_name);
@@ -993,7 +885,7 @@ public:
             this->_full_name.clear();
             this->_name_res = name_resolution::unresolved;
             for (const auto& subparser : this->_subparsers)
-                subparser->_update_program_name(this->_full_name);
+                subparser->_update_name(this->_full_name);
         }
         this->_invoked = false;
         this->_finalized = false;
@@ -1009,11 +901,9 @@ public:
             subparser->reset();
     }
 
-    /**
-     * @brief Prints the argument parser's help message to an output stream.
-     * @param verbose The verbosity mode value.
-     * @param os The output stream.
-     */
+    /// @brief Prints the argument parser's help message to an output stream.
+    /// @param verbose The verbosity mode value.
+    /// @param os The output stream.
     void print_help(const bool verbose, std::ostream& os = std::cout) const noexcept {
         os << "Program: " << this->_full_name;
         if (not this->_version.empty())
@@ -1035,13 +925,11 @@ public:
             this->_print_group(os, *group, verbose);
     }
 
-    /**
-     * @brief Prints the argument parser's version info to an output stream.
-     *
-     * If no version was specified for the parser, `(version unspecified)` will be printed.
-     *
-     * @param os The output stream.
-     */
+    /// @brief Prints the argument parser's version info to an output stream.
+    ///
+    /// If no version was specified for the parser, `(version unspecified)` will be printed.
+    ///
+    /// @param os The output stream.
     void print_version(std::ostream& os = std::cout) const noexcept {
         os << this->_full_name;
         if (this->_version.empty())
@@ -1050,16 +938,14 @@ public:
             os << ' ' << this->_version << std::endl;
     }
 
-    /**
-     * @brief Prints the argument parser's details to an output stream.
-     *
-     * An `os << parser` operation is equivalent to a `parser.print_help(_verbose, os)` call,
-     * where `_verbose` is the inner verbosity mode, which can be set with the @ref verbose function.
-     *
-     * @param os The output stream.
-     * @param parser The argument parser to print.
-     * @return The modified output stream.
-     */
+    /// @brief Prints the argument parser's details to an output stream.
+    ///
+    /// An `os << parser` operation is equivalent to a `parser.print_help(_verbose, os)` call,
+    /// where `_verbose` is the inner verbosity mode, which can be set with the @ref verbose function.
+    ///
+    /// @param os The output stream.
+    /// @param parser The argument parser to print.
+    /// @return The modified output stream.
     friend std::ostream& operator<<(std::ostream& os, const argument_parser& parser) noexcept {
         parser.print_help(parser._verbose, os);
         return os;
@@ -1147,13 +1033,15 @@ private:
         this->_name_res = name_resolution::dynamically_resolved;
 
         for (auto& sub : this->_subparsers)
-            sub->_update_program_name(this->_full_name);
+            sub->_update_name(this->_full_name);
     }
 
-    void _update_program_name(std::string_view parent_name) {
+    // TODO: properly set the state of the parser's name resolution
+    // Consider passing an additional state param to the function
+    void _update_name(std::string_view parent_name) {
         this->_full_name = std::format("{} {}", parent_name, this->_name);
         for (auto& sub : this->_subparsers)
-            sub->_update_program_name(this->_full_name);
+            sub->_update_name(this->_full_name);
     }
 
     void _verify_arg_name_pattern(const std::string_view arg_name) const {

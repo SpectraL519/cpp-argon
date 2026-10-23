@@ -180,10 +180,10 @@ public:
     static constexpr char flag_char_sentinel = '\0'; ///< Sentinel value for the flag character.
 
 private:
-    std::string _primary; ///< The primary name of the argument.
-    std::string _secondary; ///< The optional (short) name of the argument.
-    std::string _negative_prefix; ///< The optional negative prefix for the primary name.
-    char _flag_char; ///< The flag character (used for optional argument names).
+    std::string _primary;
+    std::string _secondary;
+    std::string _negative_prefix;
+    char _flag_char;
 };
 
 /// @brief Argument name member discriminator.
