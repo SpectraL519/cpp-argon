@@ -3,7 +3,7 @@ site_description: "Lightweight and feature-rich command-line argument parsing li
 repo_url: "https://github.com/SpectraL519/cpp-argon"
 
 nav:
-  - Home: pages/index.md
+  - Home: index.md
   - Argon:
       - Quick Start: pages/argon/quick_start.md
       - Parser Configuration: pages/argon/parser.md
@@ -13,16 +13,16 @@ nav:
       - Subparsers: pages/argon/subparsers.md
       - Examples: pages/argon/examples.md
   # - API Reference:
-  #     - Overview: pages/api/group__Argon.md
-  #     - Core Components: pages/api/group__Argon-Core.md
-  #     - Actions & Traits: pages/api/group__Argon-Traits.md
-  #     - Exceptions: pages/api/group__Argon-Exceptions.md
-  #     - Utility: pages/api/group__Argon-Util.md
-  - API Index:
-      - Classes & Structs: pages/api/annotated.md
-      - Class Hierarchy: pages/api/hierarchy.md
-      - Concepts: pages/api/concepts.md
-      - Files: pages/api/files.md
+  #     - Overview: cpp-argon/group__Argon.md
+  #     - Core Components: cpp-argon/group__Argon-Core.md
+  #     - Actions & Traits: cpp-argon/group__Argon-Traits.md
+  #     - Exceptions: cpp-argon/group__Argon-Exceptions.md
+  #     - Utility: cpp-argon/group__Argon-Util.md
+  - API Index: # TODO: Geneare the files into docs/pages/api/
+      - Classes & Structs: cpp-argon/annotated.md
+      - Class Hierarchy: cpp-argon/hierarchy.md
+      - Concepts: cpp-argon/concepts.md
+      - Files: cpp-argon/files.md
   - Developer Notes: pages/dev_notes.md
   - License: pages/license.md
 
