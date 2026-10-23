@@ -3,6 +3,7 @@
 import argparse
 import re
 import sys
+import tomllib
 from pathlib import Path
 from collections.abc import Iterable
 
@@ -11,19 +12,26 @@ VERSION_REGEX = r"(\d+\.\d+(?:\.\d+)*)"
 
 
 def get_cmake_version(cmake_path: Path) -> str:
-    text = cmake_path.read_text()
-    match = re.search(rf'project\s*\([^\)]*VERSION\s+{VERSION_REGEX}', text, re.IGNORECASE)
+    text = cmake_path.read_text(encoding="utf-8")
+    match = re.search(
+        rf"project\s*\([^\)]*VERSION\s+{VERSION_REGEX}", text, re.IGNORECASE
+    )
     if match:
         return match.group(1)
     raise ValueError(f"[CMake] Could not find a valid project version in {cmake_path}")
 
 
 def get_doxy_version(doxyfile_path: Path) -> str:
-    text = doxyfile_path.read_text()
-    match = re.search(rf'^\s*PROJECT_NUMBER\s*=\s*("?){VERSION_REGEX}\1', text, re.MULTILINE)
+    text = doxyfile_path.read_text(encoding="utf-8")
+    match = re.search(
+        rf'^\s*PROJECT_NUMBER\s*=\s*("?){VERSION_REGEX}\1', text, re.MULTILINE
+    )
     if match:
         return match.group(2)  # group(2) because group(1) is the optional quote
-    raise ValueError(f"[Doxygen] Could not find a valid PROJECT_NUMBER in {doxyfile_path}")
+    raise ValueError(
+        f"[Doxygen] Could not find a valid PROJECT_NUMBER in {doxyfile_path}"
+    )
+
 
 
 def get_bazel_version(bazel_module_file_path: Path) -> str:
@@ -34,16 +42,29 @@ def get_bazel_version(bazel_module_file_path: Path) -> str:
     raise ValueError(f"[Bazel] Could not find a valid module version in {bazel_module_file_path}")
 
 
+def get_pyproject_version(pyproject_path: Path) -> str:
+    with pyproject_path.open("rb") as f:
+        data = tomllib.load(f)
+
+    try:
+        return data["project"]["version"]
+    except KeyError:
+        raise ValueError(
+            f"[pyproject.toml] Could not find [project.version] in {pyproject_path}"
+        )
+
+
 def all_equal(items: Iterable) -> bool:
     return len(set(items)) == 1
 
 
-def main(cmake: Path, doxygen: Path, bazel: Path):
+def main(cmake: Path, doxygen: Path, bazel: Path, pyproject: Path):
     try:
         project_versions = {
             "CMake": get_cmake_version(cmake),
             "Doxygen": get_doxy_version(doxygen),
-            "Bazel": get_bazel_version(bazel)
+            "Bazel": get_bazel_version(bazel),
+            "pyproject.toml": get_pyproject_version(pyproject),
         }
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
@@ -80,6 +101,14 @@ if __name__ == "__main__":
         default="MODULE.bazel",
         nargs=1,
         help="Path to the Bazel module/workspace file"
+    )
+    parser.add_argument(
+        "-p",
+        "--pyproject",
+        type=Path,
+        default=Path("pyproject.toml"),
+        nargs=1,
+        help="Path to the pyproject.toml file",
     )
 
     main(**vars(parser.parse_args()))
