@@ -99,7 +99,7 @@ net_opts.add_optional_argument("port"); // (1)!
 
 > [!NOTE]
 >
-> When using naming modifiers, the argument is registered in the main parser under its fully modified name. To learn how to easily retrieve values using only the base names, see [Retrieving Values from Groups](TODO).
+> When using naming modifiers, the argument is registered in the main parser under its fully modified name. To learn how to easily retrieve values using only the base names, see [Using Argument Groups](parsing.md#using-argument-groups).
 
 ### Description
 

@@ -98,7 +98,7 @@ Ready to start building your CLI? Dive into the documentation:
 - **[Parser Configuration](pages/argon/parser_cfg.md):** Discover how to customize the parser's behavior, formatting, and unknown argument policies.
 - **[Defining Arguments](pages/argon/arguments.md):** Explore positional and optional arguments, boolean flags, and custom value types.
 - **[Argument Groups](pages/argon/groups.md):** Group related arguments and enforce validation rules.
-- **[Parsing & Values](pages/argon/parsing.md):** Understand the parsing rules and how to retrieve extracted values safely.
+- **[Command-Line Parsing](pages/argon/parsing.md):** Understand the parsing rules and how to retrieve extracted values safely.
 - **[Subparsers](pages/argon/subparsers.md):** Learn how to build multi-command applications.
 - **[Examples](pages/argon/examples.md):** View common use cases and demo projects.
 - **[API Reference](cpp-argon/annotated.md):** Browse the detailed library API documentation.

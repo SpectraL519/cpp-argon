@@ -4,7 +4,7 @@ The `CPP-ARGON` parser supports two fundamental types of arguments: **positional
 
 > [!NOTE]
 >
-> General rules for parsing arguments from the command line are described on the [Parsing & Values](parsing.md) page.
+> General rules for parsing arguments from the command line are described on the [Command-Line Parsing](parsing.md) page.
 
 ---
 

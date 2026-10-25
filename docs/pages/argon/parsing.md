@@ -1,4 +1,4 @@
-# Parsing & Values
+# Command-Line Parsing
 
 To parse command-line arguments, use of of the parser's available `parse_args` methods:
 
@@ -68,9 +68,9 @@ int main(int argc, char* argv[]) {
 
 ## Basic Argument Parsing Rules
 
-### 1. Optional arguments are parsed only with a flag
+### Optional Argument Resolution
 
-An optional argument is recognized only when its primary or secondary flag appears in the command-line input. For example:
+An optional argument is recognized **only** when its primary or secondary flag appears in the command-line input. For example:
 
 ```cpp
 parser.add_optional_argument("optional", "o");
@@ -115,7 +115,7 @@ Here, the argument is parsed only if either `--optional` (primary flag) or `-o` 
 >   ... (help message)
 >   ```
 
-### 2. Positional arguments are parsed in the order of definition
+### Positional Argument Ordering
 
 Positional arguments are assigned values in the same order they are defined in the program. They are parsed from the command-line input **excluding any values that have already been consumed by optional arguments**. This means positional arguments no longer need to appear at the beginning of the argument list.
 
@@ -141,9 +141,9 @@ positional2: value2
 > * All positional arguments expect **at most one value**.
 > * A positional argument's value doesn't have to be present in the command-line only if the argument is defined as **not** required.
 
-### 3. Positional arguments consume free values
+### Free Value Consumption
 
-A positional argument consumes only those values that cannot be assigned to optional arguments. This allows positional arguments to appear after optional arguments in the command-line input.
+A positional argument consumes only those values that cannot be assigned to optional arguments (i.e., free values). This allows positional arguments to appear after optional arguments in the command-line input.
 
 ```cpp
 parser.add_positional_argument("positional1");
@@ -182,7 +182,9 @@ optional: opt-value
 >
 > Because optional arguments accept an arbitrary number of arguments by default, it is a good practice to set the `nargs` parameter for optional arguments where it makes sense.
 
-### 4. Unknown Argument Flag Handling
+---
+
+## Unknown Argument Flag Handling
 
 A command-line argument beginning with a flag prefix (e.g., `--` or `-`) that doesn't match any of the specified optional arguments or a compound of optional arguments is considered **unknown** or **unrecognized**.
 
@@ -242,7 +244,9 @@ The available policies are:
 > - The unknown argument policy only affects the parser's behaviour when calling `parse_args` or `try_parse_args`.
 > - When parsing known args with `parse_known_args` or `try_parse_known_args` (see [Parsing Known Arguments](#parsing-known-arguments)), all unknown arguments (flags and values) are collected and returned as the parsing result, entirely ignoring the specified policy.
 
-### 5. Inline Value Assignment
+---
+
+## Inline Value Assignment
 
 By default, optional arguments accept values separated by spaces (e.g., `--number 42`). CPP-ARGON also natively supports POSIX-style inline value assignment using the `=` character.
 
@@ -282,7 +286,9 @@ you can seamlessly combine inline assignment for the first value with standard s
 > ./program --names=Kowalski Wisniewski Nowak
 ```
 
-### 6. Parsing Compound Arguments
+---
+
+## Parsing Compound Arguments
 
 Compound argument flags are **secondary** argument flags where **every** character matches the secondary name of an optional argument.
 
@@ -319,14 +325,13 @@ Numbers: 1, 2, 3
 > - If there exists an argument whose secondary name perfectly matches a possible compound of other arguments, the parser treats the flag as the **single matching argument**, not as multiple flags.
 > - The parser will attempt to assign any trailing values to the argument represented by the **last character** of the compound flag.
 
-#### Compound Flags within Argument Groups
+### Compound Flags within Argument Groups
 
 If you organized arguments into an argument group using a prefix and/or suffix, compound flags must strictly start with the group's prefix and end with the group's suffix. Characters nested between them will be treated as secondary names of the arguments registered exclusively to that group.
 
 ```cpp
 auto& log_opts = parser.add_group("Logging Options")
-                       .with_prefix("log-")
-                       .with_suffix("-opt");
+                       .with_prefix("log-");
 
 log_opts.add_optional_argument<argon::none_type>("verbose", "v");
 log_opts.add_optional_argument<argon::none_type>("quiet", "q");
@@ -336,10 +341,10 @@ parser.try_parse_args(argc, argv);
 ```
 
 ```txt
-> ./program -log-vvqd-opt
+> ./program -log-vvqd
 ```
 
-*This is equivalent to passing: `-log-v-opt -log-v-opt -log-q-opt -log-d-opt*`
+This is equivalent to passing: `-log-v -log-v -log-q -log-d`
 
 > [!NOTE]
 >

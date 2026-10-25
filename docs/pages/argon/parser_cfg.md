@@ -129,7 +129,7 @@ parser.verbose(true);
 
 By default, the parser throws an exception if it encounters a command-line argument that it does not recognize. You can alter this behavior (e.g., to ignore them, warn the user, or treat them as positional values) using the `unknown_arguments_policy()` method.
 
-For detailed information on the available policies and their behaviors, see the [Unknown Argument Flag Handling](TODO) section.
+For detailed information on the available policies and their behaviors, see [Unknown Argument Flag Handling](parsing.md#unknown-argument-flag-handling).
 
 ---
 
