@@ -95,7 +95,7 @@ Built as a modern alternative to legacy solutions like `boost::program_options`,
 Ready to start building your CLI? Dive into the documentation:
 
 - **[Quick Start](pages/argon/quick_start.md):** Learn how to integrate CPP-ARGON in your project via CMake or Bazel, and define your first parser.
-- **[Parser Configuration](pages/argon/parser.md):** Discover how to customize the parser's behavior, formatting, and unknown argument policies.
+- **[Parser Configuration](pages/argon/parser_cfg.md):** Discover how to customize the parser's behavior, formatting, and unknown argument policies.
 - **[Defining Arguments](pages/argon/arguments.md):** Explore positional and optional arguments, boolean flags, and custom value types.
 - **[Argument Groups](pages/argon/groups.md):** Group related arguments and enforce validation rules.
 - **[Parsing & Values](pages/argon/parsing.md):** Understand the parsing rules and how to retrieve extracted values safely.

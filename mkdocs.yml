@@ -6,7 +6,7 @@ nav:
   - Home: index.md
   - Argon:
       - Quick Start: pages/argon/quick_start.md
-      - Parser Configuration: pages/argon/parser.md
+      - Parser Configuration: pages/argon/parser_cfg.md
       - Defining Arguments: pages/argon/arguments.md
       - Argument Groups: pages/argon/groups.md
       - Parsing & Values: pages/argon/parsing.md

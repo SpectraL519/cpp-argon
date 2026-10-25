@@ -61,6 +61,7 @@ git_repository(
 1. Declare the desired CPP-ARGON version
 
 > [!IMPORTANT]
+>
 > CPP-ARGON versions older than [v2.5.0](https://github.com/SpectraL519/cpp-argon/releases/tag/v2.5.0) do not support building with Bazel.
 
 Then, add the `"@cpp-argon//:cpp-argon"` dependency to the target where you want to use it by adding it to the `deps` list:
@@ -164,4 +165,4 @@ Verbose mode: true
 
 ---
 
-Now that you have your parser up and running, you can move on to **[Parser Configuration](https://www.google.com/search?q=parser.md)** to learn how to heavily customize the parser's behavior, or jump straight into **[Defining Arguments](https://www.google.com/search?q=arguments.md)** to explore the library's vast type support and validation tools.
+Now that you have your parser up and running, you can move on to **[Parser Configuration](https://www.google.com/search?q=parser_cfg.md)** to learn how to heavily customize the parser's behavior, or jump straight into **[Defining Arguments](https://www.google.com/search?q=arguments.md)** to explore the library's vast type support and validation tools.
