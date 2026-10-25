@@ -38,7 +38,7 @@ An argument's value type defaults to `std::string` if no template parameter is p
 
 > [!NOTE]
 >
-> If the argument's value type is `argon::none_type`, the argument will not accept any values and therefore no value-related parameters can be set for such an argument. This includes the [number of arguments](#number-of-arguments), [greedy parsing](#greedy-parsing), [choices](#choices), [default values](#default-values), [implicit values](#implicit-values), or [value actions](#value-actions).
+> If the argument's value type is `argon::none_type`, the argument will not accept any values and therefore no value-related parameters can be set for such an argument. This includes the [number of arguments](#number-of-arguments--nargs), [greedy parsing](#greedy-parsing--greedy), [value choices](#value-choices--choices), [default values](#default-arguments), [implicit values](#implicit-values--implicit_values), and [value actions](#value-actions--actions).
 
 ### Boolean Flags
 
@@ -102,8 +102,9 @@ parser.add_optional_argument("version", "v").suppress_arg_checks();
 ```
 
 > [!WARNING]
-> - Enabling `suppress_arg_checks` has no effect on [Argument Group](https://www.google.com/search?q=groups.md) requirements validation.
-> - A required argument cannot be set to suppress checks (an exception will be thrown).
+>
+> - Enabling `suppress_arg_checks` has no effect on [argument group](groups.md) requirements validation.
+> - A required argument cannot suppress checks (an exception will be thrown if both attributes are used for one argument).
 
 ### Number of Arguments | `.nargs`
 
@@ -150,7 +151,7 @@ parser.add_optional_argument<char>("method", "m").choices('a', 'b', 'c'); // (1)
 Actions are standard C++ callables executed after parsing an argument's value. The library automatically deduces whether the action is an **observer** or a **modifier**.
 
 ```cpp
-void validate_tag(const std::string& tag) { // (1)!
+void validate_usertag(const std::string& tag) { // (1)!
     if (tag.empty() or tag.front() != '@') 
         throw std::runtime_error("Invalid tag");
 }
@@ -161,7 +162,7 @@ void capitalize(std::string& s) { // (2)!
 }
 
 parser.add_optional_argument("user", "u")
-      .actions(validate_tag, capitalize); // (3)!
+      .actions(validate_usertag, capitalize); // (3)!
 ```
 
 1. **Observe Action** (`void(const value_type&)`): Validates or logs the value without modifying it.
@@ -177,6 +178,7 @@ parser.add_optional_argument("output", "o").default_values("output.txt");
 ```
 
 > [!WARNING]
+>
 > Setting `default_values` automatically disables the `required` option for that argument.
 
 ---
@@ -191,7 +193,6 @@ Values that are injected if the argument's flag is provided without any accompan
 
 ```cpp
 parser.add_optional_argument("save", "s").implicit_values("output.txt"); // (1)!
-
 ```
 
 1. If the user passes `--save` with no value, it resolves to `"output.txt"`. If the user omits the flag entirely, the argument remains empty.
@@ -202,7 +203,9 @@ Functions called immediately upon encountering the argument's flag, before parsi
 
 ```cpp
 parser.add_optional_argument("debug")
-      .actions<argon::action::on_flag>([]() { std::cout << "Debug mode enabled\n"; });
+      .actions<argon::action::on_flag>(
+        []() { std::cout << "Debug mode enabled\n"; }
+      );
 ```
 
 ### Negative Flags | `.negative`
@@ -223,35 +226,166 @@ parser.add_optional_argument<int>("numbers")
 
 ---
 
-## Predefined Actions
+## Predefined Parameter Values
 
-`CPP-ARGON` includes several built-in actions under the `argon::action::` namespace:
+### Actions
 
-- **`print_help`** *(on-flag)*: Prints the parser's help message and optionally exits the program.
-- **`check_file_exists`** *(observe)*: Throws if the parsed file path (`std::string`) does not exist.
-- **`gt(bound)`** *(observe)*: Validates the value is strictly greater than `bound`.
-- **`geq(bound)`** *(observe)*: Validates the value is greater than or equal to `bound`.
-- **`lt(bound)`** *(observe)*: Validates the value is strictly less than `bound`.
-- **`leq(bound)`** *(observe)*: Validates the value is less than or equal to `bound`.
-- **`within(lower, upper)`** *(observe)*: Checks if the value is within the given interval.
+- `print_help` | on-flag
+  
+  Prints the parser's help message to the output stream and optionally exits with the given code.
+  
+  ```cpp
+  argon::action::util::state_callable_type print_help(
+      const argon::argument_parser& parser,
+      const std::optional<int> exit_code = std::nullopt,
+      std::ostream& os = std::cout
+  ) noexcept;
+  ```
+
+- `check_file_exists` | observe (value type: `std::string`)
+
+  Throws if the provided file path does not exist.
+
+  ```cpp
+  auto check_file_exists() noexcept;
+  ```
+
+- `gt` | observe (value type: arithmetic)
+
+  Validates that the value is strictly greater than `lower_bound`.
+
+  ```cpp
+  template <argon::traits::c_arithmetic T>
+  auto gt(const T lower_bound) noexcept;
+  ```
+
+- `geq` | observe (value type: arithmetic)
+
+  Validates that the value is greater than or equal to `lower_bound`.
+
+  ```cpp
+  template <argon::traits::c_arithmetic T>
+  auto geq(const T lower_bound) noexcept;
+  ```
+
+- `lt` | observe (value type: arithmetic)
+
+  Validates that the value is strictly less than `upper_bound`.
+
+  ```cpp
+  template <argon::traits::c_arithmetic T>
+  auto lt(const T upper_bound) noexcept;
+  ```
+
+- `leq` | observe (value type: arithmetic)
+
+  Validates that the value is less than or equal to `upper_bound`.
+
+  ```cpp
+  template <argon::traits::c_arithmetic T>
+  auto leq(const T upper_bound) noexcept;
+  ```
+
+- `within` | observe (value type: arithmetic)
+
+  Checks if the value is within the given interval. Bound inclusivity is customizable using template parameters.
+
+  ```cpp
+  template <traits::c_arithmetic T, bool LeftInclusive = true, bool RightInclusive = true>
+  auto within(const T lower_bound, const T upper_bound) noexcept;
+  ```
 
 ---
 
 ## Default Arguments
 
-You can quickly inject common boilerplate arguments into your parser using `default_arguments()`.
+The `CPP-ARGON` library defines several default arguments, which can be added to the parser's configuration as follows.
 
 ```cpp
-parser.default_arguments(
-    argon::default_argument::o_help, 
-    argon::default_argument::o_version
-);
+parser.default_arguments(<args>);
 ```
 
-Available predefined defaults:
+> [!NOTE]
+>
+> The `default_arguments` function can be called with:
+> - A variadic number of `argon::default_argument` values
+> - An arbitrary [`std::ranges::range`](https://en.cppreference.com/w/cpp/ranges/range.html) type with the `argon::default_argument` value type
 
-- `p_input` / `p_output`: Positional file paths (input validates existence).
-- `o_help`: Injects `--help, -h`.
-- `o_version`: Injects `--version, -v` (Requires `parser.version()` to be set).
-- `o_input` / `o_multi_input`: Optional input file paths (validates existence).
-- `o_output` / `o_multi_output`: Optional output file paths.
+The library defines the following default arguments:
+
+- `p_input`: Positional input file path argument.
+
+  ```cpp
+  parser.add_positional_argument<std::string>("input") // (1)!
+        .actions(argon::action::check_file_exists())
+        .help("Input file path");
+  ```
+
+1. Equivalent parser configuration.
+
+- `p_output`: Positional output file path argument.
+
+  ```cpp
+  parser.add_positional_argument("output").help("Output file path"); // (1)!
+  ```
+
+  1. Equivalent parser configuration.
+
+- `o_help`: No-value flag that prints the parser's help message.
+
+  ```cpp
+  parser.add_optional_argument<argon::none_type>("help", "h") // (1)!
+        .actions<argon::action::on_flag>(argon::action::print_help(parser, EXIT_SUCCESS))
+        .help("Display the help message");
+  ```
+
+  1. Equivalent parser configuration.
+
+- `o_version`: No-value flag that prints the parser's version info.
+  
+  ```cpp
+  parser.add_optional_argument<argon::none_type>("version", "v") // (1)!
+        .actions<argon::action::on_flag>([&parser]() {
+            parser.print_version();
+            std::exit(EXIT_SUCCESS);
+        })
+        .help("Display program's version info");
+  ```
+
+  1. Equivalent parser configuration.
+
+- `o_input` and `o_multi_input`: Optional input file path(s) arguments.
+
+  ```cpp
+  parser.add_optional_argument("input", "i") // (1)!
+        .required()
+        .nargs(1)
+        .actions(argon::action::check_file_exists())
+        .help("Input file path");
+
+  parser.add_optional_argument("input", "i") // (2)!
+        .required()
+        .nargs(argon::nargs::at_least(1))
+        .actions(argon::action::check_file_exists())
+        .help("Input files paths");
+  ```
+
+  1. Equivalent configuration for `o_input`.
+  2. Equivalent configuration for `o_multi_input`.
+
+- `o_output` and `o_multi_output`: Optional output file path(s) arguments.
+
+  ```cpp
+  parser.add_optional_argument("output", "o") // (1)!
+        .required()
+        .nargs(1)
+        .help("Output file path");
+
+  parser.add_optional_argument("output", "o") // (2)!
+        .required()
+        .nargs(argon::nargs::at_least(1))
+        .help("Output files paths");
+  ```
+
+  1. Equivalent configuration for `o_output`.
+  2. Equivalent configuration for `o_multi_output`.
