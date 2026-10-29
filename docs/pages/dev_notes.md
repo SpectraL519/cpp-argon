@@ -1,12 +1,12 @@
 # Dev Notes
 
-<br />
+---
 
 ## Building and Testing
 
 > [!NOTE]
 >
-> The project uses [doctest](https://github.com/doctest/doctest) framework for unit testing, however it is already installed in the [tests/external](/tests/external/) directory, so there is no need to install it sepparately.
+> The project uses the [doctest](https://github.com/doctest/doctest) framework for unit testing, however it is already installed in the `tests/external/` directory, so there is no need to install it separately.
 
 ### Build the Testing Executable
 
@@ -15,24 +15,24 @@ cmake -B build -DBUILD_TESTS=ON
 cmake --build build/ # -j<njobs>
 ```
 
-This will build a `run_uts` executable executable in the `build/tests/` directory.
+This will build a `run_uts` executables in the `build/tests/` directory.
 
-### Runing the Tests
+### Running the Tests
 
-To run the project's unit tests, simply run the testing executable:
+To run the project's unit tests, simply execute the testing binary:
 
 ```shell
 ./build/tests/run_uts
 ```
 
 > [!TIP]
-> Each test file defines its unique test suite with the same name as the test file. To run tests within such test suite, execute:
+>
+> Each test file defines its unique test suite with the same name as the test file. To run tests within a specific test suite, execute:
 > ```shell
 > ./build/tests/run_uts -ts=<test-suite-name>
 > ```
 
-<br />
-<br />
+---
 
 ## Formatting
 
@@ -48,7 +48,7 @@ You can format the code manually using `clang-format-18` or you can use the prep
 python scripts/format.py
 ```
 
-To inspect the all script's options and usage run:
+To inspect all the script's options and usage, run:
 
 ```shell
 python scripts/format.py --help
@@ -56,45 +56,67 @@ python scripts/format.py --help
 
 > [!NOTE]
 >
-> The script requires `python >= 3.9`
+> The script requires `python >= 3.9`.
 
-<br />
-<br />
+---
 
 ## Documentation
 
 > [!NOTE]
 >
 > You can view the online documentation for the latest version [here](https://spectral519.github.io/cpp-argon/latest/).
->
-> To view the documentation for the previous versions use the following URL pattern:
-> ```
-> https://spectral519.github.io/cpp-argon/<version>
+> To view the documentation for previous versions, use the following URL pattern:
+> ```txt
+> [https://spectral519.github.io/cpp-argon/](https://spectral519.github.io/cpp-argon/)<version>
 > ```
 
-The documentation for this project can be generated using Doxygen, styled with a custom [fork](https://github.com/SpectraL519/doxygen-awesome-css/tree/theme-alignment) of the [doxygen-awesome-css](https://github.com/jothepro/doxygen-awesome-css) theme.
+The documentation for this project is built using a modern toolchain combining:
+
+- **Doxygen** (to parse C++ sources into XML), 
+- **MkDocs** (with the Material theme and `mkdoxy` plugin to generate the site), 
+- **mike** (to handle versioning).
 
 ### Prerequisites
 
-1. Ensure that Doxygen is installed on your system. If not, you can download it from the [official website](https://www.doxygen.nl/download.html).
-
-2. The `doxygen-awesome-ccs` theme fork is included as a submodule within the project.
-
-### Generating the Documentation
-
-To generate the documentation, run the following commands in your terminal:
+1. **Doxygen**: Ensure Doxygen is installed on your system. For example, on Ubuntu:
 
 ```shell
-cd <project-root>
-doxygen Doxyfile
+sudo apt update && sudo apt install doxygen -y
 ```
 
-This should create a `documentation` directory containing the project's documentation in html format.
+2. **uv**: Install the `uv` Python package manager:
 
-> [!NOTE]
->
-> Markdown links to other files or sections and the GFM-style callouts might not be rendered properly in the Doxygen output. To fix these issues you can run the postprocessing script:
-> ```
-> python3 scripts/postprocess_doxyhtml.py ./documentation
-> ```
-> or you can view those documents by using the *Related Pages* section on the navigation bar.
+```shell
+pip install uv
+```
+
+### Setup
+
+Before building the documentation for the first time, install and sync the required Python dependencies defined in `pyproject.toml`:
+
+```shell
+uv sync
+```
+
+### Building and Serving Locally
+
+The project includes a `Makefile` to completely automate the documentation generation and deployment process.
+
+To build the documentation, deploy it to your local Git history under the `dev` alias, and serve it with live-reloading, run:
+
+```shell
+make clean
+make docs # uses TAGS="dev" by default
+make serve-docs
+```
+
+This will start a local server. You can view the documentation by navigating your browser to `http://localhost:8000/dev/`.
+
+### Makefile Targets
+
+Here are the available Make targets for managing the documentation:
+
+- `make build-docs`: Builds the documentation directly into the `site/` directory without deploying it (useful for quick CI validations).
+- `make docs TAGS="<tags>"`: Builds and deploys the documentation to the local `gh-pages` branch using `mike`.
+- `make serve-docs`: Starts the local `mike` web server.
+- `make clean` (or `make clean-docs`): Removes all generated build directories (`docs/cpp-argon/`, `site/`, and `documentation/`).

@@ -424,7 +424,7 @@ public:
     /// @param base_primary_name The base primary name of the argument.
     /// @param base_secondary_name The base secondary name of the argument.
     /// @return Reference to the added optional argument.
-    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.\
+    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.
     /// @throws std::logic_error if the argument group doesn't belong to the parser.
     template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
