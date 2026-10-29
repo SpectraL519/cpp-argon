@@ -78,13 +78,13 @@ template <typename T, template <typename...> typename Template>
 struct is_instantiation_of : std::false_type {};
 
 /// @ingroup traits
-/// @brief Specialization of the @ref gl::traits::is_instantiation_of "is_instantiation_of" trait
+/// @brief Specialization of the @ref argon::traits::is_instantiation_of "is_instantiation_of" trait
 ///        for when the type is an instantiation of the provided class template.
 template <template <typename...> typename U, typename... Args>
 struct is_instantiation_of<U<Args...>, U> : std::true_type {};
 
 /// @ingroup traits
-/// @brief Helper variable template for @ref gl::traits::is_instantiation_of "is_instantiation_of" trait.
+/// @brief Helper variable template for @ref argon::traits::is_instantiation_of "is_instantiation_of" trait.
 /// @tparam T The type to check.
 /// @tparam U The class template to match against.
 template <typename T, template <typename...> typename U>

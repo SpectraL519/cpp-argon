@@ -18,7 +18,7 @@
 namespace argon::util {
 
 /// @brief Converts a value to `std::string`.
-/// @tparam T The value type (must satisfy the @ref argon::traits::c_writable concept).
+/// @tparam T The value type (must satisfy the [c_writable](../argon_concepts/#argon-traits-c-writable) concept).
 /// @param value The value to convert.
 /// @ingroup util
 template <traits::c_writable T>
@@ -34,7 +34,7 @@ template <traits::c_writable T>
 }
 
 /// @brief Joins elements of a range into a single string with a delimiter.
-/// @tparam R The type of the value range. The value type of R must satisfy the @ref c_writable concept.
+/// @tparam R The type of the value range. The value type of R must satisfy the [c_writable](../argon_concepts/#argon-traits-c-writable) concept.
 /// @param range The input range to join.
 /// @param delimiter The separator string to insert between elements.
 /// @return A single string with all elements joined by the delimiter.
