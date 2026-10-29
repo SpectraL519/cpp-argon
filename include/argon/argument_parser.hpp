@@ -326,7 +326,7 @@ public:
     /// @tparam T Type of the argument value.
     /// @param base_name The base name of the argument.
     /// @return Reference to the added positional argument.
-    /// @throws argon::invalid_configuration
+    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.
     template <traits::c_argument_value_type T = std::string>
     positional_argument<T>& add_positional_argument(const std::string_view base_name) {
         return this->add_positional_argument<T>(this->_gr_positional_args, base_name);
@@ -336,7 +336,8 @@ public:
     /// @tparam T Type of the argument value.
     /// @param base_name The base name of the argument.
     /// @return Reference to the added positional argument.
-    /// @throws argon::invalid_configuration
+    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.
+    /// @throws std::logic_error if the argument group doesn't belong to the parser.
     template <traits::c_argument_value_type T = std::string>
     positional_argument<T>& add_positional_argument(
         argument_group& group, const std::string_view base_name
@@ -361,7 +362,7 @@ public:
     /// @param base_name The base name of the argument.
     /// @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
     /// @return Reference to the added optional argument.
-    /// @throws argon::invalid_configuration
+    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.
     template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         const std::string_view base_name, const argument_name_discriminator name_discr = n_primary
@@ -374,7 +375,7 @@ public:
     /// @param base_primary_name The base primary name of the argument.
     /// @param base_secondary_name The base secondary name of the argument.
     /// @return Reference to the added optional argument.
-    /// @throws argon::invalid_configuration
+    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.
     template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         const std::string_view base_primary_name, const std::string_view base_secondary_name
@@ -390,7 +391,8 @@ public:
     /// @param base_name The base name of the argument.
     /// @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
     /// @return Reference to the added optional argument.
-    /// @throws std::logic_error, argon::invalid_configuration
+    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.
+    /// @throws std::logic_error if the argument group doesn't belong to the parser.
     template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         argument_group& group,
@@ -422,7 +424,8 @@ public:
     /// @param base_primary_name The base primary name of the argument.
     /// @param base_secondary_name The base secondary name of the argument.
     /// @return Reference to the added optional argument.
-    /// @throws argon::invalid_configuration
+    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.\
+    /// @throws std::logic_error if the argument group doesn't belong to the parser.
     template <traits::c_argument_value_type T = std::string>
     optional_argument<T>& add_optional_argument(
         argument_group& group,
@@ -455,6 +458,7 @@ public:
     /// @param base_name The primary base name of the flag.
     /// @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
     /// @return Reference to the added boolean flag argument.
+    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.
     template <bool StoreImplicitly = true>
     optional_argument<bool>& add_flag(
         const std::string_view base_name, const argument_name_discriminator name_discr = n_primary
@@ -471,6 +475,7 @@ public:
     /// @param base_primary_name The base primary name of the flag.
     /// @param base_secondary_name The base secondary name of the flag.
     /// @return Reference to the added boolean flag argument.
+    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.
     template <bool StoreImplicitly = true>
     optional_argument<bool>& add_flag(
         const std::string_view base_primary_name, const std::string_view base_secondary_name
@@ -488,6 +493,8 @@ public:
     /// @param base_name The base name of the flag.
     /// @param name_discr The discriminator value specifying whether the given name should be treated as primary or secondary.
     /// @return Reference to the added boolean flag argument.
+    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.
+    /// @throws std::logic_error if the argument group doesn't belong to the parser.
     template <bool StoreImplicitly = true>
     optional_argument<bool>& add_flag(
         argument_group& group,
@@ -507,6 +514,8 @@ public:
     /// @param base_primary_name The base primary name of the flag.
     /// @param base_secondary_name The base secondary name of the flag.
     /// @return Reference to the added boolean flag argument.
+    /// @throws argon::invalid_configuration if the argument name is already used or if the argument name pattern is invalid.
+    /// @throws std::logic_error if the argument group doesn't belong to the parser.
     template <bool StoreImplicitly = true>
     optional_argument<bool>& add_flag(
         argument_group& group,
@@ -616,8 +625,8 @@ public:
     ///
     /// @param argc Number of command-line arguments.
     /// @param argv Array of command-line argument values.
-    /// @throws argon::invalid_configuration, argon::parsing_failure
-    /// @attention The first argument (the program name) is ignored.
+    /// @throws argon::invalid_configuration if the parser is not properly configured.
+    /// @throws argon::parsing_failure if the parsing fails due to invalid argument values or unknown arguments.
     void parse_args(int argc, char* argv[]) {
         if (argc > 0)
             this->_resolve_name(argv[0]);
@@ -629,8 +638,10 @@ public:
     /// @tparam ArgvRange The argument range type.
     /// @param argv_rng A range of command-line argument values.
     /// @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
-    /// @throws argon::invalid_configuration, argon::parsing_failure
     /// @attention This overload of the `parse_args` function assumes that the program name argument has already been discarded.
+    /// @throws argon::invalid_configuration if the parser is not properly configured.
+    /// @throws argon::parsing_failure if the parsing fails due to invalid argument values or unknown arguments.
+    /// @throws std::logic_error if the program name has not been resolved before calling this function.
     template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     void parse_args(const ArgvRange& argv_rng) {
         if (this->_name_res == name_resolution::unresolved)
@@ -655,7 +666,6 @@ public:
     ///
     /// @param argc Number of command-line arguments.
     /// @param argv Array of command-line argument values.
-    /// @note The first argument (the program name) is ignored.
     void try_parse_args(int argc, char* argv[]) {
         if (argc > 0)
             this->_resolve_name(argv[0]);
@@ -699,8 +709,9 @@ public:
     ///
     /// @param argc Number of command-line arguments.
     /// @param argv Array of command-line argument values.
-    /// @throws argon::invalid_configuration, argon::parsing_failure
-    /// @attention The first argument (the program name) is ignored.
+    /// @return A vector of unknown argument values.
+    /// @throws argon::invalid_configuration if the parser is not properly configured.
+    /// @throws argon::parsing_failure if the parsing fails due to invalid argument values.
     std::vector<std::string> parse_known_args(int argc, char* argv[]) {
         if (argc > 0)
             this->_resolve_name(argv[0]);
@@ -718,8 +729,10 @@ public:
     /// @tparam ArgvRange The argument range type.
     /// @param argv_rng A range of command-line argument values.
     /// @note `argv_rng` must be a `std::ranges::forward_range` with a value type convertible to `std::string`.
-    /// @throws argon::invalid_configuration, argon::parsing_failure
     /// @attention This overload of the `parse_known_args` function assumes that the program name argument already been discarded.
+    /// @throws argon::invalid_configuration if the parser is not properly configured.
+    /// @throws argon::parsing_failure if the parsing fails due to invalid argument values.
+    /// @throws std::logic_error if the program name has not been resolved before calling this function.
     template <traits::c_forward_range_of<std::string, traits::type_validator::convertible> ArgvRange>
     std::vector<std::string> parse_known_args(const ArgvRange& argv_rng) {
         if (this->_name_res == name_resolution::unresolved)
@@ -741,7 +754,6 @@ public:
     /// @param argc Number of command-line arguments.
     /// @param argv Array of command-line argument values.
     /// @return A vector of unknown argument values.
-    /// @attention The first argument (the program name) is ignored.
     std::vector<std::string> try_parse_known_args(int argc, char* argv[]) {
         if (argc > 0)
             this->_resolve_name(argv[0]);
