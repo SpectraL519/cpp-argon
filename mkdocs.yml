@@ -4,7 +4,7 @@ repo_url: "https://github.com/SpectraL519/cpp-argon"
 
 nav:
   - Home: index.md
-  - Argon:
+  - ARGON:
       - Quick Start: pages/argon/quick_start.md
       - Parser Configuration: pages/argon/parser_cfg.md
       - Defining Arguments: pages/argon/arguments.md
@@ -23,7 +23,6 @@ nav:
       - Class Hierarchy: cpp-argon/hierarchy.md
       - Concepts: cpp-argon/concepts.md
       - Files: cpp-argon/files.md
-  - Developer Notes: pages/dev_notes.md
   - License: pages/license.md
 
 theme:
