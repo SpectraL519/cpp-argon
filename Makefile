@@ -7,14 +7,14 @@ TAGS ?= dev
 build-docs: clean-docs
 	@echo "==> Building MkDocs documentation..."
 	doxygen Doxyfile
-	uv run python docs/scripts/gen_concept_docs.py --config docs/config/concepts.json --xml documentation/xml --out docs/cpp-argon
+	uv run python docs/scripts/gen_concept_docs.py --config docs/config/concepts.json --xml documentation/xml --out docs/pages/api
 	uv run mkdocs build --strict
 
 # Example usage: `make docs TAGS="v5.0.0 latest --update-aliases --push"`
 docs: clean-docs
 	@echo "==> Deploying MkDocs documentation (Tags: $(TAGS))..."
 	doxygen Doxyfile
-	uv run python docs/scripts/gen_concept_docs.py --config docs/config/concepts.json --xml documentation/xml --out docs/cpp-argon
+	uv run python docs/scripts/gen_concept_docs.py --config docs/config/concepts.json --xml documentation/xml --out docs/pages/api
 	uv run mike deploy $(TAGS)
 	@echo "==> Documentation deployed to local gh-pages branch."
 
@@ -24,7 +24,7 @@ serve-docs: docs
 
 clean-docs:
 	@echo "==> Cleaning documentation build directories..."
-	rm -rf docs/cpp-argon/
+	rm -rf docs/pages/api/
 	rm -rf site/
 	rm -rf documentation/
 

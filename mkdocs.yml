@@ -18,11 +18,11 @@ nav:
   #     - Actions & Traits: cpp-argon/group__Argon-Traits.md
   #     - Exceptions: cpp-argon/group__Argon-Exceptions.md
   #     - Utility: cpp-argon/group__Argon-Util.md
-  - API Index: # TODO: Geneare the files into docs/pages/api/
-      - Classes & Structs: cpp-argon/annotated.md
-      - Class Hierarchy: cpp-argon/hierarchy.md
-      - Concepts: cpp-argon/concepts.md
-      - Files: cpp-argon/files.md
+  - API Index:
+      - Classes & Structs: pages/api/annotated.md
+      - Class Hierarchy: pages/api/hierarchy.md
+      - Concepts: pages/api/concepts.md
+      - Files: pages/api/files.md
   - License: pages/license.md
 
 theme:
@@ -84,7 +84,7 @@ plugins:
       aliases: false
   - mkdoxy:
       projects:
-        cpp-argon:
+        'pages/api':
           src-dirs: "include docs/config/groups.dox"
           full-doc: true
           sorting:

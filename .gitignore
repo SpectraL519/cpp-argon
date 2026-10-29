@@ -16,7 +16,7 @@ bazel-*
 documentation/
 site/
 mike-*.yml
-docs/cpp-argon/
+docs/pages/api/
 
 # python temporary files
 **/__pycache__/

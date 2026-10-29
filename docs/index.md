@@ -101,4 +101,4 @@ Ready to start building your CLI? Dive into the documentation:
 - **[Command-Line Parsing](pages/argon/parsing.md):** Understand the parsing rules and how to retrieve extracted values safely.
 - **[Subparsers](pages/argon/subparsers.md):** Learn how to build multi-command applications.
 - **[Examples](pages/argon/examples.md):** View common use cases and demo projects.
-- **[API Reference](cpp-argon/annotated.md):** Browse the detailed library API documentation.
+- **[API Reference](pages/api/annotated.md):** Browse the detailed library API documentation.

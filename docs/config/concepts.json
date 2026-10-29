@@ -7,7 +7,7 @@
     "groups": {
         "ARGON": {
             "prefix": "argon::",
-            "filename": "argon_concepts.md",
+            "filename": "concepts.md",
             "anchor": "argon-concepts-documentation",
             "title": "ARGON Concepts",
             "description": "This page documents the C++20 concepts defined within the CPP-ARGON library."
