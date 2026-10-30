@@ -1,0 +1,1 @@
+make_example(power-calculator power_calculator_run)

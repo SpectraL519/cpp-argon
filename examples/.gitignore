@@ -1,0 +1,10 @@
+# editor files
+.vscode/
+
+# build directories
+build/
+**/build/
+
+# bazel files
+bazel-*
+MODULE.bazel.lock

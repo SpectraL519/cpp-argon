@@ -1,0 +1,18 @@
+alias(
+    name = "all_demos",
+    actual = ":demos",
+)
+
+filegroup(
+    name = "demos",
+    srcs = [
+        "//argon_git:argon_git",
+        "//file_merger:file_merger",
+        "//logging_mode:logging_mode",
+        "//message_logger:message_logger",
+        "//numbers_converter:numbers_converter",
+        "//power_calculator:power_calculator",
+        "//verbosity:verbosity",
+    ],
+    visibility = ["//visibility:public"],
+)
