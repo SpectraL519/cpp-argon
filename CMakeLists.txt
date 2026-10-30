@@ -7,7 +7,7 @@ else()
 endif()
 
 project(cpp-argon
-    VERSION 4.0.1
+    VERSION 5.0.0
     DESCRIPTION "Command-line argument parser for C++20"
     HOMEPAGE_URL "https://github.com/SpectraL519/cpp-argon"
     LANGUAGES CXX
@@ -17,6 +17,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Options
 option(BUILD_TESTS "Build project tests" OFF)
+option(BUILD_EXAMPLES "Build project examples" OFF)
 
 # The library target
 add_library(cpp-argon INTERFACE)
@@ -67,9 +68,15 @@ install(EXPORT cpp-argon-targets
     DESTINATION ${INSTALL_DIR}
 )
 
-# Include the tests directory if CPP-ARGON is a top-level project
-if (CPP_ARGON_IS_TOP_LEVEL_PROJECT AND BUILD_TESTS)
-    add_subdirectory(tests)
+# Include the tests and examples directories if CPP-ARGON is a top-level project
+if (CPP_ARGON_IS_TOP_LEVEL_PROJECT)
+    if (BUILD_TESTS)
+        add_subdirectory(tests)
+    endif()
+
+    if (BUILD_EXAMPLES)
+        add_subdirectory(examples)
+    endif()
 endif()
 
 # Exporting from the build tree
