@@ -7,3 +7,15 @@ cc_library(
     cxxopts = ["-std=c++20"],
     visibility = ["//visibility:public"],
 )
+
+alias(
+    name = "all_examples",
+    actual = "//examples:all_examples",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "examples",
+    actual = "//examples:examples",
+    visibility = ["//visibility:public"],
+)

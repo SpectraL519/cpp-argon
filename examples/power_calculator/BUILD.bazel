@@ -3,6 +3,6 @@ load("@rules_cc//cc:defs.bzl", "cc_binary")
 cc_binary(
     name = "power_calculator",
     srcs = ["main.cpp"],
-    deps = ["@cpp-argon//:cpp-argon"],
+    deps = ["//:cpp-argon"],
     visibility = ["//visibility:public"],
 )

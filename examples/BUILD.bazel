@@ -1,18 +1,19 @@
 alias(
     name = "all_examples",
     actual = ":examples",
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "examples",
     srcs = [
-        "//argon_git:argon_git",
-        "//file_merger:file_merger",
-        "//logging_mode:logging_mode",
-        "//message_logger:message_logger",
-        "//numbers_converter:numbers_converter",
-        "//power_calculator:power_calculator",
-        "//verbosity:verbosity",
+        "//examples/argon_git:argon_git",
+        "//examples/file_merger:file_merger",
+        "//examples/logging_mode:logging_mode",
+        "//examples/message_logger:message_logger",
+        "//examples/numbers_converter:numbers_converter",
+        "//examples/power_calculator:power_calculator",
+        "//examples/verbosity:verbosity",
     ],
     visibility = ["//visibility:public"],
 )

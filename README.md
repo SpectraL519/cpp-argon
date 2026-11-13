@@ -17,7 +17,7 @@
 <div align="center">
 
 [![Code Formatting](https://github.com/SpectraL519/cpp-argon/actions/workflows/format.yaml/badge.svg)](https://github.com/SpectraL519/cpp-argon/actions/workflows/format)
-[![CPP-ARGON Demo](https://github.com/SpectraL519/cpp-argon/actions/workflows/demo.yaml/badge.svg)](https://github.com/SpectraL519/cpp-argon/actions/workflows/demo)
+[![CPP-ARGON Examples](https://github.com/SpectraL519/cpp-argon/actions/workflows/examples.yaml/badge.svg)](https://github.com/SpectraL519/cpp-argon/actions/workflows/examples)
 [![Documentation](https://github.com/SpectraL519/cpp-argon/actions/workflows/documentation.yaml/badge.svg)](https://github.com/SpectraL519/cpp-argon/actions/workflows/documentation)
 [![Changelog](https://img.shields.io/badge/changelog-blue.svg?logo=github)](https://github.com/SpectraL519/cpp-argon/releases)
 
@@ -121,6 +121,34 @@ To run the project's unit tests, simply execute the testing binary:
 > ```shell
 > ./build/tests/run_uts -ts=<test-suite-name>
 > ```
+
+<br/>
+
+### Building Examples
+
+The repository includes example projects under the `examples/` directory demonstrating various features of `CPP-ARGON`.
+
+#### CMake
+
+```shell
+cmake -B build -DBUILD_EXAMPLES=ON
+cmake --build build/ # -j<njobs>
+```
+
+The resulting binaries will be located in `build/examples/<example_name>/run`.
+<!-- TODO: create build/examples/<example_name> binaries -->
+
+#### Bazel
+
+```shell
+bazel build //examples:all_examples
+```
+
+To run a specific example:
+
+```shell
+bazel run //examples/<example_name>:<example_name>
+```
 
 <br/>
 

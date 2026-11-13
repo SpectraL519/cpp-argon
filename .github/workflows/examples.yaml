@@ -22,30 +22,14 @@ jobs:
     steps:
       - name: Check out current branch
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
-
-      - name: Sync submodules
-        run: git submodule sync --recursive
-
-      - name: Update submodules
-        run: git submodule update --init --recursive
-
-      - name: Determine Current Branch
-        id: branch-name
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "branch=${{ github.event.pull_request.head.ref }}" >> $GITHUB_OUTPUT
-          else
-            echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
-          fi
 
       - name: Build cpp-argon-examples (CMake)
+        env:
+          CC: gcc-13
+          CXX: g++-13
         run: |
-          cd examples
-          cmake -B build_cmake -DARGON_TAG=${{ steps.branch-name.outputs.branch }}
-          cmake --build build_cmake/ -j 4
+          cmake -B build -DBUILD_EXAMPLES=ON -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC
+          cmake --build build/ -j 4
 
       - name: Setup Bazel
         uses: bazel-contrib/setup-bazel@0.15.0
@@ -56,10 +40,7 @@ jobs:
 
       - name: Build cpp-argon-examples (Bazel)
         run: |
-          cd examples
-          BRANCH="${{ steps.branch-name.outputs.branch }}"
-          sed -i "s/branch = \".*\"/branch = \"$BRANCH\"/" MODULE.bazel
-          bazel build //:all_examples
+          bazel build //examples:all_examples
 
   build-examples-windows:
     name: Build cpp-argon-examples (Windows)
@@ -68,33 +49,11 @@ jobs:
     steps:
       - name: Check out current branch
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
-
-      - name: Sync submodules
-        run: git submodule sync --recursive
-        shell: bash
-
-      - name: Update submodules
-        run: git submodule update --init --recursive
-        shell: bash
-
-      - name: Determine Current Branch
-        id: branch-name
-        run: |
-          if ("${{ github.event_name }}" -eq "pull_request") {
-            "branch=${{ github.event.pull_request.head.ref }}" >> $env:GITHUB_OUTPUT
-          } else {
-            $branch = "${env:GITHUB_REF}".Replace("refs/heads/", "")
-            "branch=$branch" >> $env:GITHUB_OUTPUT
-          }
 
       - name: Build cpp-argon-examples (CMake)
         run: |
-          cd examples
-          cmake -B build_cmake -DARGON_TAG=${{ steps.branch-name.outputs.branch }}
-          cmake --build build_cmake/ --config Release -j 4
+          cmake -B build -DBUILD_EXAMPLES=ON
+          cmake --build build/ --config Release -j 4
 
       - name: Setup Bazel
         uses: bazel-contrib/setup-bazel@0.15.0
@@ -105,7 +64,4 @@ jobs:
 
       - name: Build cpp-argon-examples (Bazel)
         run: |
-          cd examples
-          $BRANCH="${{ steps.branch-name.outputs.branch }}"
-          (Get-Content MODULE.bazel) -replace 'branch = ".*"', "branch = `"$BRANCH`"" | Set-Content MODULE.bazel
-          bazel build //:all_examples
+          bazel build //examples:all_examples

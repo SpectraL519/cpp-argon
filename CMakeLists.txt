@@ -25,6 +25,7 @@ target_include_directories(cpp-argon INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
+target_compile_features(cpp-argon INTERFACE cxx_std_20)
 set_target_properties(cpp-argon PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED YES
